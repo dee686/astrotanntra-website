@@ -110,6 +110,111 @@ export function getTimezoneOffsetHours(timeZoneName, dateStr) {
 }
 
 /**
+ * Normalizes state and province names for consistent deduplication and display
+ * (e.g. "State of Bihār" -> "Bihar", "Alba / Scotland" -> "Scotland", "Haryāna" -> "Haryana")
+ */
+export function normalizeStateName(rawState) {
+  if (!rawState) return '';
+  let s = rawState.trim();
+  
+  // Remove accents & diacritics
+  s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  // Strip common administrative prefixes
+  s = s.replace(/\b(State of|Province of|Department of|Region of|National Capital Territory of|Union Territory of)\b/gi, '').trim();
+  
+  // Handle multi-lingual slashes like "Alba / Scotland"
+  if (s.includes('/')) {
+    const parts = s.split('/').map(p => p.trim());
+    s = parts[parts.length - 1];
+  }
+  
+  // Strip trailing admin words
+  s = s.replace(/\s+(State|Province|Region|Department)$/i, '').trim();
+
+  // Canonical Indian & global state dictionary
+  const lower = s.toLowerCase();
+  const STATE_CANONICAL = {
+    'bihar': 'Bihar',
+    'orissa': 'Odisha',
+    'odisha': 'Odisha',
+    'uttar pradesh': 'Uttar Pradesh',
+    'madhya pradesh': 'Madhya Pradesh',
+    'andhra pradesh': 'Andhra Pradesh',
+    'himachal pradesh': 'Himachal Pradesh',
+    'tamil nadu': 'Tamil Nadu',
+    'west bengal': 'West Bengal',
+    'delhi': 'Delhi',
+    'nct of delhi': 'Delhi',
+    'jammu & kashmir': 'Jammu and Kashmir',
+    'jammu and kashmir': 'Jammu and Kashmir',
+    'karnataka': 'Karnataka',
+    'maharashtra': 'Maharashtra',
+    'gujarat': 'Gujarat',
+    'rajasthan': 'Rajasthan',
+    'punjab': 'Punjab',
+    'haryana': 'Haryana',
+    'kerala': 'Kerala',
+    'assam': 'Assam',
+    'telangana': 'Telangana',
+    'chhattisgarh': 'Chhattisgarh',
+    'chhatisgarh': 'Chhattisgarh',
+    'jharkhand': 'Jharkhand',
+    'uttarakhand': 'Uttarakhand',
+    'uttaranchal': 'Uttarakhand',
+    'scotland': 'Scotland',
+    'england': 'England',
+    'wales': 'Wales',
+    'northern ireland': 'Northern Ireland',
+    'virginia': 'Virginia',
+    'texas': 'Texas',
+    'california': 'California'
+  };
+
+  return STATE_CANONICAL[lower] || s;
+}
+
+/**
+ * Normalizes city names (stripping diacritics like "Pātna" -> "Patna")
+ */
+export function normalizeCityName(rawName) {
+  if (!rawName) return '';
+  return rawName.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Great-circle distance between two geographic coordinates in kilometers
+ */
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Filters out non-place OSM features (highways, roads, universities, flyovers, administrative polygons)
+ */
+function isPopulatedPlace(properties) {
+  const osmKey = properties.osm_key;
+  const name = properties.name || properties.city || '';
+
+  if (osmKey === 'highway' || osmKey === 'railway' || osmKey === 'amenity' || osmKey === 'building') {
+    return false;
+  }
+  if (/(\bRoad\b|\bFlyover\b|\bCorridor\b|\bUniversity\b|\bAuthority\b|\bHospital\b|\bExpressway\b|\bBypass\b|\bToll\b|\bSector\s*\d+)/i.test(name)) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Cleans admin region names for clean presentation
  */
 function cleanAdminName(str, cityName) {
@@ -124,16 +229,23 @@ function cleanAdminName(str, cityName) {
 /**
  * Normalizes Open-Meteo Geocoding API response
  */
-function normalizeOpenMeteoResult(item, dateStr) {
-  const name = item.name || '';
+function normalizeOpenMeteoResult(item, dateStr, cleanQuery) {
+  let name = normalizeCityName(item.name || '');
+  const rawCity = name.toLowerCase();
+
+  // If user searched an alias (e.g. "gurgaon") and result is "Gurugram", show both
+  if (cleanQuery === 'gurgaon' && rawCity === 'gurugram') {
+    name = 'Gurgaon (Gurugram)';
+  } else if (cleanQuery === 'bangalore' && rawCity === 'bengaluru') {
+    name = 'Bangalore (Bengaluru)';
+  }
+
   const rawState = item.admin1 || '';
-  const rawDistrict = item.admin2 || '';
+  const state = normalizeStateName(rawState);
+  const district = cleanAdminName(item.admin2 || '', name);
   const country = item.country || 'India';
   const countryCode = (item.country_code || 'IN').toUpperCase();
   const flag = getCountryFlag(countryCode);
-
-  const state = cleanAdminName(rawState, name);
-  const district = cleanAdminName(rawDistrict, name);
 
   const lat = parseFloat(item.latitude);
   const lng = parseFloat(item.longitude);
@@ -141,18 +253,20 @@ function normalizeOpenMeteoResult(item, dateStr) {
   const tz = getTimezoneOffsetHours(tzName, dateStr);
 
   const parts = [name];
-  if (district && district !== name && district !== state) parts.push(district);
-  if (state && state !== name) parts.push(state);
+  if (state && state.toLowerCase() !== name.toLowerCase()) parts.push(state);
   if (country) parts.push(country);
-
   const formatted = parts.join(', ');
+
+  const population = item.population || 0;
+  const featureCode = item.feature_code || '';
 
   return {
     id: `om-${item.id || Math.random()}`,
     name,
+    rawCity,
     formatted,
     district,
-    state: state || rawState,
+    state,
     country,
     countryCode,
     flag,
@@ -160,6 +274,8 @@ function normalizeOpenMeteoResult(item, dateStr) {
     lng,
     tzName,
     tz,
+    population,
+    featureCode,
     source: 'Open-Meteo'
   };
 }
@@ -167,18 +283,25 @@ function normalizeOpenMeteoResult(item, dateStr) {
 /**
  * Normalizes Photon / OpenStreetMap GeoJSON response
  */
-function normalizePhotonResult(feature, dateStr) {
+function normalizePhotonResult(feature, dateStr, cleanQuery) {
   const p = feature.properties || {};
-  const coords = feature.geometry?.coordinates || [77.2090, 28.6139]; // [lng, lat]
+  const coords = feature.geometry?.coordinates || [77.209, 28.6139]; // [lng, lat]
   const lng = parseFloat(coords[0]);
   const lat = parseFloat(coords[1]);
 
-  const name = p.name || p.city || p.locality || '';
+  let name = normalizeCityName(p.name || p.city || p.locality || '');
+  const rawCity = name.toLowerCase();
+
+  if (cleanQuery === 'gurgaon' && rawCity === 'gurugram') {
+    name = 'Gurgaon (Gurugram)';
+  } else if (cleanQuery === 'bangalore' && rawCity === 'bengaluru') {
+    name = 'Bangalore (Bengaluru)';
+  }
+
+  const state = normalizeStateName(p.state || '');
   const district = cleanAdminName(p.county || p.district || '', name);
-  const rawState = p.state || '';
-  const state = cleanAdminName(rawState, name);
   const country = p.country || 'India';
-  const countryCode = p.countrycode ? p.countrycode.toUpperCase() : (country === 'India' ? 'IN' : 'US');
+  const countryCode = p.countrycode ? p.countrycode.toUpperCase() : country === 'India' ? 'IN' : 'US';
   const flag = getCountryFlag(countryCode);
 
   let tzName = 'Asia/Kolkata';
@@ -194,18 +317,17 @@ function normalizePhotonResult(feature, dateStr) {
   const tz = getTimezoneOffsetHours(tzName, dateStr);
 
   const parts = [name];
-  if (district && district !== name && district !== state) parts.push(district);
-  if (state && state !== name) parts.push(state);
+  if (state && state.toLowerCase() !== name.toLowerCase()) parts.push(state);
   if (country) parts.push(country);
-
   const formatted = parts.join(', ');
 
   return {
     id: `ph-${p.osm_id || Math.random()}`,
     name,
+    rawCity,
     formatted,
     district,
-    state: state || rawState,
+    state,
     country,
     countryCode,
     flag,
@@ -213,6 +335,8 @@ function normalizePhotonResult(feature, dateStr) {
     lng,
     tzName,
     tz,
+    population: 0,
+    featureCode: p.osm_value || '',
     source: 'OpenStreetMap'
   };
 }
@@ -222,14 +346,15 @@ function normalizePhotonResult(feature, dateStr) {
  */
 export const WORLD_POPULAR_PLACES = [
   { id: 'wp-1', name: 'Gurgaon', formatted: 'Gurgaon, Haryana, India', district: 'Gurugram', state: 'Haryana', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 28.4646, lng: 77.0299, tz: 5.5, tzName: 'Asia/Kolkata' },
-  { id: 'wp-2', name: 'Paris', formatted: 'Paris, Île-de-France, France', district: '', state: 'Île-de-France', country: 'France', countryCode: 'FR', flag: '🇫🇷', lat: 48.85341, lng: 2.34880, tz: 2, tzName: 'Europe/Paris' },
-  { id: 'wp-3', name: 'London', formatted: 'London, Greater London, England, United Kingdom', district: 'Greater London', state: 'England', country: 'United Kingdom', countryCode: 'GB', flag: '🇬🇧', lat: 51.50853, lng: -0.12574, tz: 1, tzName: 'Europe/London' },
-  { id: 'wp-4', name: 'New York', formatted: 'New York, NY, United States', district: '', state: 'New York', country: 'United States', countryCode: 'US', flag: '🇺🇸', lat: 40.71427, lng: -74.00597, tz: -4, tzName: 'America/New_York' },
-  { id: 'wp-5', name: 'Tokyo', formatted: 'Tokyo, Kanto, Japan', district: '', state: 'Tokyo', country: 'Japan', countryCode: 'JP', flag: '🇯🇵', lat: 35.68950, lng: 139.69171, tz: 9, tzName: 'Asia/Tokyo' },
-  { id: 'wp-6', name: 'Dubai', formatted: 'Dubai, United Arab Emirates', district: '', state: 'Dubai', country: 'United Arab Emirates', countryCode: 'AE', flag: '🇦🇪', lat: 25.07725, lng: 55.30927, tz: 4, tzName: 'Asia/Dubai' },
-  { id: 'wp-7', name: 'New Delhi', formatted: 'New Delhi, Delhi, India', district: '', state: 'Delhi', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 28.61390, lng: 77.20900, tz: 5.5, tzName: 'Asia/Kolkata' },
-  { id: 'wp-8', name: 'Bengaluru', formatted: 'Bengaluru, Karnataka, India', district: '', state: 'Karnataka', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 12.9716, lng: 77.5946, tz: 5.5, tzName: 'Asia/Kolkata' },
-  { id: 'wp-9', name: 'Tezpur', formatted: 'Tezpur, Sonitpur, Assam, India', district: 'Sonitpur', state: 'Assam', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 26.63380, lng: 92.79260, tz: 5.5, tzName: 'Asia/Kolkata' }
+  { id: 'wp-2', name: 'Patna', formatted: 'Patna, Bihar, India', district: 'Patna', state: 'Bihar', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 25.59408, lng: 85.13563, tz: 5.5, tzName: 'Asia/Kolkata' },
+  { id: 'wp-3', name: 'Paris', formatted: 'Paris, Île-de-France, France', district: '', state: 'Île-de-France', country: 'France', countryCode: 'FR', flag: '🇫🇷', lat: 48.85341, lng: 2.3488, tz: 2, tzName: 'Europe/Paris' },
+  { id: 'wp-4', name: 'London', formatted: 'London, England, United Kingdom', district: 'Greater London', state: 'England', country: 'United Kingdom', countryCode: 'GB', flag: '🇬🇧', lat: 51.50853, lng: -0.12574, tz: 1, tzName: 'Europe/London' },
+  { id: 'wp-5', name: 'New York', formatted: 'New York, New York, United States', district: '', state: 'New York', country: 'United States', countryCode: 'US', flag: '🇺🇸', lat: 40.71427, lng: -74.00597, tz: -4, tzName: 'America/New_York' },
+  { id: 'wp-6', name: 'Tokyo', formatted: 'Tokyo, Tokyo, Japan', district: '', state: 'Tokyo', country: 'Japan', countryCode: 'JP', flag: '🇯🇵', lat: 35.6895, lng: 139.69171, tz: 9, tzName: 'Asia/Tokyo' },
+  { id: 'wp-7', name: 'Dubai', formatted: 'Dubai, Dubai, United Arab Emirates', district: '', state: 'Dubai', country: 'United Arab Emirates', countryCode: 'AE', flag: '🇦🇪', lat: 25.07725, lng: 55.30927, tz: 4, tzName: 'Asia/Dubai' },
+  { id: 'wp-8', name: 'New Delhi', formatted: 'New Delhi, Delhi, India', district: '', state: 'Delhi', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 28.6139, lng: 77.209, tz: 5.5, tzName: 'Asia/Kolkata' },
+  { id: 'wp-9', name: 'Bengaluru', formatted: 'Bengaluru, Karnataka, India', district: '', state: 'Karnataka', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 12.9716, lng: 77.5946, tz: 5.5, tzName: 'Asia/Kolkata' },
+  { id: 'wp-10', name: 'Tezpur', formatted: 'Tezpur, Assam, India', district: 'Sonitpur', state: 'Assam', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 26.6338, lng: 92.7926, tz: 5.5, tzName: 'Asia/Kolkata' }
 ];
 
 /**
@@ -261,9 +386,10 @@ export function initGoogleMapsIfNeeded() {
 
 /**
  * Search places live across global map engines
- * Multi-source parallel engine: Photon (OpenStreetMap) + Open-Meteo + City Alias Matrix
+ * Multi-source parallel engine: Open-Meteo + Photon (OpenStreetMap) + City Alias Matrix
+ * With strict state-level deduplication (one entry per city per state, matching AstroSage)
  * 
- * @param {string} query - Location query (e.g. "Gurgaon", "Paris", "Bangalore")
+ * @param {string} query - Location query (e.g. "Patna", "Gurgaon", "Paris")
  * @param {string} [dateStr] - Optional birth date (YYYY-MM-DD)
  * @returns {Promise<Array>} Array of normalized location objects
  */
@@ -288,35 +414,39 @@ export async function searchPlacesLive(query, dateStr) {
   const fetchTasks = [];
 
   for (const q of queriesToSearch) {
-    // Photon / OpenStreetMap query
-    const photonPromise = fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`, {
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (data && Array.isArray(data.features)) {
-          return data.features.map(f => normalizePhotonResult(f, dateStr));
-        }
-        return [];
-      })
-      .catch(() => []);
-
-    fetchTasks.push(photonPromise);
-
-    // Open-Meteo Geocoding query
-    const omPromise = fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`, {
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(res => res.ok ? res.json() : null)
+    // Open-Meteo Geocoding query (primary high-precision populated places database)
+    const omPromise = fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`,
+      { headers: { Accept: 'application/json' } }
+    )
+      .then(res => (res.ok ? res.json() : null))
       .then(data => {
         if (data && Array.isArray(data.results)) {
-          return data.results.map(item => normalizeOpenMeteoResult(item, dateStr));
+          return data.results.map(item => normalizeOpenMeteoResult(item, dateStr, cleanQuery));
         }
         return [];
       })
       .catch(() => []);
 
     fetchTasks.push(omPromise);
+
+    // Photon / OpenStreetMap query (worldwide village and hamlet coverage)
+    const photonPromise = fetch(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8`,
+      { headers: { Accept: 'application/json' } }
+    )
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data && Array.isArray(data.features)) {
+          return data.features
+            .filter(f => isPopulatedPlace(f.properties || {}))
+            .map(f => normalizePhotonResult(f, dateStr, cleanQuery));
+        }
+        return [];
+      })
+      .catch(() => []);
+
+    fetchTasks.push(photonPromise);
   }
 
   const taskResults = await Promise.allSettled(fetchTasks);
@@ -328,35 +458,70 @@ export async function searchPlacesLive(query, dateStr) {
     }
   });
 
-  // Deduplicate candidates by coordinates proximity (within ~0.15 degree) and matching name
-  const seenCoordinates = new Set();
+  // Calculate score for each candidate to pick the highest quality entry
+  for (const c of allCandidates) {
+    let score = c.population || 0;
+    const nameLower = c.rawCity;
+    if (nameLower === cleanQuery) score += 25000;
+    else if (CITY_ALIASES[cleanQuery]?.includes(nameLower)) score += 20000;
+
+    if (c.featureCode === 'PPLC' || c.featureCode === 'PPLA') score += 500000;
+    if (c.source === 'Open-Meteo') score += 1000;
+    c.score = score;
+  }
+
+  // Deduplication 1: Group by [canonicalCityKey + normalizedState + countryCode]
+  // This guarantees that for "patna", there is ONLY ONE entry for Bihar, one for UP, etc.
+  const byStateMap = new Map();
+  for (const c of allCandidates) {
+    if (!c.name || isNaN(c.lat) || isNaN(c.lng)) continue;
+
+    let cityGroup = c.rawCity;
+    if (CITY_ALIASES[cleanQuery]?.includes(cityGroup)) {
+      cityGroup = cleanQuery;
+    }
+
+    const stateKey = (c.state || '').toLowerCase();
+    const countryKey = (c.countryCode || 'IN').toLowerCase();
+    const groupKey = `${cityGroup}|${stateKey}|${countryKey}`;
+
+    const existing = byStateMap.get(groupKey);
+    if (!existing || c.score > existing.score) {
+      byStateMap.set(groupKey, c);
+    }
+  }
+
+  // Deduplication 2: Proximity check (<30km) with matching or suburb root
+  // Prevents rural tehsils or sectors from duplicating the main metropolitan city
+  const uniqueCandidates = Array.from(byStateMap.values());
   let results = [];
 
-  for (const item of allCandidates) {
-    if (!item.name || isNaN(item.lat) || isNaN(item.lng)) continue;
-    // Spatial grid key (~15km resolution)
-    const coordKey = `${Math.round(item.lat * 8)}_${Math.round(item.lng * 8)}`;
-    if (!seenCoordinates.has(coordKey)) {
-      seenCoordinates.add(coordKey);
+  for (const item of uniqueCandidates) {
+    const isNearby = results.some(r => {
+      const sameCityOrAlias =
+        r.rawCity === item.rawCity ||
+        CITY_ALIASES[cleanQuery]?.includes(item.rawCity) ||
+        (item.rawCity.startsWith(cleanQuery) && cleanQuery.length >= 4);
+      return sameCityOrAlias && getDistanceKm(r.lat, r.lng, item.lat, item.lng) < 30;
+    });
+
+    if (!isNearby) {
       results.push(item);
     }
   }
 
-  // Smart Sorting / Prioritization:
-  // For queries with aliases (e.g. "gurgaon" -> Haryana should be on top):
+  // Smart Ranking / Prioritization:
   results.sort((a, b) => {
     const aState = (a.state || '').toLowerCase();
     const bState = (b.state || '').toLowerCase();
     const aName = (a.name || '').toLowerCase();
     const bName = (b.name || '').toLowerCase();
 
-    // Priority 1: Exact name match
-    const aExact = aName === cleanQuery;
-    const bExact = bName === cleanQuery;
-    if (aExact && !bExact) return -1;
-    if (!aExact && bExact) return 1;
-
-    // Priority 2: Famous hubs for specific ambiguous names (e.g. Gurgaon in Haryana)
+    // Priority 1: Primary famous hub for ambiguous queries (e.g. Gurgaon in Haryana, Patna in Bihar, Bangalore in Karnataka)
+    if (cleanQuery === 'patna') {
+      if (aState.includes('bihar') && !bState.includes('bihar')) return -1;
+      if (!aState.includes('bihar') && bState.includes('bihar')) return 1;
+    }
     if (cleanQuery === 'gurgaon' || cleanQuery === 'gurugram') {
       if (aState.includes('haryan') && !bState.includes('haryan')) return -1;
       if (!aState.includes('haryan') && bState.includes('haryan')) return 1;
@@ -366,7 +531,13 @@ export async function searchPlacesLive(query, dateStr) {
       if (!aState.includes('karnatak') && bState.includes('karnatak')) return 1;
     }
 
-    return 0;
+    // Priority 2: Exact query or alias name match
+    const aExact = aName === cleanQuery || a.rawCity === cleanQuery || Boolean(CITY_ALIASES[cleanQuery]?.includes(a.rawCity));
+    const bExact = bName === cleanQuery || b.rawCity === cleanQuery || Boolean(CITY_ALIASES[cleanQuery]?.includes(b.rawCity));
+    if (aExact && !bExact) return -1;
+    if (!aExact && bExact) return 1;
+
+    return b.score - a.score;
   });
 
   // Fallback: If network failed entirely, use offline cache

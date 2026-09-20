@@ -215,15 +215,20 @@ export default function PlaceAutocomplete({
                           <span className="font-bold text-xs sm:text-sm text-amber-200">
                             {item.name}
                           </span>
-                          {subLocation && (
-                            <span className="text-xs text-slate-300">
-                              ({subLocation})
+                          {item.state && item.state.toLowerCase() !== item.name.toLowerCase() && (
+                            <span className="text-xs font-medium text-slate-200">
+                              , {item.state}
                             </span>
                           )}
+                          <span className="text-xs text-amber-400/90 font-medium">
+                            ({item.country})
+                          </span>
                         </div>
-                        <div className="text-[11px] text-amber-400/90 font-medium truncate mt-0.5">
-                          {item.country}
-                        </div>
+                        {item.district && item.district.toLowerCase() !== item.name.toLowerCase() && item.district.toLowerCase() !== (item.state || '').toLowerCase() && (
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                            District: {item.district}
+                          </div>
+                        )}
                       </div>
                     </div>
 
