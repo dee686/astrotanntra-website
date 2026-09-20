@@ -4,19 +4,31 @@
  * 
  * Features:
  * - 100% Free with NO API keys, NO credentials, and NO usage barriers
- * - Global coverage including villages, towns, tehsils, cities, and international hubs
- * - Returns precise Latitude, Longitude, State, District, Country, and IANA Timezone
+ * - Global coverage including worldwide capitals, metropolises, towns, tehsils, and villages
+ * - Prominently returns Country, Country Flag Emoji, State/Province, District, Latitude, Longitude, and IANA Timezone
  * - Calculates accurate decimal UTC timezone offset for Vedic astronomical equations
  * - In-memory LRU caching to eliminate redundant network calls
  */
 
 // In-memory search cache: query -> results array
 const cache = new Map();
-const MAX_CACHE_SIZE = 150;
+const MAX_CACHE_SIZE = 200;
 
 /**
- * Derives decimal timezone offset in hours (e.g. +5.5 for IST, -5 for EST)
- * from an IANA timezone string (e.g. 'Asia/Kolkata', 'America/New_York')
+ * Converts a 2-letter ISO country code (e.g. 'FR', 'US', 'IN') into an emoji flag (🇫🇷, 🇺🇸, 🇮🇳)
+ */
+export function getCountryFlag(countryCode) {
+  if (!countryCode || countryCode.length !== 2) return '🌐';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+/**
+ * Derives decimal timezone offset in hours (e.g. +5.5 for IST, -5 for EST, +1/+2 for Paris/CET)
+ * from an IANA timezone string (e.g. 'Europe/Paris', 'Asia/Kolkata', 'America/New_York')
  * and an optional date string.
  */
 export function getTimezoneOffsetHours(timeZoneName, dateStr) {
@@ -24,7 +36,6 @@ export function getTimezoneOffsetHours(timeZoneName, dateStr) {
     if (!timeZoneName) return 5.5; // Default to Indian Standard Time (IST)
     const targetDate = dateStr ? new Date(dateStr) : new Date();
     if (isNaN(targetDate.getTime())) {
-      // If date parsing fails, use current date
       const now = new Date();
       const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
       const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timeZoneName }));
@@ -35,8 +46,20 @@ export function getTimezoneOffsetHours(timeZoneName, dateStr) {
     return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
   } catch (err) {
     console.warn(`Timezone calculation fallback for ${timeZoneName}:`, err);
-    return 5.5; // Fallback to IST
+    return 5.5;
   }
+}
+
+/**
+ * Cleans admin region names for clean presentation
+ */
+function cleanAdminName(str, cityName) {
+  if (!str) return '';
+  const cleaned = str
+    .replace(/\b(Department|Region|Province|District|County|Prefecture)\b/gi, '')
+    .trim();
+  if (cleaned.toLowerCase() === (cityName || '').toLowerCase()) return '';
+  return cleaned;
 }
 
 /**
@@ -44,9 +67,15 @@ export function getTimezoneOffsetHours(timeZoneName, dateStr) {
  */
 function normalizeOpenMeteoResult(item, dateStr) {
   const name = item.name || '';
-  const state = item.admin1 || '';
-  const district = item.admin2 || '';
+  const rawState = item.admin1 || '';
+  const rawDistrict = item.admin2 || '';
   const country = item.country || '';
+  const countryCode = (item.country_code || 'IN').toUpperCase();
+  const flag = getCountryFlag(countryCode);
+
+  const state = cleanAdminName(rawState, name);
+  const district = cleanAdminName(rawDistrict, name);
+
   const lat = parseFloat(item.latitude);
   const lng = parseFloat(item.longitude);
   const tzName = item.timezone || 'Asia/Kolkata';
@@ -54,8 +83,8 @@ function normalizeOpenMeteoResult(item, dateStr) {
 
   // Build clean display strings
   const parts = [name];
-  if (district && district !== name) parts.push(district);
-  if (state && state !== name && state !== district) parts.push(state);
+  if (district && district !== name && district !== state) parts.push(district);
+  if (state && state !== name) parts.push(state);
   if (country) parts.push(country);
 
   const formatted = parts.join(', ');
@@ -65,14 +94,15 @@ function normalizeOpenMeteoResult(item, dateStr) {
     name,
     formatted,
     district,
-    state,
+    state: state || rawState,
     country,
-    countryCode: item.country_code || 'IN',
+    countryCode,
+    flag,
     lat,
     lng,
     tzName,
     tz,
-    source: 'Open-Meteo'
+    source: 'Open-Meteo Live Map'
   };
 }
 
@@ -86,18 +116,28 @@ function normalizePhotonResult(feature, dateStr) {
   const lat = parseFloat(coords[1]);
 
   const name = p.name || p.city || p.locality || '';
-  const district = p.county || p.district || '';
-  const state = p.state || '';
+  const district = cleanAdminName(p.county || p.district || '', name);
+  const state = cleanAdminName(p.state || '', name);
   const country = p.country || 'India';
-  const countryCode = p.countrycode ? p.countrycode.toUpperCase() : 'IN';
+  const countryCode = p.countrycode ? p.countrycode.toUpperCase() : (country === 'India' ? 'IN' : 'FR');
+  const flag = getCountryFlag(countryCode);
 
-  // Guess timezone from country code if missing
-  const tzName = countryCode === 'IN' ? 'Asia/Kolkata' : 'UTC';
+  // Map known country codes to default timezone if timezone string isn't in OSM feature
+  let tzName = 'Asia/Kolkata';
+  if (countryCode === 'FR') tzName = 'Europe/Paris';
+  else if (countryCode === 'GB') tzName = 'Europe/London';
+  else if (countryCode === 'US') tzName = lng < -100 ? 'America/Los_Angeles' : 'America/New_York';
+  else if (countryCode === 'JP') tzName = 'Asia/Tokyo';
+  else if (countryCode === 'AE') tzName = 'Asia/Dubai';
+  else if (countryCode === 'AU') tzName = 'Australia/Sydney';
+  else if (countryCode === 'DE') tzName = 'Europe/Berlin';
+  else if (countryCode === 'CA') tzName = 'America/Toronto';
+
   const tz = getTimezoneOffsetHours(tzName, dateStr);
 
   const parts = [name];
-  if (district && district !== name) parts.push(district);
-  if (state && state !== name && state !== district) parts.push(state);
+  if (district && district !== name && district !== state) parts.push(district);
+  if (state && state !== name) parts.push(state);
   if (country) parts.push(country);
 
   const formatted = parts.join(', ');
@@ -110,20 +150,35 @@ function normalizePhotonResult(feature, dateStr) {
     state,
     country,
     countryCode,
+    flag,
     lat,
     lng,
     tzName,
     tz,
-    source: 'Photon/OSM'
+    source: 'OpenStreetMap'
   };
 }
+
+/**
+ * Default popular world cities shown on focus before typing
+ */
+export const WORLD_POPULAR_PLACES = [
+  { id: 'wp-1', name: 'Paris', formatted: 'Paris, Île-de-France, France', district: '', state: 'Île-de-France', country: 'France', countryCode: 'FR', flag: '🇫🇷', lat: 48.85341, lng: 2.34880, tz: 2, tzName: 'Europe/Paris' },
+  { id: 'wp-2', name: 'London', formatted: 'London, Greater London, England, United Kingdom', district: 'Greater London', state: 'England', country: 'United Kingdom', countryCode: 'GB', flag: '🇬🇧', lat: 51.50853, lng: -0.12574, tz: 1, tzName: 'Europe/London' },
+  { id: 'wp-3', name: 'New York', formatted: 'New York, NY, United States', district: '', state: 'New York', country: 'United States', countryCode: 'US', flag: '🇺🇸', lat: 40.71427, lng: -74.00597, tz: -4, tzName: 'America/New_York' },
+  { id: 'wp-4', name: 'Tokyo', formatted: 'Tokyo, Kanto, Japan', district: '', state: 'Tokyo', country: 'Japan', countryCode: 'JP', flag: '🇯🇵', lat: 35.68950, lng: 139.69171, tz: 9, tzName: 'Asia/Tokyo' },
+  { id: 'wp-5', name: 'Dubai', formatted: 'Dubai, United Arab Emirates', district: '', state: 'Dubai', country: 'United Arab Emirates', countryCode: 'AE', flag: '🇦🇪', lat: 25.07725, lng: 55.30927, tz: 4, tzName: 'Asia/Dubai' },
+  { id: 'wp-6', name: 'New Delhi', formatted: 'New Delhi, Delhi, India', district: '', state: 'Delhi', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 28.61390, lng: 77.20900, tz: 5.5, tzName: 'Asia/Kolkata' },
+  { id: 'wp-7', name: 'Mumbai', formatted: 'Mumbai, Maharashtra, India', district: '', state: 'Maharashtra', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 19.07600, lng: 72.87770, tz: 5.5, tzName: 'Asia/Kolkata' },
+  { id: 'wp-8', name: 'Tezpur', formatted: 'Tezpur, Sonitpur, Assam, India', district: 'Sonitpur', state: 'Assam', country: 'India', countryCode: 'IN', flag: '🇮🇳', lat: 26.63380, lng: 92.79260, tz: 5.5, tzName: 'Asia/Kolkata' }
+];
 
 /**
  * Search places live across global map APIs
  * Primary: Open-Meteo (fast, includes timezone, admin1/admin2)
  * Fallback: Photon Komoot (OpenStreetMap data)
  * 
- * @param {string} query - Location text query (e.g. "Tezpur", "Bettiah", "Guwahati", "London")
+ * @param {string} query - Location text query (e.g. "Paris", "London", "Tezpur", "Bettiah")
  * @param {string} [dateStr] - Optional birth date (YYYY-MM-DD) for accurate seasonal timezone offset
  * @returns {Promise<Array>} Array of normalized location objects
  */
@@ -143,7 +198,7 @@ export async function searchPlacesLive(query, dateStr) {
 
   // Attempt 1: Open-Meteo Geocoding API (Fast, Free, CORS enabled, IANA timezone included)
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanQuery)}&count=8&language=en&format=json`;
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanQuery)}&count=10&language=en&format=json`;
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json'
@@ -163,7 +218,7 @@ export async function searchPlacesLive(query, dateStr) {
   // Attempt 2: Photon / OpenStreetMap API (If Open-Meteo returned 0 results or threw error)
   if (results.length === 0) {
     try {
-      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQuery)}&limit=8`;
+      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQuery)}&limit=10`;
       const pResponse = await fetch(photonUrl, {
         headers: {
           'Accept': 'application/json'
@@ -195,6 +250,7 @@ export async function searchPlacesLive(query, dateStr) {
           state: c.state || '',
           country: c.country || 'India',
           countryCode: 'IN',
+          flag: '🇮🇳',
           lat: c.lat,
           lng: c.lng,
           tzName: c.tz || 'Asia/Kolkata',
@@ -223,12 +279,13 @@ export async function searchPlacesLive(query, dateStr) {
  * 
  * @param {string} query - Place string
  * @param {string} [dateStr] - Birth date
- * @returns {Promise<Object>} Object with { place, lat, lng, tz, tzName }
+ * @returns {Promise<Object>} Object with { place, lat, lng, tz, tzName, country }
  */
 export async function resolveLocation(query, dateStr) {
   if (!query || query.trim().length === 0) {
     return {
-      place: 'New Delhi, India',
+      place: 'New Delhi, Delhi, India',
+      country: 'India',
       lat: 28.6139,
       lng: 77.2090,
       tz: 5.5,
@@ -242,6 +299,7 @@ export async function resolveLocation(query, dateStr) {
       const best = suggestions[0];
       return {
         place: best.formatted,
+        country: best.country,
         lat: best.lat,
         lng: best.lng,
         tz: best.tz,
@@ -252,9 +310,10 @@ export async function resolveLocation(query, dateStr) {
     console.warn('Could not live resolve location:', err);
   }
 
-  // Emergency IST fallback if completely offline
+  // Emergency fallback
   return {
     place: query,
+    country: 'India',
     lat: 28.6139,
     lng: 77.2090,
     tz: 5.5,
