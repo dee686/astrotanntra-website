@@ -55,7 +55,7 @@ export default function App() {
       name: 'Ansh Mishra',
       dob: '1998-10-15',
       tob: '14:30',
-      place: 'Tezpur, Assam, India',
+      place: 'Tezpur, Sonitpur, Assam, India',
       gender: 'Male',
       lat: 26.6338,
       lng: 92.7926,

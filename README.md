@@ -29,6 +29,7 @@ Unlike standard astrology websites that rely on costly, rate-limited third-party
 ## ✨ Key Features
 
 ### 🌌 1. Real-Time Kundli Generator & D1–D10 Charts
+- **Live Free Map Geocoding**: Search-as-you-type autocomplete powered by **Open-Meteo & OpenStreetMap (Photon)**. Fetches real-time recommendations, precise latitude & longitude coordinates, and dynamic timezone offsets for any village, town, city, or district worldwide with **zero API keys and zero cost**.
 - **Comprehensive Ephemeris**: Calculates real-time positions for Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu using Indian sidereal coordinates (*Nirayana* system with Chitra Paksha / Lahiri Ayanamsha).
 - **Dual Visual Styles**: Interactive SVG North Indian (*Diamond*) and South Indian (*Box*) chart visualizers.
 - **Divisional Charts (Vargas)**:
@@ -170,6 +171,7 @@ astrotanntra-website/
     ├── components/                # Presentation Components & Interactive Modals
     │   ├── Header.jsx             # Navigation bar & language switcher
     │   ├── Hero.jsx               # Hero section with birth data entry form
+    │   ├── PlaceAutocomplete.jsx  # Live free map search recommendations with coords & timezone
     │   ├── CelestialArtwork.jsx   # Vector armillary spheres and sacred motifs
     │   ├── PanchangStrip.jsx      # Daily Hindu calendar summary ribbon
     │   ├── HoroscopeStrip.jsx     # 12 Zodiac Rashi carousel ribbon
@@ -190,6 +192,9 @@ astrotanntra-website/
     │   ├── AboutModal.jsx         # Astrotanntra lineage & Acharya background
     │   └── BlogModal.jsx          # Vedic astrology articles & case studies
     │
+    ├── services/                  # External Network & Live API Integrations
+    │   └── geoService.js          # Live Open-Meteo & OpenStreetMap free geocoding & timezone engine
+    │
     ├── utils/                     # Mathematical & Astrological Calculation Engines
     │   ├── vedicCalculations.js   # Julian Day, Lagna, D1-D10, Dasha, Manglik, Sade Sati
     │   ├── ashtakootMilan.js      # 8 Kootas & 36 Gunas scoring algorithms
@@ -200,7 +205,7 @@ astrotanntra-website/
         ├── tarotData.js           # 78 Tarot cards & priced reading packages
         ├── horoscopeData.js       # 12 Zodiac signs with weekly predictions
         ├── panchangData.js        # Vedic calendar calculations and muhurtas
-        ├── citiesData.js          # 50+ major cities with lat/lng & timezones
+        ├── citiesData.js          # Emergency offline cache of major Indian & global cities
         └── blogData.js            # Editorial articles on astrological sciences
 ```
 
@@ -217,6 +222,17 @@ Astrotanntra operates completely autonomously without any external commercial as
 4. **Vedic Divisional Charts (D1 to D10)**: Uses classical Parashara mathematical formulas to project planetary coordinates into fine divisional segments (D1 Rashi, D2 Hora, D3 Drekkana, D4 Chaturthamsa, D7 Saptamsa, D9 Navamsha, and D10 Dashamsha).
 5. **Vimshottari Dasha Engine**: Identifies birth nakshatra and computes the 120-year cycle balances.
 6. **Ashtakoot Guna Milan**: Implements the 8 traditional kootas out of 36 points with Nadi/Bhakoot dosha evaluation.
+
+---
+
+## 🗺️ Live Free Map Geocoding Engine
+
+To guarantee zero mathematical dilution of your Janam Kundli charts, Astrotanntra connects to free, open-source global geographic services:
+- **Open-Meteo Geocoding API** (Primary): High-speed, zero-token REST service returning exact latitude, longitude, district, state, country, and IANA timezone ID.
+- **Photon by Komoot / OpenStreetMap** (Secondary): Real-time fallback ensuring global search down to small villages and tehsils.
+- **Dynamic Timezone Derivation**: Converts IANA timezone identifiers into exact decimal UTC offsets (`+5.5` IST, `-5.0` EST, `+1.0` CET) based on the user's birth date, accounting for daylight saving time (DST) shifts.
+- **Client-Side In-Memory Cache**: Rapid keystroke autocomplete with 0ms repeat query latency.
+- **Zero API Keys & Zero Fees**: 100% free, requiring no user authentication or credit card setup.
 
 ---
 

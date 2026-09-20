@@ -12,8 +12,9 @@ import {
   Star,
   ChevronDown
 } from 'lucide-react';
-import { findCity, POPULAR_CITIES } from '../data/citiesData';
 import { ArmillarySphereArtwork, GaneshaArtwork } from './CelestialArtwork';
+import PlaceAutocomplete from './PlaceAutocomplete';
+import { resolveLocation } from '../services/geoService';
 
 export default function Hero({ 
   onGenerateKundli, 
@@ -24,40 +25,52 @@ export default function Hero({
   const [name, setName] = useState('Ansh Mishra');
   const [dob, setDob] = useState('1998-10-15');
   const [tob, setTob] = useState('14:30');
-  const [place, setPlace] = useState('Tezpur, Assam, India');
+  const [place, setPlace] = useState('Tezpur, Sonitpur, Assam, India');
+  const [coordinates, setCoordinates] = useState({
+    lat: 26.6338,
+    lng: 92.7926,
+    tz: 5.5,
+    tzName: 'Asia/Kolkata'
+  });
   const [gender, setGender] = useState('Male');
-  const [citySuggestions, setCitySuggestions] = useState(POPULAR_CITIES.slice(0, 8));
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedCityObj, setSelectedCityObj] = useState(POPULAR_CITIES[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePlaceChange = (e) => {
-    const val = e.target.value;
-    setPlace(val);
-    const matched = findCity(val);
-    setCitySuggestions(matched);
-    setShowSuggestions(true);
-    if (matched && matched.length > 0) {
-      setSelectedCityObj(matched[0]);
-    }
+  const handleSelectLocation = (loc) => {
+    setPlace(loc.formatted);
+    setCoordinates({
+      lat: loc.lat,
+      lng: loc.lng,
+      tz: loc.tz,
+      tzName: loc.tzName
+    });
   };
 
-  const handleSelectCity = (city) => {
-    setPlace(`${city.name}, ${city.state || city.country}`);
-    setSelectedCityObj(city);
-    setShowSuggestions(false);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    let activeCoords = { ...coordinates };
+
+    // If coordinates are missing or user edited the text manually, live-resolve
+    try {
+      const resolved = await resolveLocation(place, dob);
+      if (resolved && resolved.lat && resolved.lng) {
+        activeCoords = resolved;
+      }
+    } catch (err) {
+      console.warn('Geocoding resolution fallback:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+
     onGenerateKundli({
       name,
       dob,
       tob,
       place,
       gender,
-      lat: selectedCityObj?.lat || 28.6139,
-      lng: selectedCityObj?.lng || 77.2090,
-      tz: 5.5
+      lat: activeCoords.lat || 26.6338,
+      lng: activeCoords.lng || 92.7926,
+      tz: activeCoords.tz !== undefined ? activeCoords.tz : 5.5
     });
   };
 
@@ -244,39 +257,15 @@ export default function Hero({
                 />
               </div>
 
-              {/* Place of Birth with Autocomplete */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-300">
-                  <MapPin className="w-4 h-4 text-amber-400/80" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={place}
-                  onChange={handlePlaceChange}
-                  onFocus={() => { setCitySuggestions(findCity(place)); setShowSuggestions(true); }}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder="Place of Birth (e.g. Tezpur, Assam)"
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
-
-                {/* Suggestions dropdown */}
-                {showSuggestions && citySuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#170932] border border-amber-500/40 rounded-xl overflow-hidden shadow-2xl z-30 max-h-56 overflow-y-auto">
-                    {citySuggestions.map((city, cIdx) => (
-                      <button
-                        type="button"
-                        key={cIdx}
-                        onClick={() => handleSelectCity(city)}
-                        className="w-full text-left px-3.5 py-2 text-xs text-slate-200 hover:bg-amber-500/20 flex items-center justify-between transition-colors cursor-pointer"
-                      >
-                        <span className="font-medium text-amber-200">{city.name}</span>
-                        <span className="text-[10px] text-slate-400">{city.state || city.country}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Place of Birth with Live Free Map Autocomplete */}
+              <PlaceAutocomplete
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                onSelectLocation={handleSelectLocation}
+                dateStr={dob}
+                required
+                placeholder="Place of Birth (e.g. Tezpur, Assam or any town)"
+              />
 
               {/* Gender Selector */}
               <div className="relative">
@@ -300,10 +289,15 @@ export default function Hero({
               {/* Submit CTA: ★ GENERATE KUNDLI */}
               <button
                 type="submit"
-                className="w-full mt-2 py-3.5 rounded-xl gold-btn font-extrabold text-base tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow"
+                disabled={isSubmitting}
+                className="w-full mt-2 py-3.5 rounded-xl gold-btn font-extrabold text-base tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <Star className="w-4 h-4 fill-slate-900 text-slate-900" />
-                <span>{lang === 'hi' ? '★ कुण्डली बनाएं' : '★ GENERATE KUNDLI'}</span>
+                <span>
+                  {isSubmitting 
+                    ? (lang === 'hi' ? 'स्थान खोज रहे हैं...' : 'LOCATING ON MAP...') 
+                    : (lang === 'hi' ? '★ कुण्डली बनाएं' : '★ GENERATE KUNDLI')}
+                </span>
               </button>
 
             </form>

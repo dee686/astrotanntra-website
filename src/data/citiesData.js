@@ -94,8 +94,12 @@ export const POPULAR_CITIES = [
   { name: 'Tokyo', aliases: [], state: 'Kanto', country: 'Japan', lat: 35.6762, lng: 139.6503, tz: 'Asia/Tokyo' }
 ];
 
-export function findCity(query) {
-  if (!query) return POPULAR_CITIES.slice(0, 10);
+/**
+ * Offline Emergency Fallback Search
+ * Only used if user's device is completely disconnected from internet.
+ */
+export function findOfflineCity(query) {
+  if (!query) return POPULAR_CITIES.slice(0, 8);
   const q = query.toLowerCase().trim();
 
   // 1. Check exact or prefix match on name, aliases, or state
@@ -108,7 +112,7 @@ export function findCity(query) {
 
   if (matched.length > 0) return matched;
 
-  // 2. Special fallback / phonetic mapping for common spellings (e.g. Tejpur -> Tezpur)
+  // 2. Special fallback / phonetic mapping for common spellings
   if (q.includes('tejpur') || q.includes('tezpur')) {
     return [POPULAR_CITIES.find(c => c.name === 'Tezpur')];
   }
@@ -116,13 +120,8 @@ export function findCity(query) {
     return [POPULAR_CITIES.find(c => c.name === 'Guwahati')];
   }
 
-  // 3. User typed custom location: return custom entry with standard IST coordinates
-  return [{ 
-    name: query, 
-    state: 'Custom Location', 
-    country: 'India', 
-    lat: 26.6338, // default northeast/central fallback
-    lng: 92.7926, 
-    tz: 'Asia/Kolkata' 
-  }];
+  return [];
 }
+
+export const findCity = findOfflineCity;
+

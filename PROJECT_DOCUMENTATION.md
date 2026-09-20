@@ -46,6 +46,7 @@ The Astrotanntra platform is built as a high-performance Single-Page Application
 | **Canvas Confetti** | `^1.9.4` | Particle physics celebration effect triggered upon successful birth chart generation and consultation appointment confirmation. |
 | **Google Fonts** | CDN | Professional dual typography: **Cinzel** (ancient sacred royal serif for headings) and **Outfit** (modern clean sans-serif for legible body text). |
 | **Pure JavaScript Math** | Native ES6 | Custom-built astronomical algorithms (Julian Day, Lahiri Ayanamsha, Planetary Perturbations, D1-D10 divisional chart projection, Ashtakoot 36-point matching). **Zero reliance on paid external astrology APIs!** |
+| **Live Free Map APIs** | REST / CORS | **Open-Meteo Geocoding API** & **Photon (OpenStreetMap)** for live global place recommendations, accurate latitude/longitude, and dynamic IANA timezone offsets without API keys or usage fees. |
 
 ---
 
@@ -131,6 +132,7 @@ website/
 │   ├── components/                # Presentation Components & Interactive Modals
 │   │   ├── Header.jsx             # Top sticky navbar with navigation & language toggle
 │   │   ├── Hero.jsx               # Hero section with interactive birth chart inputs
+│   │   ├── PlaceAutocomplete.jsx  # Live free map search recommendations with coords & timezone
 │   │   ├── CelestialArtwork.jsx   # Vector armillary spheres & sacred artwork
 │   │   ├── PanchangStrip.jsx      # Daily Hindu calendar summary ribbon
 │   │   ├── HoroscopeStrip.jsx     # 12 Zodiac Rashi carousel ribbon
@@ -151,6 +153,9 @@ website/
 │   │   ├── AboutModal.jsx         # Astrotanntra lineage, mission & background
 │   │   └── BlogModal.jsx          # Vedic astrology articles & case studies
 │   │
+│   ├── services/                  # External Network & Live API Integrations
+│   │   └── geoService.js          # Live Open-Meteo & OpenStreetMap free geocoding & timezone engine
+│   │
 │   ├── utils/                     # Mathematical & Astrological Calculation Engines
 │   │   ├── vedicCalculations.js   # Ephemeris, Julian Day, Lagna, D1-D10, Dasha, Doshas
 │   │   ├── ashtakootMilan.js      # 8 Kootas & 36 Gunas scoring algorithms
@@ -161,7 +166,7 @@ website/
 │       ├── tarotData.js           # 78 Tarot cards & priced reading packages
 │       ├── horoscopeData.js       # 12 Zodiac signs with elements, lords & weekly forecasts
 │       ├── panchangData.js        # Vedic calendar calculations and muhurtas
-│       ├── citiesData.js          # 50+ major cities with latitudes, longitudes, timezones
+│       ├── citiesData.js          # Emergency offline cache of major Indian & global cities
 │       └── blogData.js            # Editorial articles on astrological sciences
 ```
 
@@ -227,8 +232,13 @@ Every file in this project has a specific role, distinct inputs, and exact outpu
 
 #### `src/components/Hero.jsx`
 - **Purpose**: Visual hero showcase and interactive birth chart data entry form.
-- **Inputs**: User input fields (Name, Gender, Date of Birth, Time of Birth, Place). Cities typed query `citiesData.js` to match exact latitude and longitude coordinates.
-- **Outputs**: Submits structured birth parameters to `onGenerateKundli(formData)` in `App.jsx`, or triggers `onOpenConsultation` / `onOpenTarot`.
+- **Inputs**: User input fields (Name, Gender, Date of Birth, Time of Birth, Place). Utilizes `PlaceAutocomplete` and `geoService.js` to live geocode any village, town, or city worldwide.
+- **Outputs**: Submits structured birth parameters including high-precision live latitude, longitude, and calculated timezone offset (`{ name, dob, tob, place, gender, lat, lng, tz }`) to `onGenerateKundli(formData)` in `App.jsx`, or triggers `onOpenConsultation` / `onOpenTarot`.
+
+#### `src/components/PlaceAutocomplete.jsx`
+- **Purpose**: Reusable, accessible, celestial-themed live location search input with real-time recommendations.
+- **Inputs**: User keystrokes, optional birth date (for seasonal daylight saving / timezone calculations). Queries `searchPlacesLive` in `geoService.js`.
+- **Outputs**: Displays live recommendations dropdown with place name, district/state, country, formatted coordinates, and timezone badge. Emits selected location object `{ formatted, name, lat, lng, tz, tzName }` via `onSelectLocation`.
 
 #### `src/components/CelestialArtwork.jsx`
 - **Purpose**: Pure vector SVG graphical assets representing celestial armillary spheres, astronomical coordinate rings, and sacred Lord Ganesha emblems.
@@ -332,6 +342,21 @@ Every file in this project has a specific role, distinct inputs, and exact outpu
 
 ---
 
+### External Services & Live Map Geocoding (`src/services/`)
+
+#### `src/services/geoService.js`
+- **Purpose**: The live geographic intelligence service connecting Astrotanntra to free worldwide map and geocoding engines:
+  - **Open-Meteo Geocoding API**: Ultra-fast, zero-token REST endpoint returning high-precision latitude, longitude, state (`admin1`), district (`admin2`), country, and IANA timezone name (`timezone`).
+  - **Photon / OpenStreetMap API**: Automatic fallback provider if Open-Meteo is unreachable.
+  - **Dynamic Timezone Offset**: `getTimezoneOffsetHours(timeZoneName, dateStr)` calculates exact UTC hour offset (`+5.5` for IST, `-5.0` for EST, `+1.0` for CET) using `Intl.DateTimeFormat` across historical daylight saving periods.
+  - **LRU In-Memory Cache**: Eliminates redundant network calls for identical searches.
+  - **Emergency Offline Cache**: Gracefully falls back to local city cache if network drops.
+  - **Direct Geocoding Resolver**: `resolveLocation(query, dateStr)` automatically resolves coordinates even if the user presses Submit without selecting a dropdown item.
+- **Inputs**: Location query string (e.g. *"Tezpur"*, *"Bettiah"*, *"London"*), optional birth date.
+- **Outputs**: Array of normalized location objects `{ id, name, formatted, district, state, country, lat, lng, tz, tzName }`.
+
+---
+
 ### Mathematical & Astrological Engines (`src/utils/`)
 
 #### `src/utils/vedicCalculations.js`
@@ -396,9 +421,9 @@ Every file in this project has a specific role, distinct inputs, and exact outpu
 - **Outputs**: Imported by `PanchangStrip.jsx` and `PanchangModal.jsx`.
 
 #### `src/data/citiesData.js`
-- **Purpose**: Coordinates database of 50+ major Indian and international cities (New Delhi, Mumbai, Bengaluru, Kolkata, Chennai, Tezpur, Guwahati, London, New York, etc.) with pre-configured latitude, longitude, and timezone offsets.
+- **Purpose**: Lightweight emergency offline fallback cache containing ~90 major Indian and global locations with verified coordinates.
 - **Inputs**: Static database array.
-- **Outputs**: Powers the live city auto-complete input in `Hero.jsx`.
+- **Outputs**: Used exclusively as an offline fallback by `geoService.js` if the client device completely loses internet connectivity.
 
 #### `src/data/blogData.js`
 - **Purpose**: Educational library of Vedic astrology articles and planetary transit insights.
@@ -428,21 +453,24 @@ Every file in this project has a specific role, distinct inputs, and exact outpu
 Here is a functional breakdown of what every feature on the live website actually does:
 
 ### 1. Real-Time Kundli Generator & Divisional Charts (D1 to D10)
-- **How to trigger**: On the Hero section, fill in Name, Gender, Date of Birth, Time of Birth, and City (e.g. *Tezpur, Assam*), then click **\"Get Your Kundli\"**.
+- **How to trigger**: On the Hero section, fill in Name, Gender, Date of Birth, Time of Birth, and Place of Birth (type any village, town, or city worldwide), then click **"Get Your Kundli"**.
 - **What it does**:
-  1. Instantly queries `citiesData.js` for exact geographical coordinates (Latitude & Longitude).
-  2. Converts date and time to Julian Day and computes Lahiri Ayanamsha.
-  3. Calculates the exact rising Ascendant (Lagna) and sidereal positions for all 9 Vedic planets.
-  4. Triggers a celebratory confetti effect and opens `KundliModal`.
-  5. Users can toggle between **North Indian (Diamond)** and **South Indian (Box)** charts.
-  6. Users can switch between **D1 (Rashi), D2 (Hora), D3 (Drekkana), D4 (Chaturthamsa), D7 (Saptamsa), D9 (Navamsha), and D10 (Dashamsha)** charts.
-  7. Displays Vimshottari Mahadasha balance, Manglik Dosha severity, Sade Sati phase, and allows downloading the complete 12-page calculation guide PDF.
+  1. Real-time live suggestions appear via `PlaceAutocomplete` powered by Open-Meteo & OpenStreetMap APIs, displaying exact District, State, Country, and Lat/Lng coordinates.
+  2. Resolves exact geographical coordinates (Latitude & Longitude) and dynamic IANA timezone offset (UTC hours).
+  3. Converts date and time to Astronomical Julian Day and computes Lahiri Ayanamsha.
+  4. Calculates the exact rising Ascendant (Lagna) and sidereal positions for all 9 Vedic planets based on the live longitude and latitude.
+  5. Triggers a celebratory confetti effect and opens `KundliModal`.
+  6. Displays live coordinates and Ayanamsha right in the Kundli header.
+  7. Users can toggle between **North Indian (Diamond)** and **South Indian (Box)** charts.
+  8. Users can switch between **D1 (Rashi), D2 (Hora), D3 (Drekkana), D4 (Chaturthamsa), D7 (Saptamsa), D9 (Navamsha), and D10 (Dashamsha)** charts.
+  9. Displays Vimshottari Mahadasha balance, Manglik Dosha severity, Sade Sati phase, and allows downloading the complete 12-page calculation guide PDF.
 
 ### 2. Kundli Milan / 36-Guna Matchmaking
-- **How to trigger**: Click **\"Kundali Matching\"** on the middle services card or navigation bar.
+- **How to trigger**: Click **"Kundali Matching"** on the middle services card or navigation bar.
 - **What it does**:
-  - Prompts for both Boy and Girl birth dates, times, and places.
-  - Calculates Moon sign and Nakshatra for both partners.
+  - Prompts for both Boy and Girl birth dates, times, and places using live `PlaceAutocomplete` with real-time global map search.
+  - Accurately resolves both partners' geographic coordinates and local timezones.
+  - Calculates Moon sign, Nakshatra, Pada, and degrees for both partners from their exact birth locations.
   - Computes all 8 Kootas: Varna (1), Vashya (2), Tara (3), Yoni (4), Graha Maitri (5), Gana (6), Bhakoot (7), and Nadi (8).
   - Tallies score out of 36 (e.g., 28/36 = *Excellent Match*), checks Nadi Dosha, and displays compatibility verdict.
 

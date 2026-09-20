@@ -589,6 +589,7 @@ export function calculateKundli({ name, dob, tob, place, gender, lat = 28.6139, 
       gender: gender || 'Male',
       lat: Number(lat).toFixed(4),
       lng: Number(lng).toFixed(4),
+      tz: Number(tz),
       ayanamsha: `${Math.floor(ayanamsha)}° ${Math.floor((ayanamsha % 1) * 60)}' (Lahiri)`
     },
     ascendant: {

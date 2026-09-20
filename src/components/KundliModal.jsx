@@ -82,7 +82,8 @@ export default function KundliModal({ kundliData, onClose, onOpenConsultation, l
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
-                Born on {meta.dob} at {meta.tob} in <strong className="text-amber-200">{meta.place}</strong> (Ayanamsha: {meta.ayanamsha})
+                Born on {meta.dob} at {meta.tob} in <strong className="text-amber-200">{meta.place}</strong> 
+                <span className="text-slate-400 ml-1.5 font-mono text-[11px]">({meta.lat}°, {meta.lng}° • {meta.ayanamsha})</span>
               </p>
             </div>
           </div>

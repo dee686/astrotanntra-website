@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Heart, Sparkles, CheckCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { calculateGunMilan } from '../utils/ashtakootMilan';
+import PlaceAutocomplete from './PlaceAutocomplete';
+import { resolveLocation } from '../services/geoService';
 
 export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) {
   // Default sample inputs
@@ -8,19 +10,57 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
   const [groomDob, setGroomDob] = useState('1996-05-18');
   const [groomTob, setGroomTob] = useState('11:45');
   const [groomPlace, setGroomPlace] = useState('New Delhi, India');
+  const [groomCoords, setGroomCoords] = useState({ lat: 28.6139, lng: 77.2090, tz: 5.5 });
 
   const [brideName, setBrideName] = useState('Pooja Singh');
   const [brideDob, setBrideDob] = useState('1998-08-22');
   const [brideTob, setBrideTob] = useState('16:15');
-  const [bridePlace, setBridePlace] = useState('Jaipur, India');
+  const [bridePlace, setBridePlace] = useState('Jaipur, Rajasthan, India');
+  const [brideCoords, setBrideCoords] = useState({ lat: 26.9124, lng: 75.7873, tz: 5.5 });
 
+  const [isCalculating, setIsCalculating] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
 
-  const handleCalculate = (e) => {
+  const handleCalculate = async (e) => {
     e.preventDefault();
+    setIsCalculating(true);
+    let gCoords = { ...groomCoords };
+    let bCoords = { ...brideCoords };
+
+    try {
+      const [gRes, bRes] = await Promise.all([
+        resolveLocation(groomPlace, groomDob),
+        resolveLocation(bridePlace, brideDob)
+      ]);
+      if (gRes && gRes.lat) gCoords = gRes;
+      if (bRes && bRes.lat) bCoords = bRes;
+    } catch (err) {
+      console.warn('Geocoding for Kundli Milan:', err);
+    } finally {
+      setIsCalculating(false);
+    }
+
     const res = calculateGunMilan(
-      { name: groomName, dob: groomDob, tob: groomTob, place: groomPlace, gender: 'Male' },
-      { name: brideName, dob: brideDob, tob: brideTob, place: bridePlace, gender: 'Female' }
+      { 
+        name: groomName, 
+        dob: groomDob, 
+        tob: groomTob, 
+        place: groomPlace, 
+        gender: 'Male',
+        lat: gCoords.lat,
+        lng: gCoords.lng,
+        tz: gCoords.tz
+      },
+      { 
+        name: brideName, 
+        dob: brideDob, 
+        tob: brideTob, 
+        place: bridePlace, 
+        gender: 'Female',
+        lat: bCoords.lat,
+        lng: bCoords.lng,
+        tz: bCoords.tz
+      }
     );
     setMatchResult(res);
   };
@@ -96,13 +136,17 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Birth Place</label>
-                <input
-                  type="text"
-                  required
+                <label className="text-[11px] text-slate-300 block mb-1">Birth Place (जन्म स्थान)</label>
+                <PlaceAutocomplete
                   value={groomPlace}
                   onChange={(e) => setGroomPlace(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                  onSelectLocation={(loc) => {
+                    setGroomPlace(loc.formatted);
+                    setGroomCoords({ lat: loc.lat, lng: loc.lng, tz: loc.tz });
+                  }}
+                  dateStr={groomDob}
+                  placeholder="Groom's Birth City/Town"
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
@@ -145,13 +189,17 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Birth Place</label>
-                <input
-                  type="text"
-                  required
+                <label className="text-[11px] text-slate-300 block mb-1">Birth Place (जन्म स्थान)</label>
+                <PlaceAutocomplete
                   value={bridePlace}
                   onChange={(e) => setBridePlace(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                  onSelectLocation={(loc) => {
+                    setBridePlace(loc.formatted);
+                    setBrideCoords({ lat: loc.lat, lng: loc.lng, tz: loc.tz });
+                  }}
+                  dateStr={brideDob}
+                  placeholder="Bride's Birth City/Town"
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
@@ -159,10 +207,11 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
             <div className="md:col-span-2 flex justify-center pt-2">
               <button
                 type="submit"
-                className="gold-btn px-8 py-3 rounded-xl font-bold text-sm tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-gold-glow"
+                disabled={isCalculating}
+                className="gold-btn px-8 py-3 rounded-xl font-bold text-sm tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <Sparkles className="w-4 h-4 text-slate-900" />
-                <span>Calculate 36 Guna Milan</span>
+                <span>{isCalculating ? 'Calculating Live Charts...' : 'Calculate 36 Guna Milan'}</span>
               </button>
             </div>
 
