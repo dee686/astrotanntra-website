@@ -20,6 +20,7 @@ import NumerologyModal from './components/NumerologyModal';
 import AuthModal from './components/AuthModal';
 import AboutModal from './components/AboutModal';
 import BlogModal from './components/BlogModal';
+import { getActiveUser, setActiveUser } from './services/authService';
 
 // Vedic Calculations
 import { calculateKundli } from './utils/vedicCalculations';
@@ -28,7 +29,7 @@ import confetti from 'canvas-confetti';
 
 export default function App() {
   const [lang, setLang] = useState('en');
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => getActiveUser());
 
   // Active page state: 'home' | 'kundli'
   const [currentPage, setCurrentPage] = useState('home');
@@ -114,6 +115,11 @@ export default function App() {
     };
   }, [lang]);
 
+  const handleLogout = () => {
+    setActiveUser(null);
+    setUser(null);
+  };
+
   const handleGoHome = () => {
     if (currentPage !== 'home' || window.location.hash === '#kundli') {
       window.history.pushState({ page: 'home' }, '', window.location.pathname + window.location.search);
@@ -185,6 +191,8 @@ export default function App() {
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenAbout={() => setIsAboutOpen(true)}
         onOpenBlog={() => setIsBlogOpen(true)}
+        user={user}
+        onLogout={handleLogout}
         lang={lang}
         setLang={setLang}
       />
