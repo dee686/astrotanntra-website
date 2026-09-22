@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Globe, User, Menu, X, Sparkles, Moon } from 'lucide-react';
 
 export default function Header({ 
+  onGoHome,
   onOpenKundli, 
   onOpenMilan, 
   onOpenHoroscope, 
@@ -21,7 +22,11 @@ export default function Header({
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Brand Logo & Name */}
-        <a href="#" className="flex items-center gap-3 group">
+        <a 
+          href="#" 
+          onClick={(e) => { e.preventDefault(); onGoHome?.(); }} 
+          className="flex items-center gap-3 group cursor-pointer"
+        >
           <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 via-amber-600 to-purple-900 p-0.5 shadow-gold-glow flex items-center justify-center group-hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#0e0422] flex items-center justify-center">
               <span className="font-cinzel font-black text-amber-300 text-lg tracking-tighter">A</span>
@@ -41,10 +46,10 @@ export default function Header({
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-200">
           <button 
-            onClick={onOpenKundli}
+            onClick={onGoHome}
             className="hover:text-amber-300 transition-colors cursor-pointer"
           >
-            {lang === 'hi' ? 'कुण्डली' : 'Kundali'}
+            {lang === 'hi' ? 'होम' : 'Home'}
           </button>
           <button 
             onClick={onOpenAbout}
@@ -58,12 +63,6 @@ export default function Header({
           >
             {lang === 'hi' ? 'ब्लॉग' : 'Blog'}
           </button>
-          <a 
-            href="#services"
-            className="text-amber-300 hover:text-amber-200 font-semibold transition-colors flex items-center gap-1"
-          >
-            {lang === 'hi' ? 'सेवाएं' : 'home final'}
-          </a>
         </nav>
 
         {/* Language Selector & Login Button */}
@@ -110,30 +109,23 @@ export default function Header({
       {mobileMenuOpen && (
         <div className="md:hidden mt-3 pt-3 border-t border-amber-500/20 flex flex-col gap-3 pb-2 animate-fadeIn">
           <button 
-            onClick={() => { onOpenKundli(); setMobileMenuOpen(false); }}
-            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium"
+            onClick={() => { onGoHome?.(); setMobileMenuOpen(false); }}
+            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium cursor-pointer"
           >
-            {lang === 'hi' ? 'कुण्डली' : 'Kundali'}
+            {lang === 'hi' ? 'होम' : 'Home'}
           </button>
           <button 
             onClick={() => { onOpenAbout(); setMobileMenuOpen(false); }}
-            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium"
+            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium cursor-pointer"
           >
             {lang === 'hi' ? 'हमारे बारे में' : 'About'}
           </button>
           <button 
             onClick={() => { onOpenBlog(); setMobileMenuOpen(false); }}
-            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium"
+            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-slate-200 font-medium cursor-pointer"
           >
             {lang === 'hi' ? 'ब्लॉग' : 'Blog'}
           </button>
-          <a 
-            href="#services"
-            onClick={() => setMobileMenuOpen(false)}
-            className="text-left py-2 px-3 rounded-lg hover:bg-amber-500/10 text-amber-300 font-medium"
-          >
-            {lang === 'hi' ? 'सेवाएं' : 'Services'}
-          </a>
           <div className="pt-2 border-t border-purple-800/40 flex items-center justify-between px-2">
             <span className="text-xs text-slate-400">Language:</span>
             <div className="flex gap-2">

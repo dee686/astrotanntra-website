@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
 export default function Footer({
+  onGoHome,
   onOpenKundli,
   onOpenAbout,
   onOpenBlog,
@@ -59,8 +60,8 @@ export default function Footer({
             QUICK LINKS
           </h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <a href="#" className="hover:text-amber-300 transition-colors">› Home</a>
-            <button onClick={onOpenKundli} className="text-left hover:text-amber-300 transition-colors">› Kundli</button>
+            <button onClick={onGoHome} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› Home</button>
+            <button onClick={onOpenKundli} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› Kundli</button>
             <button onClick={onOpenAbout} className="text-left hover:text-amber-300 transition-colors">› About Us</button>
             <button onClick={onOpenTarot} className="text-left hover:text-amber-300 transition-colors">› Tarot</button>
             <a href="#services" className="hover:text-amber-300 transition-colors">› Services</a>

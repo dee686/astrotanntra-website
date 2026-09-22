@@ -10,6 +10,7 @@ import WhatsAppButton from './components/WhatsAppButton';
 
 // Modals
 import KundliModal from './components/KundliModal';
+import KundliPage from './components/KundliPage';
 import KundliMilanModal from './components/KundliMilanModal';
 import PanchangModal from './components/PanchangModal';
 import HoroscopeModal from './components/HoroscopeModal';
@@ -28,6 +29,9 @@ import confetti from 'canvas-confetti';
 export default function App() {
   const [lang, setLang] = useState('en');
   const [user, setUser] = useState(null);
+
+  // Active page state: 'home' | 'kundli'
+  const [currentPage, setCurrentPage] = useState('home');
 
   // Modals state
   const [isKundliOpen, setIsKundliOpen] = useState(false);
@@ -64,10 +68,21 @@ export default function App() {
     setKundliData(defaultKundli);
   }, []);
 
+  const handleGoHome = () => {
+    setCurrentPage('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenKundliPage = () => {
+    setCurrentPage('kundli');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleGenerateKundli = (formData) => {
     const computed = calculateKundli(formData);
     setKundliData(computed);
-    setIsKundliOpen(true);
+    setCurrentPage('kundli');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 } });
     } catch (e) {}
@@ -93,7 +108,8 @@ export default function App() {
       
       {/* Top Header */}
       <Header
-        onOpenKundli={() => setIsKundliOpen(true)}
+        onGoHome={handleGoHome}
+        onOpenKundli={handleOpenKundliPage}
         onOpenMilan={() => setIsMilanOpen(true)}
         onOpenHoroscope={() => { setSelectedSign(HOROSCOPE_DATA[0]); setIsHoroscopeOpen(true); }}
         onOpenPanchang={() => setIsPanchangOpen(true)}
@@ -106,44 +122,57 @@ export default function App() {
         setLang={setLang}
       />
 
-      {/* Main Hero Section with "CREATE YOUR KUNDLI" Card */}
-      <main className="flex-1 flex flex-col">
-        <Hero
-          onGenerateKundli={handleGenerateKundli}
-          onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
-          onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
-          lang={lang}
-        />
+      {/* Main Content: Dedicated Full Kundli Page OR Home Landing View */}
+      {currentPage === 'kundli' ? (
+        <main className="flex-1 flex flex-col">
+          <KundliPage
+            kundliData={kundliData}
+            onGoBack={handleGoHome}
+            onOpenConsultation={handleOpenConsultationWithTopic}
+            lang={lang}
+          />
+        </main>
+      ) : (
+        <main className="flex-1 flex flex-col">
+          {/* Main Hero Section with "CREATE YOUR KUNDLI" Form Card */}
+          <Hero
+            onGenerateKundli={handleGenerateKundli}
+            onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
+            onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
+            lang={lang}
+          />
 
-        {/* Today's Astrology Information (Panchang Bar) */}
-        <PanchangStrip
-          onOpenPanchang={() => setIsPanchangOpen(true)}
-          lang={lang}
-        />
+          {/* Today's Astrology Information (Panchang Bar) */}
+          <PanchangStrip
+            onOpenPanchang={() => setIsPanchangOpen(true)}
+            lang={lang}
+          />
 
-        {/* Today's Horoscope Carousel (12 Zodiac Signs) */}
-        <HoroscopeStrip
-          onSelectSign={handleSelectSign}
-          lang={lang}
-        />
+          {/* Today's Horoscope Carousel (12 Zodiac Signs) */}
+          <HoroscopeStrip
+            onSelectSign={handleSelectSign}
+            lang={lang}
+          />
 
-        {/* 3 Middle Cards: Premium Services, Tarot Packages, Why Choose Us */}
-        <MiddleCardsSection
-          onOpenConsultation={handleOpenConsultationWithTopic}
-          onOpenMilan={() => setIsMilanOpen(true)}
-          onOpenNumerology={() => setIsNumerologyOpen(true)}
-          onOpenTarotWithPackage={handleOpenTarotWithPackage}
-          onOpenKundli={() => setIsKundliOpen(true)}
-          lang={lang}
-        />
+          {/* 3 Middle Cards: Premium Services, Tarot Packages, Why Choose Us */}
+          <MiddleCardsSection
+            onOpenConsultation={handleOpenConsultationWithTopic}
+            onOpenMilan={() => setIsMilanOpen(true)}
+            onOpenNumerology={() => setIsNumerologyOpen(true)}
+            onOpenTarotWithPackage={handleOpenTarotWithPackage}
+            onOpenKundli={handleOpenKundliPage}
+            lang={lang}
+          />
 
-        {/* What Our Clients Say (Testimonials) */}
-        <Testimonials lang={lang} />
-      </main>
+          {/* What Our Clients Say (Testimonials) */}
+          <Testimonials lang={lang} />
+        </main>
+      )}
 
       {/* Footer */}
       <Footer
-        onOpenKundli={() => setIsKundliOpen(true)}
+        onGoHome={handleGoHome}
+        onOpenKundli={handleOpenKundliPage}
         onOpenAbout={() => setIsAboutOpen(true)}
         onOpenBlog={() => setIsBlogOpen(true)}
         onOpenConsultation={() => handleOpenConsultationWithTopic('Customer Support & Inquiries')}
@@ -155,15 +184,7 @@ export default function App() {
       {/* Floating WhatsApp Action Button & Live Help Drawer */}
       <WhatsAppButton />
 
-      {/* ALL MODALS */}
-      {isKundliOpen && (
-        <KundliModal
-          kundliData={kundliData}
-          onClose={() => setIsKundliOpen(false)}
-          onOpenConsultation={handleOpenConsultationWithTopic}
-          lang={lang}
-        />
-      )}
+      {/* ALL MODALS (Kundli is now a dedicated full page, not a popup modal) */}
 
       {isMilanOpen && (
         <KundliMilanModal
