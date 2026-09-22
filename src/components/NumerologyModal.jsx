@@ -3,8 +3,8 @@ import { X, Hash, Sparkles, User, Calendar } from 'lucide-react';
 import { calculateLifePath, calculateDestinyNumber, NUMBER_MEANINGS } from '../utils/numerology';
 
 export default function NumerologyModal({ onClose, onOpenConsultation, lang }) {
-  const [name, setName] = useState('Ansh Mishra');
-  const [dob, setDob] = useState('1998-10-15');
+  const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
   const [result, setResult] = useState(null);
 
   const handleCalculate = (e) => {

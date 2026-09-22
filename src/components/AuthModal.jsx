@@ -20,7 +20,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang }) {
     e.preventDefault();
     setIsLoggedIn(true);
     setTimeout(() => {
-      onLoginSuccess && onLoginSuccess({ phone, name: 'Ansh Mishra' });
+      onLoginSuccess && onLoginSuccess({ phone, name: 'Vedic Seeker' });
       onClose();
     }, 1200);
   };
@@ -59,7 +59,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang }) {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h4 className="font-cinzel font-bold text-lg text-amber-300">Login Successful!</h4>
-              <p className="text-xs text-slate-300">Welcome back, Ansh Mishra. Syncing your Vedic charts...</p>
+              <p className="text-xs text-slate-300">Welcome to ASTROTANNTRA. Syncing your Vedic charts...</p>
             </div>
           ) : (
             <>

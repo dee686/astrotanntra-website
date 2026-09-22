@@ -63,15 +63,16 @@ export default function App() {
       }
     } catch (e) {}
 
-    if (!initialKundli) {
+    if (!initialKundli && window.location.hash === '#kundli') {
+      // If directly accessing #kundli without prior generation, provide clean placeholder
       initialKundli = calculateKundli({
-        name: 'Ansh Mishra',
-        dob: '1998-10-15',
-        tob: '14:30',
-        place: 'Tezpur, Sonitpur, Assam, India',
+        name: 'Vedic Native',
+        dob: '2000-01-01',
+        tob: '12:00',
+        place: 'New Delhi, India',
         gender: 'Male',
-        lat: 26.6338,
-        lng: 92.7926,
+        lat: 28.6139,
+        lng: 77.2090,
         tz: 5.5
       });
     }
@@ -188,6 +189,7 @@ export default function App() {
         <main className="flex-1 flex flex-col">
           {/* Main Hero Section with "CREATE YOUR KUNDLI" Form Card */}
           <Hero
+            key={currentPage}
             onGenerateKundli={handleGenerateKundli}
             onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
             onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}

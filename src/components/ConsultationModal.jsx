@@ -40,11 +40,11 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
   const [selectedSlot, setSelectedSlot] = useState('11:00 AM - 11:30 AM');
   
   // Client details
-  const [userName, setUserName] = useState('Ansh Mishra');
-  const [userPhone, setUserPhone] = useState('+91 99930 27943');
-  const [userEmail, setUserEmail] = useState('ansh@example.com');
+  const [userName, setUserName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [queryTopic, setQueryTopic] = useState(initialTopic || 'Career Growth & Life Direction');
-  const [birthDetails, setBirthDetails] = useState('15-Oct-1998, 02:30 PM, Tezpur Assam');
+  const [birthDetails, setBirthDetails] = useState('');
 
   // Payment details
   const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi', 'card', 'netbanking', 'paylater'

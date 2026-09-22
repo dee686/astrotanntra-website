@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Calendar, 
@@ -22,18 +22,33 @@ export default function Hero({
   onOpenTarot, 
   lang 
 }) {
-  const [name, setName] = useState('Ansh Mishra');
-  const [dob, setDob] = useState('1998-10-15');
-  const [tob, setTob] = useState('14:30');
-  const [place, setPlace] = useState('Tezpur, Sonitpur, Assam, India');
+  const [name, setName] = useState('');
+  const [dob, setDob] = useState('');
+  const [tob, setTob] = useState('');
+  const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState({
-    lat: 26.6338,
-    lng: 92.7926,
+    lat: null,
+    lng: null,
     tz: 5.5,
     tzName: 'Asia/Kolkata'
   });
   const [gender, setGender] = useState('Male');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear/clean form inputs every time Hero mounts (on refresh or when returning to Home page)
+  useEffect(() => {
+    setName('');
+    setDob('');
+    setTob('');
+    setPlace('');
+    setCoordinates({
+      lat: null,
+      lng: null,
+      tz: 5.5,
+      tzName: 'Asia/Kolkata'
+    });
+    setGender('Male');
+  }, []);
 
   const handleSelectLocation = (loc) => {
     setPlace(loc.formatted);
@@ -47,6 +62,11 @@ export default function Hero({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name.trim()) return;
+    if (!dob) return;
+    if (!tob) return;
+    if (!place.trim()) return;
+
     setIsSubmitting(true);
     let activeCoords = { ...coordinates };
 
@@ -63,15 +83,28 @@ export default function Hero({
     }
 
     onGenerateKundli({
-      name,
+      name: name.trim(),
       dob,
       tob,
-      place,
-      gender,
-      lat: activeCoords.lat || 26.6338,
-      lng: activeCoords.lng || 92.7926,
+      place: place.trim(),
+      gender: gender || 'Male',
+      lat: activeCoords.lat || 28.6139,
+      lng: activeCoords.lng || 77.2090,
       tz: activeCoords.tz !== undefined ? activeCoords.tz : 5.5
     });
+
+    // Immediately clean all form fields so next page or coming back is clean
+    setName('');
+    setDob('');
+    setTob('');
+    setPlace('');
+    setCoordinates({
+      lat: null,
+      lng: null,
+      tz: 5.5,
+      tzName: 'Asia/Kolkata'
+    });
+    setGender('Male');
   };
 
   return (
@@ -210,7 +243,7 @@ export default function Hero({
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
               
               {/* Full Name */}
               <div className="relative">
@@ -222,7 +255,8 @@ export default function Hero({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Full Name"
+                  placeholder={lang === 'hi' ? 'पूरा नाम दर्ज करें' : 'Full Name'}
+                  autoComplete="off"
                   className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                 />
               </div>
@@ -237,7 +271,8 @@ export default function Hero({
                   required
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  placeholder="mm/dd/yyyy"
+                  placeholder="yyyy-mm-dd"
+                  autoComplete="off"
                   className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                 />
               </div>
@@ -252,7 +287,8 @@ export default function Hero({
                   required
                   value={tob}
                   onChange={(e) => setTob(e.target.value)}
-                  placeholder="Time of Birth (24h, HH:MM)"
+                  placeholder="--:--"
+                  autoComplete="off"
                   className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                 />
               </div>
@@ -264,7 +300,7 @@ export default function Hero({
                 onSelectLocation={handleSelectLocation}
                 dateStr={dob}
                 required
-                placeholder="Place of Birth (e.g. Tezpur, Assam or any town)"
+                placeholder={lang === 'hi' ? 'जन्म स्थान खोजें (उदा. दिल्ली, पटना, मुंबई)...' : 'Place of Birth (e.g. Delhi, Mumbai, Paris)...'}
               />
 
               {/* Gender Selector */}
@@ -277,9 +313,9 @@ export default function Hero({
                   onChange={(e) => setGender(e.target.value)}
                   className="w-full pl-10 pr-10 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all appearance-none cursor-pointer"
                 >
-                  <option value="Male" className="bg-[#170932]">Male</option>
-                  <option value="Female" className="bg-[#170932]">Female</option>
-                  <option value="Other" className="bg-[#170932]">Other</option>
+                  <option value="Male" className="bg-[#170932]">{lang === 'hi' ? 'पुरुष (Male)' : 'Male'}</option>
+                  <option value="Female" className="bg-[#170932]">{lang === 'hi' ? 'महिला (Female)' : 'Female'}</option>
+                  <option value="Other" className="bg-[#170932]">{lang === 'hi' ? 'अन्य (Other)' : 'Other'}</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-purple-300">
                   <ChevronDown className="w-4 h-4" />
