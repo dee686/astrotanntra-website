@@ -226,7 +226,7 @@ export default function Hero({
           </div>
 
           {/* Form Card matching screenshot 1 */}
-          <div className="w-full max-w-md bg-[#180b33]/95 backdrop-blur-xl border border-amber-500/40 rounded-3xl p-6 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.25)] relative z-20">
+          <div id="kundli-form" className="w-full max-w-md bg-[#180b33]/95 backdrop-blur-xl border border-amber-500/40 rounded-3xl p-6 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.25)] relative z-20">
             
             {/* Ornate corner flourishes */}
             <div className="absolute top-2 left-2 text-amber-400/40 text-xs">❖</div>

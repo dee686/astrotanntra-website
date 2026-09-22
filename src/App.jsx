@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import PanchangStrip from './components/PanchangStrip';
@@ -36,6 +36,17 @@ export default function App() {
   // Modals state
   const [isKundliOpen, setIsKundliOpen] = useState(false);
   const [kundliData, setKundliData] = useState(null);
+  const kundliDataRef = useRef(null);
+  const [formNotice, setFormNotice] = useState(null);
+  const noticeTimeoutRef = useRef(null);
+
+  const triggerNotice = (msg) => {
+    if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+    setFormNotice(msg);
+    noticeTimeoutRef.current = setTimeout(() => {
+      setFormNotice(null);
+    }, 4500);
+  };
 
   const [isMilanOpen, setIsMilanOpen] = useState(false);
   const [isPanchangOpen, setIsPanchangOpen] = useState(false);
@@ -53,38 +64,19 @@ export default function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isBlogOpen, setIsBlogOpen] = useState(false);
 
-  // Initialize with sample/cached Kundli and sync with browser history
+  // Initialize and sync with browser history
   useEffect(() => {
-    let initialKundli = null;
+    // Every time the page is refreshed, reset session and require user to submit form
     try {
-      const saved = sessionStorage.getItem('astrotanntra_kundli');
-      if (saved) {
-        initialKundli = JSON.parse(saved);
-      }
+      sessionStorage.removeItem('astrotanntra_kundli');
     } catch (e) {}
 
-    if (!initialKundli && window.location.hash === '#kundli') {
-      // If directly accessing #kundli without prior generation, provide clean placeholder
-      initialKundli = calculateKundli({
-        name: 'Vedic Native',
-        dob: '2000-01-01',
-        tob: '12:00',
-        place: 'New Delhi, India',
-        gender: 'Male',
-        lat: 28.6139,
-        lng: 77.2090,
-        tz: 5.5
-      });
-    }
-    setKundliData(initialKundli);
+    setKundliData(null);
+    kundliDataRef.current = null;
+    setCurrentPage('home');
 
-    // Sync initial state with URL hash
-    if (window.location.hash === '#kundli') {
-      setCurrentPage('kundli');
-      window.history.replaceState({ page: 'kundli' }, '', '#kundli');
-    } else {
-      window.history.replaceState({ page: 'home' }, '', window.location.pathname + window.location.search);
-    }
+    // Ensure initial URL is clean root '/'
+    window.history.replaceState({ page: 'home' }, '', window.location.pathname);
 
     // Handle browser Back and Forward navigation buttons
     const handlePopState = (event) => {
@@ -92,6 +84,19 @@ export default function App() {
       const state = event?.state;
 
       if (hash === '#kundli' || state?.page === 'kundli') {
+        // Disallow forward navigation to Kundli page if user has not filled details and clicked Generate Kundli
+        if (!kundliDataRef.current) {
+          window.history.replaceState({ page: 'home' }, '', window.location.pathname);
+          setCurrentPage('home');
+          triggerNotice(
+            lang === 'hi'
+              ? 'कृपया पहले जन्म विवरण भरें और "कुण्डली बनाएं" पर क्लिक करें।'
+              : 'Please fill in your birth details and click "Generate Kundli" first.'
+          );
+          const el = document.getElementById('kundli-form');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
         setCurrentPage('kundli');
       } else {
         setCurrentPage('home');
@@ -105,8 +110,9 @@ export default function App() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('hashchange', handlePopState);
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
     };
-  }, []);
+  }, [lang]);
 
   const handleGoHome = () => {
     if (currentPage !== 'home' || window.location.hash === '#kundli') {
@@ -117,6 +123,16 @@ export default function App() {
   };
 
   const handleOpenKundliPage = () => {
+    if (!kundliDataRef.current) {
+      triggerNotice(
+        lang === 'hi'
+          ? 'कृपया पहले जन्म विवरण भरें और "कुण्डली बनाएं" पर क्लिक करें।'
+          : 'Please fill in your birth details and click "Generate Kundli" first.'
+      );
+      const el = document.getElementById('kundli-form');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     setCurrentPage('kundli');
     if (window.location.hash !== '#kundli') {
       window.history.pushState({ page: 'kundli' }, '', '#kundli');
@@ -126,10 +142,8 @@ export default function App() {
 
   const handleGenerateKundli = (formData) => {
     const computed = calculateKundli(formData);
+    kundliDataRef.current = computed;
     setKundliData(computed);
-    try {
-      sessionStorage.setItem('astrotanntra_kundli', JSON.stringify(computed));
-    } catch (e) {}
 
     setCurrentPage('kundli');
     if (window.location.hash !== '#kundli') {
@@ -237,6 +251,20 @@ export default function App() {
 
       {/* Floating WhatsApp Action Button & Live Help Drawer */}
       <WhatsAppButton />
+
+      {/* Floating Notice Toast */}
+      {formNotice && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1e0a3c]/95 border-2 border-amber-400 text-amber-200 px-5 py-3 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.4)] flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-md w-[90%] sm:w-auto">
+          <span className="text-amber-400 text-base shrink-0">✦</span>
+          <span className="text-xs sm:text-sm font-semibold">{formNotice}</span>
+          <button
+            onClick={() => setFormNotice(null)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-auto cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ALL MODALS (Kundli is now a dedicated full page, not a popup modal) */}
 
