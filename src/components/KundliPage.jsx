@@ -128,14 +128,6 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
           {/* Action Buttons */}
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <button
-              onClick={onGoBack}
-              className="px-4 py-2 rounded-xl bg-[#1a0938] hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:border-amber-400 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-md"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{lang === 'hi' ? '← होम पर वापस जाएं' : '← Back to Home'}</span>
-            </button>
-
-            <button
               onClick={handlePrint}
               className="px-4 py-2 rounded-xl bg-[#1a0938] hover:bg-amber-500/20 border border-purple-700/60 text-slate-200 hover:text-amber-300 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
               title="Print / Save as PDF"
@@ -862,13 +854,6 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
             >
               <Sparkles className="w-4 h-4 text-slate-950" />
               <span>{lang === 'hi' ? 'आचार्य से बात करें' : 'Talk to Astrologer'}</span>
-            </button>
-
-            <button
-              onClick={onGoBack}
-              className="px-5 py-3 rounded-xl bg-cosmic-800 hover:bg-cosmic-700 text-slate-300 text-xs font-semibold cursor-pointer border border-purple-800"
-            >
-              {lang === 'hi' ? '← होम पर वापस' : '← Back to Home'}
             </button>
           </div>
         </div>

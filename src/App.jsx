@@ -53,35 +53,87 @@ export default function App() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isBlogOpen, setIsBlogOpen] = useState(false);
 
-  // Initialize with sample Kundli on first load
+  // Initialize with sample/cached Kundli and sync with browser history
   useEffect(() => {
-    const defaultKundli = calculateKundli({
-      name: 'Ansh Mishra',
-      dob: '1998-10-15',
-      tob: '14:30',
-      place: 'Tezpur, Sonitpur, Assam, India',
-      gender: 'Male',
-      lat: 26.6338,
-      lng: 92.7926,
-      tz: 5.5
-    });
-    setKundliData(defaultKundli);
+    let initialKundli = null;
+    try {
+      const saved = sessionStorage.getItem('astrotanntra_kundli');
+      if (saved) {
+        initialKundli = JSON.parse(saved);
+      }
+    } catch (e) {}
+
+    if (!initialKundli) {
+      initialKundli = calculateKundli({
+        name: 'Ansh Mishra',
+        dob: '1998-10-15',
+        tob: '14:30',
+        place: 'Tezpur, Sonitpur, Assam, India',
+        gender: 'Male',
+        lat: 26.6338,
+        lng: 92.7926,
+        tz: 5.5
+      });
+    }
+    setKundliData(initialKundli);
+
+    // Sync initial state with URL hash
+    if (window.location.hash === '#kundli') {
+      setCurrentPage('kundli');
+      window.history.replaceState({ page: 'kundli' }, '', '#kundli');
+    } else {
+      window.history.replaceState({ page: 'home' }, '', window.location.pathname + window.location.search);
+    }
+
+    // Handle browser Back and Forward navigation buttons
+    const handlePopState = (event) => {
+      const hash = window.location.hash;
+      const state = event?.state;
+
+      if (hash === '#kundli' || state?.page === 'kundli') {
+        setCurrentPage('kundli');
+      } else {
+        setCurrentPage('home');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const handleGoHome = () => {
-    setCurrentPage('home');
+    if (currentPage !== 'home' || window.location.hash === '#kundli') {
+      window.history.pushState({ page: 'home' }, '', window.location.pathname + window.location.search);
+      setCurrentPage('home');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenKundliPage = () => {
     setCurrentPage('kundli');
+    if (window.location.hash !== '#kundli') {
+      window.history.pushState({ page: 'kundli' }, '', '#kundli');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleGenerateKundli = (formData) => {
     const computed = calculateKundli(formData);
     setKundliData(computed);
+    try {
+      sessionStorage.setItem('astrotanntra_kundli', JSON.stringify(computed));
+    } catch (e) {}
+
     setCurrentPage('kundli');
+    if (window.location.hash !== '#kundli') {
+      window.history.pushState({ page: 'kundli' }, '', '#kundli');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 } });
