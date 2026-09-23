@@ -30,6 +30,11 @@ import confetti from 'canvas-confetti';
 export default function App() {
   const [lang, setLang] = useState('en');
   const [user, setUser] = useState(() => getActiveUser());
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Active page state: 'home' | 'kundli'
   const [currentPage, setCurrentPage] = useState('home');
@@ -38,6 +43,12 @@ export default function App() {
   const [isKundliOpen, setIsKundliOpen] = useState(false);
   const [kundliData, setKundliData] = useState(null);
   const kundliDataRef = useRef(null);
+
+  // Stored pending Kundli data when an unauthenticated user submits the form
+  const [pendingKundliData, setPendingKundliData] = useState(null);
+  const pendingKundliDataRef = useRef(null);
+  const [authReason, setAuthReason] = useState(null);
+
   const [formNotice, setFormNotice] = useState(null);
   const noticeTimeoutRef = useRef(null);
 
@@ -85,6 +96,20 @@ export default function App() {
       const state = event?.state;
 
       if (hash === '#kundli' || state?.page === 'kundli') {
+        // Disallow forward navigation to Kundli page if user is not logged in
+        if (!userRef.current) {
+          window.history.replaceState({ page: 'home' }, '', window.location.pathname);
+          setCurrentPage('home');
+          setAuthReason('premium_kundli');
+          setIsAuthOpen(true);
+          triggerNotice(
+            lang === 'hi'
+              ? 'कुण्डली निर्माण एक प्रीमियम सुविधा है। कृपया पहले लॉगिन या साइन अप करें।'
+              : 'Generating Kundli is a premium feature. Please Sign In or Sign Up first.'
+          );
+          return;
+        }
+
         // Disallow forward navigation to Kundli page if user has not filled details and clicked Generate Kundli
         if (!kundliDataRef.current) {
           window.history.replaceState({ page: 'home' }, '', window.location.pathname);
@@ -115,9 +140,41 @@ export default function App() {
     };
   }, [lang]);
 
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    userRef.current = userData;
+
+    // If there was a pending Kundli calculation waiting for login, calculate and display immediately
+    if (pendingKundliDataRef.current) {
+      const dataToCompute = pendingKundliDataRef.current;
+      pendingKundliDataRef.current = null;
+      setPendingKundliData(null);
+      setAuthReason(null);
+
+      const computed = calculateKundli(dataToCompute);
+      kundliDataRef.current = computed;
+      setKundliData(computed);
+
+      setCurrentPage('kundli');
+      if (window.location.hash !== '#kundli') {
+        window.history.pushState({ page: 'kundli' }, '', '#kundli');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try {
+        confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 } });
+      } catch (e) {}
+    }
+  };
+
   const handleLogout = () => {
     setActiveUser(null);
     setUser(null);
+    userRef.current = null;
+    kundliDataRef.current = null;
+    setKundliData(null);
+    pendingKundliDataRef.current = null;
+    setPendingKundliData(null);
+    setCurrentPage('home');
   };
 
   const handleGoHome = () => {
@@ -129,6 +186,17 @@ export default function App() {
   };
 
   const handleOpenKundliPage = () => {
+    if (!userRef.current) {
+      setAuthReason('premium_kundli');
+      setIsAuthOpen(true);
+      triggerNotice(
+        lang === 'hi'
+          ? 'कुण्डली देखना एक प्रीमियम सुविधा है। कृपया पहले लॉगिन या साइन अप करें।'
+          : 'Viewing Kundli is a premium feature. Please Sign In or Sign Up first.'
+      );
+      return;
+    }
+
     if (!kundliDataRef.current) {
       triggerNotice(
         lang === 'hi'
@@ -147,6 +215,20 @@ export default function App() {
   };
 
   const handleGenerateKundli = (formData) => {
+    if (!userRef.current) {
+      // Premium feature guard: prompt user to login/signup and preserve their entered details
+      pendingKundliDataRef.current = formData;
+      setPendingKundliData(formData);
+      setAuthReason('premium_kundli');
+      setIsAuthOpen(true);
+      triggerNotice(
+        lang === 'hi'
+          ? 'कुण्डली निर्माण एक प्रीमियम सुविधा है। सम्पूर्ण कुण्डली देखने के लिए कृपया लॉगिन या साइन अप करें।'
+          : 'Generating Kundli is a premium feature. Please Sign In or Sign Up to view your chart.'
+      );
+      return;
+    }
+
     const computed = calculateKundli(formData);
     kundliDataRef.current = computed;
     setKundliData(computed);
@@ -188,7 +270,7 @@ export default function App() {
         onOpenPanchang={() => setIsPanchangOpen(true)}
         onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
         onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={() => { setAuthReason(null); setIsAuthOpen(true); }}
         onOpenAbout={() => setIsAboutOpen(true)}
         onOpenBlog={() => setIsBlogOpen(true)}
         user={user}
@@ -212,6 +294,7 @@ export default function App() {
           {/* Main Hero Section with "CREATE YOUR KUNDLI" Form Card */}
           <Hero
             key={currentPage}
+            user={user}
             onGenerateKundli={handleGenerateKundli}
             onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
             onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
@@ -327,8 +410,12 @@ export default function App() {
 
       {isAuthOpen && (
         <AuthModal
-          onClose={() => setIsAuthOpen(false)}
-          onLoginSuccess={(userData) => setUser(userData)}
+          authReason={authReason}
+          onClose={() => {
+            setIsAuthOpen(false);
+            setAuthReason(null);
+          }}
+          onLoginSuccess={handleLoginSuccess}
           lang={lang}
         />
       )}

@@ -10,7 +10,8 @@ import {
   ShieldCheck, 
   Headphones, 
   Star,
-  ChevronDown
+  ChevronDown,
+  Lock
 } from 'lucide-react';
 import { ArmillarySphereArtwork, GaneshaArtwork } from './CelestialArtwork';
 import PlaceAutocomplete from './PlaceAutocomplete';
@@ -20,6 +21,7 @@ export default function Hero({
   onGenerateKundli, 
   onOpenConsultation, 
   onOpenTarot, 
+  user,
   lang 
 }) {
   const [name, setName] = useState('');
@@ -93,18 +95,20 @@ export default function Hero({
       tz: activeCoords.tz !== undefined ? activeCoords.tz : 5.5
     });
 
-    // Immediately clean all form fields so next page or coming back is clean
-    setName('');
-    setDob('');
-    setTob('');
-    setPlace('');
-    setCoordinates({
-      lat: null,
-      lng: null,
-      tz: 5.5,
-      tzName: 'Asia/Kolkata'
-    });
-    setGender('Male');
+    // If user is already logged in, immediately clean all form fields
+    if (user) {
+      setName('');
+      setDob('');
+      setTob('');
+      setPlace('');
+      setCoordinates({
+        lat: null,
+        lng: null,
+        tz: 5.5,
+        tzName: 'Asia/Kolkata'
+      });
+      setGender('Male');
+    }
   };
 
   return (
@@ -326,15 +330,32 @@ export default function Hero({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full mt-2 py-3.5 rounded-xl gold-btn font-extrabold text-base tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full mt-2 py-3.5 rounded-xl gold-btn font-extrabold text-base tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed group transition-all"
               >
-                <Star className="w-4 h-4 fill-slate-900 text-slate-900" />
+                {user ? (
+                  <Star className="w-4 h-4 fill-slate-900 text-slate-900" />
+                ) : (
+                  <Lock className="w-4 h-4 text-slate-900 group-hover:scale-110 transition-transform" />
+                )}
                 <span>
                   {isSubmitting 
                     ? (lang === 'hi' ? 'स्थान खोज रहे हैं...' : 'LOCATING ON MAP...') 
-                    : (lang === 'hi' ? '★ कुण्डली बनाएं' : '★ GENERATE KUNDLI')}
+                    : (user 
+                        ? (lang === 'hi' ? '★ कुण्डली बनाएं' : '★ GENERATE KUNDLI')
+                        : (lang === 'hi' ? '★ कुण्डली बनाएं (प्रीमियम)' : '★ GENERATE KUNDLI (PREMIUM)'))}
                 </span>
               </button>
+
+              {!user && (
+                <div className="text-center mt-2 text-[11px] text-amber-300/80 flex items-center justify-center gap-1.5 animate-fadeIn">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>
+                    {lang === 'hi' 
+                      ? 'प्रीमियम सुविधा: कुण्डली देखने के लिए लॉगिन / साइन अप आवश्यक' 
+                      : 'Premium feature: Sign In or Sign Up required to view Kundli'}
+                  </span>
+                </div>
+              )}
 
             </form>
           </div>

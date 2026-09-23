@@ -22,7 +22,7 @@ import {
   evaluatePasswordRules 
 } from '../services/authService';
 
-export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
+export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authReason = null }) {
   // Tab: 'signin' | 'signup'
   const [isLogin, setIsLogin] = useState(true);
 
@@ -178,10 +178,18 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
             </div>
             <div>
               <h3 className="font-cinzel font-bold text-base sm:text-lg text-amber-300">
-                {isSuccess ? 'Authentication Complete' : (isLogin ? 'Welcome to ASTROTANNTRA' : 'Create Free Account')}
+                {isSuccess 
+                  ? (lang === 'hi' ? 'प्रमाणीकरण सफल' : 'Authentication Complete') 
+                  : authReason === 'premium_kundli'
+                    ? (isLogin 
+                        ? (lang === 'hi' ? '★ कुण्डली हेतु साइन इन करें' : '★ Sign In to Unlock Kundli') 
+                        : (lang === 'hi' ? '★ नया खाता बनाएं (साइन अप)' : '★ Sign Up to Unlock Kundli'))
+                    : (isLogin ? (lang === 'hi' ? 'ASTROTANNTRA में आपका स्वागत है' : 'Welcome to ASTROTANNTRA') : (lang === 'hi' ? 'निःशुल्क खाता बनाएं' : 'Create Free Account'))}
               </h3>
               <span className="text-[11px] text-amber-200/70">
-                {isLogin ? 'Sign in to access your Vedic charts & readings' : 'Join thousands of Vedic seekers worldwide'}
+                {authReason === 'premium_kundli'
+                  ? (lang === 'hi' ? 'सम्पूर्ण वैदिक कुण्डली अनलॉक करने के लिए लॉगिन या साइन अप करें' : 'Sign In or Sign Up to unlock your detailed Vedic Kundli charts')
+                  : (isLogin ? 'Sign in to access your Vedic charts & readings' : 'Join thousands of Vedic seekers worldwide')}
               </span>
             </div>
           </div>
@@ -217,6 +225,28 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
             </div>
           ) : (
             <>
+              {/* PREMIUM KUNDLI NOTICE BANNER (WHEN USER CLICKS GENERATE KUNDLI) */}
+              {authReason === 'premium_kundli' && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-purple-900/30 border border-amber-400/60 flex items-start gap-3 shadow-[0_4px_25px_rgba(245,158,11,0.2)] animate-fadeIn">
+                  <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center shrink-0 text-amber-300">
+                    <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-cinzel font-bold text-xs text-amber-300 flex items-center gap-2">
+                      <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                        {lang === 'hi' ? 'प्रीमियम सुविधा' : 'PREMIUM FEATURE'}
+                      </span>
+                      <span>{lang === 'hi' ? 'वैदिक कुण्डली निर्माण' : 'Vedic Kundli Generation'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-relaxed">
+                      {lang === 'hi'
+                        ? 'कुण्डली निर्माण एक विशेष प्रीमियम सुविधा है। यदि आपका पहले से खाता है तो नीचे "साइन इन" करें, अथवा नए यूजर के रूप में तुरंत "साइन अप" करें।'
+                        : 'Generating your full Vedic Kundli is an exclusive premium feature. Existing users please Sign In; new users can quickly Sign Up Free below to view your full chart.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* TAB SWITCHER: Sign In vs Sign Up */}
               <div className="grid grid-cols-2 bg-[#1b0a39] rounded-2xl p-1 border border-purple-800/80 text-xs">
                 <button
@@ -232,7 +262,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  {lang === 'hi' ? 'साइन इन (Sign In)' : 'Sign In'}
+                  {lang === 'hi' ? 'साइन इन (पुराने यूजर)' : 'Sign In (Existing User)'}
                 </button>
                 <button
                   type="button"
@@ -247,7 +277,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  {lang === 'hi' ? 'साइन अप (Sign Up)' : 'Sign Up Free'}
+                  {lang === 'hi' ? 'साइन अप (नए यूजर)' : 'Sign Up Free (New User)'}
                 </button>
               </div>
 
@@ -662,7 +692,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
               <div className="text-center pt-1 text-xs text-slate-400">
                 {isLogin ? (
                   <span>
-                    {lang === 'hi' ? 'खाता नहीं है?' : "Don't have an account?"}{' '}
+                    {lang === 'hi' ? 'नए यूजर हैं? खाता नहीं है?' : "New User? Don't have an account?"}{' '}
                     <button
                       type="button"
                       onClick={() => {
@@ -672,12 +702,12 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
                       }}
                       className="text-amber-300 font-bold hover:underline cursor-pointer ml-1"
                     >
-                      {lang === 'hi' ? 'मुफ्त साइन अप करें' : 'Sign Up Free'}
+                      {lang === 'hi' ? 'यहाँ नया खाता (साइन अप) बनाएं' : 'Sign Up Free Here'}
                     </button>
                   </span>
                 ) : (
                   <span>
-                    {lang === 'hi' ? 'पहले से खाता मौजूद है?' : 'Already have an account?'}{' '}
+                    {lang === 'hi' ? 'पुराने यूजर हैं? पहले से खाता मौजूद है?' : 'Existing User? Already have an account?'}{' '}
                     <button
                       type="button"
                       onClick={() => {
@@ -687,7 +717,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en' }) {
                       }}
                       className="text-amber-300 font-bold hover:underline cursor-pointer ml-1"
                     >
-                      {lang === 'hi' ? 'साइन इन करें' : 'Sign In'}
+                      {lang === 'hi' ? 'यहाँ साइन इन करें' : 'Sign In Here'}
                     </button>
                   </span>
                 )}
