@@ -16,6 +16,7 @@ import {
 import { ArmillarySphereArtwork, GaneshaArtwork } from './CelestialArtwork';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import { resolveLocation } from '../services/geoService';
+import { parseDateOfBirth, parseTimeOfBirth } from '../utils/vedicCalculations';
 
 export default function Hero({ 
   onGenerateKundli, 
@@ -36,6 +37,44 @@ export default function Hero({
   });
   const [gender, setGender] = useState('Male');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Time parsing & AM/PM detection
+  const timeInfo = parseTimeOfBirth(tob);
+  const isPM = tob ? timeInfo.hour >= 12 : false;
+
+  const handleToggleAmPm = (target) => {
+    const currentTob = tob || '04:30';
+    const parsed = parseTimeOfBirth(currentTob);
+    let h = parsed.hour;
+    const m = String(parsed.min).padStart(2, '0');
+
+    if (target === 'PM' && h < 12) {
+      h += 12;
+    } else if (target === 'AM' && h >= 12) {
+      h -= 12;
+    }
+    setTob(`${String(h).padStart(2, '0')}:${m}`);
+  };
+
+  // Formatted date preview for clarity (e.g. "1 May 2000")
+  const datePreview = dob ? (() => {
+    const parsed = parseDateOfBirth(dob);
+    const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthsHi = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+    const mName = lang === 'hi' ? monthsHi[parsed.month - 1] : monthsEn[parsed.month - 1];
+    return `${parsed.day} ${mName} ${parsed.year}`;
+  })() : null;
+
+  // Formatted time preview for clarity (e.g. "04:30 AM (सुबह)")
+  const timePreview = tob ? (() => {
+    const parsed = parseTimeOfBirth(tob);
+    const h12 = parsed.hour % 12 || 12;
+    const pad = (n) => String(n).padStart(2, '0');
+    const ampm = parsed.hour >= 12 ? 'PM' : 'AM';
+    const periodHi = parsed.hour >= 12 ? 'दोपहर/शाम' : 'सुबह/प्रातः';
+    const periodEn = parsed.hour >= 12 ? 'Evening/PM' : 'Morning/AM';
+    return `${pad(h12)}:${pad(parsed.min)} ${ampm} (${lang === 'hi' ? periodHi : periodEn})`;
+  })() : null;
 
   // Clear/clean form inputs every time Hero mounts (on refresh or when returning to Home page)
   useEffect(() => {
@@ -281,21 +320,69 @@ export default function Hero({
                 />
               </div>
 
-              {/* Time of Birth */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-300">
-                  <Clock className="w-4 h-4 text-amber-400/80" />
+              {/* Time of Birth with explicit AM / PM toggle */}
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-300">
+                    <Clock className="w-4 h-4 text-amber-400/80" />
+                  </div>
+                  <input
+                    type="time"
+                    required
+                    value={tob}
+                    onChange={(e) => setTob(e.target.value)}
+                    placeholder="--:--"
+                    autoComplete="off"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                  />
                 </div>
-                <input
-                  type="time"
-                  required
-                  value={tob}
-                  onChange={(e) => setTob(e.target.value)}
-                  placeholder="--:--"
-                  autoComplete="off"
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
+
+                {/* AM / PM Segmented Control */}
+                <div className="flex rounded-xl overflow-hidden border border-purple-600/50 bg-[#231248]/90 p-1 shrink-0 gap-1 h-[46px] items-center">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleAmPm('AM')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      tob && !isPM 
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md font-extrabold' 
+                        : 'text-slate-400 hover:text-amber-200'
+                    }`}
+                    title={lang === 'hi' ? 'सुबह / प्रातः (AM)' : 'Morning (AM)'}
+                  >
+                    AM
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleAmPm('PM')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      tob && isPM 
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md font-extrabold' 
+                        : 'text-slate-400 hover:text-amber-200'
+                    }`}
+                    title={lang === 'hi' ? 'दोपहर / शाम (PM)' : 'Evening / Afternoon (PM)'}
+                  >
+                    PM
+                  </button>
+                </div>
               </div>
+
+              {/* Live Date & Time Preview for complete clarity */}
+              {(datePreview || timePreview) && (
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-300">
+                  {datePreview && (
+                    <span className="flex items-center gap-1 font-medium">
+                      <span>📅</span>
+                      <span>{datePreview}</span>
+                    </span>
+                  )}
+                  {timePreview && (
+                    <span className="flex items-center gap-1 font-semibold text-amber-200">
+                      <span>⏰</span>
+                      <span>{timePreview}</span>
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Place of Birth with Live Free Map Autocomplete */}
               <PlaceAutocomplete

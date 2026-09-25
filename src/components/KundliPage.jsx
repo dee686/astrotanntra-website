@@ -19,17 +19,20 @@ import {
   CheckCircle2,
   Calendar,
   MapPin,
-  UserCheck
+  Globe,
+  Palette
 } from 'lucide-react';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import { DIVISIONAL_CHARTS_META } from '../utils/vedicCalculations';
 
-export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, lang }) {
+export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, lang = 'en' }) {
   const [activeTab, setActiveTab] = useState('chart');
   const [chartType, setChartType] = useState('north'); // 'north' or 'south'
+  const [chartLang, setChartLang] = useState('both'); // 'en' | 'hi' | 'both'
+  const [chartTheme, setChartTheme] = useState('astrosage'); // 'astrosage' | 'cosmic'
   const [selectedHouse, setSelectedHouse] = useState(1);
-  const [selectedDivChart, setSelectedDivChart] = useState('D1'); // D1..D10, PANCHANG
+  const [selectedDivChart, setSelectedDivChart] = useState('D9'); // For the right chart
 
   if (!kundliData) {
     return (
@@ -63,8 +66,12 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
     sunDetails, 
     panchangAtBirth, 
     planets, 
+    d1Chart,
+    d9Chart,
     houseOccupants, 
     divisionalCharts, 
+    karaks,
+    avasthas,
     doshas, 
     dasha, 
     predictions, 
@@ -75,14 +82,21 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
     window.print();
   };
 
-  // Get active chart data (fallback to D1 if not found)
-  const currentChart = divisionalCharts?.[selectedDivChart] || {
+  // Base primary Lagna (D1) chart data
+  const lagnaChartData = d1Chart || {
     id: 'D1',
-    name: 'Rashi',
-    title: 'D-1 (Rashi Chart)',
-    focus: 'Physical body, personality, general life blueprint',
+    name: 'Lagna Chart',
+    nameHi: 'लग्न कुण्डली',
     ascSign: ascendant,
-    planets: planets,
+    houseOccupants: houseOccupants
+  };
+
+  // Secondary chart data (D-9 Navamsha or selected divisional chart)
+  const secondaryChartData = (selectedDivChart === 'D9' ? d9Chart : divisionalCharts?.[selectedDivChart]) || d9Chart || {
+    id: 'D9',
+    name: 'Navamsa Chart',
+    nameHi: 'नवांश कुण्डली',
+    ascSign: ascendant,
     houseOccupants: houseOccupants
   };
 
@@ -99,6 +113,13 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
     10: 'Karma Bhava (House of Profession, Status, Fame, Authority, Life Calling)',
     11: 'Labha Bhava (House of Gains, Income, Friendships, Aspirations, Elder Siblings)',
     12: 'Vyaya Bhava (House of Expenses, Foreign Lands, Liberation, Subconscious, Sleep)'
+  };
+
+  // Helper for displaying bilingual labels
+  const getBilingual = (en, hi) => {
+    if (chartLang === 'hi') return hi || en;
+    if (chartLang === 'both') return hi ? `${en} (${hi})` : en;
+    return en;
   };
 
   return (
@@ -149,7 +170,6 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
 
         {/* Kundli Identity Card */}
         <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-r from-[#1d0a3d] via-[#250e50] to-[#160630] p-5 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(245,158,11,0.15)] relative overflow-hidden">
-          {/* Subtle celestial watermarks */}
           <div className="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-amber-500/5 blur-2xl pointer-events-none" />
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
@@ -184,7 +204,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   <div className="flex items-center gap-1.5">
                     <Compass className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span className="font-mono text-[11px] text-slate-400">
-                      Coords: {meta.lat}°, {meta.lng}° ({meta.ayanamsha || 'Lahiri'})
+                      Coords: {meta.lat}°, {meta.lng}° ({meta.ayanamshaFormatted || meta.ayanamsha || 'Lahiri'})
                     </span>
                   </div>
                 </div>
@@ -194,21 +214,21 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
             {/* Status Pills */}
             <div className="flex flex-wrap lg:flex-col items-start lg:items-end gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 border-purple-800/60">
               <span className={`px-3 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${
-                doshas.manglik.isManglik 
+                doshas?.manglik?.isManglik 
                   ? 'bg-rose-950/80 text-rose-300 border-rose-500/80' 
                   : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80'
               }`}>
                 <span>●</span>
-                <span>Manglik: {doshas.manglik.intensity}</span>
+                <span>Manglik: {doshas?.manglik?.intensity || 'Non-Manglik'}</span>
               </span>
 
               <span className={`px-3 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${
-                doshas.kaalSarp.hasKaalSarp
+                doshas?.kaalSarp?.hasKaalSarp
                   ? 'bg-amber-950/80 text-amber-300 border-amber-500/80'
                   : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80'
               }`}>
                 <span>●</span>
-                <span>Kaal Sarp: {doshas.kaalSarp.status}</span>
+                <span>Kaal Sarp: {doshas?.kaalSarp?.status || 'No Kaal Sarp Dosha'}</span>
               </span>
             </div>
 
@@ -221,7 +241,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               <strong className="text-amber-300 text-sm font-cinzel">
                 {ascendant.sign} ({ascendant.sanskrit})
               </strong>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Lord: {ascendant.lord}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {ascendant.degFormatted} • {ascendant.nakshatra}
+              </span>
             </div>
 
             <div className="p-2.5 rounded-xl bg-black/30 border border-purple-900/50">
@@ -229,7 +251,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               <strong className="text-sky-300 text-sm font-cinzel">
                 {moonDetails.sign} ({moonDetails.sanskrit})
               </strong>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Nakshatra: {moonDetails.nakshatra}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {moonDetails.degFormatted} • {moonDetails.nakshatra}
+              </span>
             </div>
 
             <div className="p-2.5 rounded-xl bg-black/30 border border-purple-900/50">
@@ -237,7 +261,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               <strong className="text-amber-400 text-sm font-cinzel">
                 {sunDetails.sign} ({sunDetails.sanskrit})
               </strong>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Lord: {sunDetails.lord}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                {sunDetails.degFormatted} • Lord: {sunDetails.lord}
+              </span>
             </div>
 
             <div className="p-2.5 rounded-xl bg-black/30 border border-purple-900/50">
@@ -245,7 +271,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               <strong className="text-emerald-300 text-sm font-cinzel">
                 {dasha.currentMahadasha}
               </strong>
-              <span className="text-[10px] text-slate-400 block mt-0.5">120-Year Vimshottari</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
+                {dasha.balanceStr || 'Vimshottari Cycle'}
+              </span>
             </div>
           </div>
 
@@ -254,8 +282,8 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
         {/* Navigation Tabs Bar */}
         <div className="flex items-center gap-1.5 p-1.5 bg-[#120629] border border-amber-500/30 rounded-2xl overflow-x-auto scrollbar-none shadow-md">
           {[
-            { id: 'chart', label: lang === 'hi' ? 'वर्ग कुण्डलियां (D1-D10)' : 'Divisional Charts (D1-D10)', icon: Layers },
-            { id: 'planets', label: lang === 'hi' ? 'ग्रह स्थिति (Planets)' : 'Planetary Positions', icon: Sun },
+            { id: 'chart', label: lang === 'hi' ? 'कुण्डली एवं वर्ग चार्ट (Charts)' : 'Kundli & Divisional Charts', icon: Layers },
+            { id: 'planets', label: lang === 'hi' ? 'ग्रह स्थिति एवं अवस्था (Planets)' : 'Planetary Positions & Avasthas', icon: Sun },
             { id: 'panchang', label: lang === 'hi' ? 'जन्म पंचांग (Panchang)' : 'Janma Panchang', icon: Compass },
             { id: 'doshas', label: lang === 'hi' ? 'दोष विश्लेषण (Doshas)' : 'Dosha Analysis', icon: ShieldAlert },
             { id: 'dasha', label: lang === 'hi' ? 'विंशोत्तरी दशा (Dasha)' : 'Vimshottari Dasha', icon: Clock },
@@ -281,39 +309,115 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
           })}
         </div>
 
-        {/* TAB 1: DIVISIONAL CHARTS (D1 TO D10 + PANCHANG) */}
+        {/* TAB 1: KUNDLI & DIVISIONAL CHARTS (ASTROSAGE SIDE-BY-SIDE + AUTHENTIC TABLES) */}
         {activeTab === 'chart' && (
           <div className="bg-[#120629] border border-amber-500/30 rounded-3xl p-5 sm:p-7 space-y-6 shadow-xl">
             
-            {/* Divisional Chart Selector & Chart Style Switcher */}
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-amber-400" />
-                  <span>Select Divisional Chart (षोडशवर्ग D1 to D10 & Panchang)</span>
+            {/* Controls Bar: Language Toggle, Theme Toggle & Chart Style Switcher */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1b0a38] border border-purple-800/80">
+              
+              {/* Language Selector: English / हिन्दी / Both */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-amber-400" />
+                  <span>Language / भाषा:</span>
                 </span>
-
-                <div className="flex items-center bg-[#1b0a38] rounded-xl p-1 border border-purple-700/60 self-start sm:self-auto">
+                <div className="inline-flex rounded-xl bg-black/40 p-1 border border-purple-700/60">
                   <button
-                    onClick={() => setChartType('north')}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      chartType === 'north' ? 'bg-amber-400 text-slate-950 shadow-md font-bold' : 'text-slate-300 hover:text-white'
+                    onClick={() => setChartLang('en')}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      chartLang === 'en'
+                        ? 'bg-amber-400 text-slate-950 shadow font-extrabold'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    North Indian (Diamond)
+                    English
                   </button>
                   <button
-                    onClick={() => setChartType('south')}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      chartType === 'south' ? 'bg-amber-400 text-slate-950 shadow-md font-bold' : 'text-slate-300 hover:text-white'
+                    onClick={() => setChartLang('hi')}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      chartLang === 'hi'
+                        ? 'bg-amber-400 text-slate-950 shadow font-extrabold'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
-                    South Indian (Box)
+                    हिन्दी
+                  </button>
+                  <button
+                    onClick={() => setChartLang('both')}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      chartLang === 'both'
+                        ? 'bg-amber-400 text-slate-950 shadow font-extrabold'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Both (दोनों)
                   </button>
                 </div>
               </div>
 
-              {/* Pills Bar */}
+              {/* Theme & Style Toggles */}
+              <div className="flex items-center flex-wrap gap-2.5">
+                {/* Theme Selector */}
+                <div className="inline-flex rounded-xl bg-black/40 p-1 border border-purple-700/60 items-center">
+                  <Palette className="w-3.5 h-3.5 text-amber-400 ml-2 mr-1" />
+                  <button
+                    onClick={() => setChartTheme('astrosage')}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                      chartTheme === 'astrosage'
+                        ? 'bg-amber-400 text-slate-950 shadow font-bold'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Classic (AstroSage)
+                  </button>
+                  <button
+                    onClick={() => setChartTheme('cosmic')}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                      chartTheme === 'cosmic'
+                        ? 'bg-amber-400 text-slate-950 shadow font-bold'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    Cosmic Gold
+                  </button>
+                </div>
+
+                {/* North / South Style */}
+                <div className="inline-flex rounded-xl bg-black/40 p-1 border border-purple-700/60">
+                  <button
+                    onClick={() => setChartType('north')}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                      chartType === 'north' ? 'bg-amber-400 text-slate-950 shadow font-bold' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    North Indian
+                  </button>
+                  <button
+                    onClick={() => setChartType('south')}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                      chartType === 'south' ? 'bg-amber-400 text-slate-950 shadow font-bold' : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    South Indian
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Divisional Chart Selector Pills */}
+            <div>
+              <div className="flex items-center justify-between pb-2 text-xs text-slate-300">
+                <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Right Chart Selector (तुलना हेतु वर्ग कुण्डली चुनें):</span>
+                </span>
+                <span className="text-slate-400 text-[11px]">
+                  Left: <strong>Lagna (D-1)</strong> • Right: <strong>{secondaryChartData.name} ({secondaryChartData.id})</strong>
+                </span>
+              </div>
+
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 {DIVISIONAL_CHARTS_META.map((metaItem) => {
                   const isSelected = selectedDivChart === metaItem.id;
@@ -321,7 +425,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                     <button
                       key={metaItem.id}
                       onClick={() => setSelectedDivChart(metaItem.id)}
-                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-medium shrink-0 flex items-center gap-2 transition-all cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-xl border text-xs font-medium shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold shadow-gold-glow'
                           : 'bg-[#1b0a38] text-slate-300 border-purple-800/80 hover:border-amber-400/50 hover:bg-[#230f47]'
@@ -339,120 +443,286 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               </div>
             </div>
 
-            {/* Active Chart Header & Description Banner */}
-            <div className="bg-gradient-to-r from-[#220c4c] via-[#1a0839] to-[#160630] border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/40 font-bold uppercase">
-                    {currentChart.id} Chart
-                  </span>
-                  <h3 className="font-cinzel text-lg font-bold text-amber-300">
-                    {currentChart.title}
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-300 mt-1">
-                  <strong className="text-amber-200">Primary Focus:</strong> {currentChart.focus}
-                </p>
-              </div>
-
-              <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-purple-800/60">
-                <span className="text-[11px] text-slate-400 block">Divisional Ascendant (Lagna)</span>
-                <strong className="text-amber-300 text-sm font-semibold">
-                  {currentChart.ascSign?.name || ascendant.sign} ({currentChart.ascSign?.sanskrit || ascendant.sanskrit})
-                </strong>
-              </div>
-            </div>
-
-            {/* Chart Graphic & House Occupants Explorer */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* ASTROSAGE SIDE-BY-SIDE CHARTS: LAGNA CHART (D-1) & NAVAMSA CHART (D-9) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               
-              <div className="lg:col-span-7 flex justify-center bg-[#0d0322] p-4 rounded-3xl border border-purple-900/60 shadow-inner">
+              {/* Left Chart: Lagna Chart (D-1) */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
                 {chartType === 'north' ? (
                   <NorthIndianChart
-                    houseOccupants={currentChart.houseOccupants}
+                    houseOccupants={lagnaChartData.houseOccupants}
                     activeHouse={selectedHouse}
                     onSelectHouse={(h) => setSelectedHouse(h)}
-                    chartTitle={`${currentChart.name} (${currentChart.id}) - North Indian`}
+                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
+                    chartLang={chartLang}
+                    showDegrees={true}
+                    theme={chartTheme}
                   />
                 ) : (
                   <SouthIndianChart
-                    planets={currentChart.planets}
-                    ascendant={currentChart.ascSign}
-                    chartTitle={`${currentChart.name} (${currentChart.id}) - South Indian`}
+                    planets={lagnaChartData.planets || planets}
+                    ascendant={ascendant}
+                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
                   />
                 )}
               </div>
 
-              {/* House Inspector & Directory */}
-              <div className="lg:col-span-5 space-y-4">
-                
-                {/* House Details */}
-                <div className="bg-[#1b0a38] border border-amber-500/30 rounded-2xl p-4 shadow-md">
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-purple-800">
-                    <span className="font-cinzel font-bold text-sm text-amber-300">
-                      House {selectedHouse} in {currentChart.id}
-                    </span>
-                    <span className="text-xs font-semibold text-purple-300">
-                      Sign: {currentChart.houseOccupants?.[selectedHouse]?.sign?.name} ({currentChart.houseOccupants?.[selectedHouse]?.sign?.sanskrit})
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
-                    {houseMeanings[selectedHouse]}
-                  </p>
-
-                  <div className="text-xs">
-                    <span className="text-slate-400 block mb-1.5 font-semibold">Planets in House {selectedHouse}:</span>
-                    {currentChart.houseOccupants?.[selectedHouse]?.planets && currentChart.houseOccupants[selectedHouse].planets.length > 0 ? (
-                      <div className="space-y-1.5">
-                        {currentChart.houseOccupants[selectedHouse].planets.map((p) => (
-                          <div key={p.code} className="flex items-center justify-between p-2.5 rounded-xl bg-black/40 border border-purple-900/60">
-                            <span className="font-bold text-amber-200">{p.name} ({p.code})</span>
-                            <span className="text-[11px] text-slate-300">
-                              Sign: {p.signName || currentChart.houseOccupants[selectedHouse]?.sign?.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-3 rounded-xl bg-black/20 text-slate-400 italic text-center border border-purple-950">
-                        No direct planetary occupants in this house.
-                      </div>
+              {/* Right Chart: Navamsa Chart (D-9) or Selected Divisional Chart */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
+                {chartType === 'north' ? (
+                  <NorthIndianChart
+                    houseOccupants={secondaryChartData.houseOccupants}
+                    activeHouse={selectedHouse}
+                    onSelectHouse={(h) => setSelectedHouse(h)}
+                    chartTitle={getBilingual(
+                      `${secondaryChartData.name} (${secondaryChartData.id})`,
+                      `${secondaryChartData.nameHi || secondaryChartData.name} (${secondaryChartData.id})`
                     )}
-                  </div>
+                    chartLang={chartLang}
+                    showDegrees={secondaryChartData.id === 'D1'}
+                    theme={chartTheme}
+                  />
+                ) : (
+                  <SouthIndianChart
+                    planets={secondaryChartData.planets || planets}
+                    ascendant={secondaryChartData.ascSign}
+                    chartTitle={`${secondaryChartData.name} (${secondaryChartData.id})`}
+                  />
+                )}
+              </div>
+
+            </div>
+
+            {/* ASTROSAGE TABLES SECTION: PLANETS TABLE & VIMSHOTTARI DASHA */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-2">
+              
+              {/* Planets Table (8 cols on lg) */}
+              <div className="lg:col-span-8 bg-[#170933] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-800">
+                  <h3 className="font-cinzel text-base sm:text-lg font-bold text-amber-300 flex items-center gap-2">
+                    <Sun className="w-5 h-5 text-amber-400" />
+                    <span>{getBilingual('Planetary Positions', 'ग्रह स्थिति')}</span>
+                  </h3>
+                  <span className="text-[11px] text-slate-400">
+                    {meta.ayanamshaFormatted || 'Lahiri Ayanamsha'}
+                  </span>
                 </div>
 
-                {/* Varga Reference Directory */}
-                <div className="bg-[#180935] border border-purple-800/60 rounded-2xl p-4 text-xs shadow-md">
-                  <h4 className="font-cinzel font-bold text-amber-300 pb-2 mb-2 border-b border-purple-800/80 flex items-center justify-between">
-                    <span>Divisional Charts Directory</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Click to switch</span>
-                  </h4>
-
-                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                    {DIVISIONAL_CHARTS_META.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setSelectedDivChart(item.id)}
-                        className={`w-full p-2.5 rounded-xl text-left flex items-start justify-between gap-2 transition-all cursor-pointer ${
-                          selectedDivChart === item.id
-                            ? 'bg-amber-500/20 border border-amber-400/60 shadow-sm'
-                            : 'bg-black/20 hover:bg-white/5 border border-transparent'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-amber-300">{item.id}</span>
-                            <span className="font-semibold text-slate-200">{item.name}</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{item.focus}</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-amber-400 shrink-0 mt-1" />
-                      </button>
-                    ))}
-                  </div>
+                <div className="overflow-x-auto rounded-xl border border-purple-800/60">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-[#240e49] text-amber-300 font-cinzel border-b border-purple-700/60">
+                        <th className="p-2.5">Planets</th>
+                        <th className="p-2.5 text-center">C</th>
+                        <th className="p-2.5 text-center">R</th>
+                        <th className="p-2.5">Rashi</th>
+                        <th className="p-2.5">Longitude</th>
+                        <th className="p-2.5">Nakshatra</th>
+                        <th className="p-2.5 text-center">Pada</th>
+                        <th className="p-2.5">Relation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-purple-900/50 font-mono">
+                      {planets.map((p) => {
+                        const isAsc = p.name === 'Ascendant';
+                        return (
+                          <tr key={p.name} className="hover:bg-white/5 transition-colors">
+                            <td className="p-2.5 font-bold font-sans text-slate-100 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color || '#eab308' }}></span>
+                              <span className={isAsc ? 'text-amber-300 font-bold' : ''}>
+                                {getBilingual(p.name, p.nameHi)}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-center font-bold text-amber-400">
+                              {p.cStatus || ''}
+                            </td>
+                            <td className={`p-2.5 text-center font-bold ${
+                              p.rStatus === 'R' ? 'text-rose-400' : p.rStatus === 'D' ? 'text-slate-200' : 'text-slate-500'
+                            }`}>
+                              {isAsc ? '' : (p.rStatus || '-')}
+                            </td>
+                            <td className="p-2.5 font-sans text-slate-200">
+                              {getBilingual(p.signName, p.signHi)}
+                            </td>
+                            <td className="p-2.5 text-amber-200 font-bold">
+                              {p.degFormatted}
+                            </td>
+                            <td className="p-2.5 font-sans text-slate-200">
+                              {getBilingual(p.nakshatraName || p.nakshatra?.en, p.nakshatraNameHi || p.nakshatra?.hi)}
+                            </td>
+                            <td className="p-2.5 text-center font-sans text-slate-300">
+                              {p.pada || 1}
+                            </td>
+                            <td className="p-2.5 font-sans">
+                              {p.relation && p.relation !== '-' ? (
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block ${
+                                  p.relation === 'Exalted' ? 'bg-emerald-950 text-emerald-300 border border-emerald-500' :
+                                  p.relation === 'Debilitated' ? 'bg-rose-950 text-rose-300 border border-rose-500' :
+                                  p.relation === 'Own' ? 'bg-amber-950 text-amber-300 border border-amber-500' :
+                                  p.relation === 'Friendly' ? 'bg-sky-950 text-sky-300 border border-sky-500' :
+                                  p.relation === 'Enemy' ? 'bg-red-950 text-red-300 border border-red-500' :
+                                  'bg-purple-950 text-purple-300'
+                                }`}>
+                                  {getBilingual(p.relation, p.relationHi)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-500">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
 
+                <div className="mt-2.5 text-[11px] text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                  <span><strong>Note:</strong> [C] - Combust</span>
+                  <span>[D] - Direct</span>
+                  <span>[R / *] - Retrograde</span>
+                </div>
+              </div>
+
+              {/* Vimshottari Dasha Balance Card (4 cols on lg) */}
+              <div className="lg:col-span-4 bg-[#170933] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-800">
+                  <h3 className="font-cinzel text-base font-bold text-amber-300 flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span>Vimshottari Dasha</span>
+                  </h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
+                    120-Year
+                  </span>
+                </div>
+
+                {/* Balance String Banner */}
+                <div className="p-3 rounded-xl bg-black/40 border border-purple-900/60 mb-3 text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    Balance Of Dasha at Birth
+                  </span>
+                  <strong className="text-amber-300 text-xs sm:text-sm font-mono mt-0.5 block">
+                    {chartLang === 'hi' ? (dasha.balanceStrHi || dasha.balanceStr) : dasha.balanceStr}
+                  </strong>
+                </div>
+
+                {/* Timeline Table */}
+                <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-1">
+                  {dasha.timeline?.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center justify-between p-2 rounded-xl text-xs transition-colors ${
+                        item.isCurrent
+                          ? 'bg-amber-500/20 border border-amber-400/80 shadow-sm'
+                          : 'bg-black/20 hover:bg-white/5 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-[10px] ${
+                          item.isCurrent ? 'bg-amber-400 text-slate-950 font-black' : 'bg-purple-950 text-amber-300'
+                        }`}>
+                          {item.lord.substring(0, 2)}
+                        </span>
+                        <span className="font-semibold text-slate-200">
+                          {getBilingual(item.lord, item.lordHi)}
+                        </span>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-mono text-amber-300 font-bold text-[11px]">
+                          {item.endDate || item.endYear}
+                        </span>
+                        {item.isCurrent && (
+                          <span className="text-[9px] block text-emerald-400 font-bold">Active</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* ASTROSAGE SCREENSHOT 2 TABLES: KARAK TABLE & AVASTHA TABLE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pt-2">
+              
+              {/* Karak Table */}
+              <div className="bg-[#170933] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-800">
+                  <h3 className="font-cinzel text-base font-bold text-amber-300 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-amber-400" />
+                    <span>{getBilingual('Karak Table (Jaimini)', 'कारक सारणी')}</span>
+                  </h3>
+                  <span className="text-[10px] text-slate-400">7 Chara & Sthir Karakas</span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-purple-800/60">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-[#240e49] text-amber-300 font-cinzel border-b border-purple-700/60">
+                        <th className="p-2.5">Karak</th>
+                        <th className="p-2.5">Sthir</th>
+                        <th className="p-2.5 font-bold text-amber-400">Chara</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-purple-900/50">
+                      {karaks?.map((k, idx) => (
+                        <tr key={idx} className="hover:bg-white/5 transition-colors">
+                          <td className="p-2.5 font-bold text-slate-200">
+                            {getBilingual(k.karak, k.karakHi)}
+                          </td>
+                          <td className="p-2.5 text-slate-300">
+                            {getBilingual(k.sthir, k.sthirHi)}
+                          </td>
+                          <td className="p-2.5 font-bold text-amber-300">
+                            {getBilingual(k.chara, k.charaHi)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Avastha Table */}
+              <div className="bg-[#170933] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-800">
+                  <h3 className="font-cinzel text-base font-bold text-amber-300 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-amber-400" />
+                    <span>{getBilingual('Avastha Table (Parashari)', 'अवस्था सारणी')}</span>
+                  </h3>
+                  <span className="text-[10px] text-slate-400">Jagrat • Baladi • Deeptadi</span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-purple-800/60">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-[#240e49] text-amber-300 font-cinzel border-b border-purple-700/60">
+                        <th className="p-2.5">Planets</th>
+                        <th className="p-2.5">Jagrat</th>
+                        <th className="p-2.5">Baladi</th>
+                        <th className="p-2.5">Deeptadi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-purple-900/50">
+                      {avasthas?.map((a, idx) => (
+                        <tr key={idx} className="hover:bg-white/5 transition-colors">
+                          <td className="p-2.5 font-bold text-slate-200">
+                            {getBilingual(a.name, a.nameHi)}
+                          </td>
+                          <td className="p-2.5 text-slate-300">
+                            {getBilingual(a.jagrat, a.jagratHi)}
+                          </td>
+                          <td className="p-2.5 text-amber-300 font-semibold">
+                            {getBilingual(a.baladi, a.baladiHi)}
+                          </td>
+                          <td className="p-2.5 text-slate-300">
+                            {getBilingual(a.deeptadi, a.deeptadiHi)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
             </div>
@@ -460,7 +730,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
           </div>
         )}
 
-        {/* TAB 2: PLANETARY POSITIONS */}
+        {/* TAB 2: DETAILED PLANETARY POSITIONS */}
         {activeTab === 'planets' && (
           <div className="bg-[#120629] border border-amber-500/30 rounded-3xl p-5 sm:p-7 space-y-5 shadow-xl">
             <div>
@@ -468,7 +738,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                 Planetary Positions & Ephemeris Details
               </h3>
               <p className="text-xs text-slate-400 mt-1">
-                Calculated using True Chitra Paksha (Lahiri) Ayanamsha for your exact birth date, time, and coordinates.
+                Calculated using NASA JPL Keplerian orbital ephemeris and Chitrapaksha (Lahiri) Ayanamsha for your exact birth date, time, and coordinates.
               </p>
             </div>
 
@@ -489,7 +759,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   {planets.map((p) => (
                     <tr key={p.name} className="hover:bg-white/5 transition-colors">
                       <td className="p-3.5 font-bold text-slate-100 flex items-center gap-2">
-                        <span>{p.name}</span>
+                        <span>{getBilingual(p.name, p.nameHi)}</span>
                         {p.isRetro && p.name !== 'Rahu' && p.name !== 'Ketu' && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-900 text-rose-200 font-semibold">Retro</span>
                         )}
@@ -497,13 +767,13 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                       <td className="p-3.5 text-slate-300">{p.signName} ({p.signSanskrit})</td>
                       <td className="p-3.5 text-amber-200 font-mono font-semibold">{p.degFormatted}</td>
                       <td className="p-3.5 font-semibold text-slate-200">House {p.house}</td>
-                      <td className="p-3.5 text-slate-300">{p.nakshatra}</td>
+                      <td className="p-3.5 text-slate-300">{p.nakshatraName || p.nakshatra?.en}</td>
                       <td className="p-3.5 text-slate-300">{p.pada}</td>
                       <td className="p-3.5">
                         <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold inline-block ${
-                          p.dignity.includes('Exalted') ? 'bg-emerald-950 text-emerald-300 border border-emerald-500' :
-                          p.dignity.includes('Debilitated') ? 'bg-rose-950 text-rose-300 border border-rose-500' :
-                          p.dignity.includes('Own') ? 'bg-amber-950 text-amber-300 border border-amber-500' :
+                          p.dignity?.includes('Exalted') ? 'bg-emerald-950 text-emerald-300 border border-emerald-500' :
+                          p.dignity?.includes('Debilitated') ? 'bg-rose-950 text-rose-300 border border-rose-500' :
+                          p.dignity?.includes('Own') ? 'bg-amber-950 text-amber-300 border border-amber-500' :
                           'bg-purple-950 text-purple-300'
                         }`}>
                           {p.dignity}
@@ -535,8 +805,11 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                 <div>
                   <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Lunar Day (Tithi)</span>
                   <h4 className="text-lg font-bold font-cinzel text-slate-100 mt-1">
-                    {panchangAtBirth?.tithi || 'Shukla Navami'}
+                    {panchangAtBirth?.tithi || 'Chaturthi (Shukla Paksha)'}
                   </h4>
+                  {panchangAtBirth?.tithiHi && (
+                    <span className="text-xs text-amber-300 block">{panchangAtBirth.tithiHi}</span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
                   Governs emotional temperament, relationships, and the subtle water element (Jala Tatva).
@@ -549,6 +822,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   <h4 className="text-lg font-bold font-cinzel text-slate-100 mt-1">
                     {panchangAtBirth?.nakshatra || `${moonDetails.nakshatra} (Pada ${moonDetails.pada})`}
                   </h4>
+                  {panchangAtBirth?.nakshatraHi && (
+                    <span className="text-xs text-amber-300 block">{panchangAtBirth.nakshatraHi}</span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
                   Ruled by <strong className="text-amber-300">{moonDetails.lord}</strong>. Governs destiny, mental nature, and life path (Vayu Tatva).
@@ -559,7 +835,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                 <div>
                   <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Solar-Lunar Yoga</span>
                   <h4 className="text-lg font-bold font-cinzel text-slate-100 mt-1">
-                    {panchangAtBirth?.yoga || 'Siddha Yoga'}
+                    {panchangAtBirth?.yoga || 'Ayushman Yoga'}
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
@@ -606,59 +882,57 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               
               {/* Manglik Dosha */}
               <div className={`p-5 rounded-2xl border ${
-                doshas.manglik.isManglik ? 'bg-rose-950/25 border-rose-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
+                doshas?.manglik?.isManglik ? 'bg-rose-950/25 border-rose-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold text-base text-amber-300">Manglik Dosha</h4>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    doshas.manglik.isManglik ? 'bg-rose-900 text-rose-200' : 'bg-emerald-900 text-emerald-200'
+                    doshas?.manglik?.isManglik ? 'bg-rose-900 text-rose-200' : 'bg-emerald-900 text-emerald-200'
                   }`}>
-                    {doshas.manglik.intensity}
+                    {doshas?.manglik?.intensity}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 mb-3">{doshas.manglik.housesChecked}</p>
+                <p className="text-xs text-slate-300 mb-3">{doshas?.manglik?.housesChecked || doshas?.manglik?.details}</p>
                 <div className="p-3 rounded-xl bg-black/40 border border-purple-900/60 text-xs text-slate-300">
                   <strong className="text-amber-400 block mb-1">Prescribed Vedic Remedy:</strong>
-                  {doshas.manglik.remedy}
+                  {doshas?.manglik?.remedy}
                 </div>
               </div>
 
               {/* Kaal Sarp Dosha */}
               <div className={`p-5 rounded-2xl border ${
-                doshas.kaalSarp.hasKaalSarp ? 'bg-amber-950/25 border-amber-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
+                doshas?.kaalSarp?.hasKaalSarp ? 'bg-amber-950/25 border-amber-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold text-base text-amber-300">Kaal Sarp Dosha</h4>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    doshas.kaalSarp.hasKaalSarp ? 'bg-amber-900 text-amber-200' : 'bg-emerald-900 text-emerald-200'
+                    doshas?.kaalSarp?.hasKaalSarp ? 'bg-amber-900 text-amber-200' : 'bg-emerald-900 text-emerald-200'
                   }`}>
-                    {doshas.kaalSarp.status}
+                    {doshas?.kaalSarp?.status}
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 mb-3">
-                  {doshas.kaalSarp.hasKaalSarp 
-                    ? 'All seven major planets lie on one side of the Rahu-Ketu nodal axis.' 
-                    : 'Planets are free from Rahu-Ketu nodal hem, indicating absence of full Kaal Sarp.'}
+                  {doshas?.kaalSarp?.details || 'Chart is free from Kaal Sarp Dosha.'}
                 </p>
                 <div className="p-3 rounded-xl bg-black/40 border border-purple-900/60 text-xs text-slate-300">
                   <strong className="text-amber-400 block mb-1">Spiritual Mitigation:</strong>
-                  {doshas.kaalSarp.remedy}
+                  {doshas?.kaalSarp?.remedy}
                 </div>
               </div>
 
               {/* Sade Sati */}
               <div className={`p-5 rounded-2xl border ${
-                doshas.sadeSati.status === 'Active' ? 'bg-purple-950/35 border-purple-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
+                doshas?.sadeSati?.status === 'Active' ? 'bg-purple-950/35 border-purple-500/50' : 'bg-emerald-950/25 border-emerald-500/50'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold text-base text-amber-300">Shani Sade Sati</h4>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    doshas.sadeSati.status === 'Active' ? 'bg-purple-900 text-purple-200' : 'bg-emerald-900 text-emerald-200'
+                    doshas?.sadeSati?.status === 'Active' ? 'bg-purple-900 text-purple-200' : 'bg-emerald-900 text-emerald-200'
                   }`}>
-                    {doshas.sadeSati.status}: {doshas.sadeSati.phase}
+                    {doshas?.sadeSati?.status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 mb-3">{doshas.sadeSati.description}</p>
+                <p className="text-xs text-slate-300 mb-3">{doshas?.sadeSati?.description}</p>
                 <div className="p-3 rounded-xl bg-black/40 border border-purple-900/60 text-xs text-slate-300">
                   <strong className="text-amber-400 block mb-1">Protective Measure:</strong>
                   Chant Hanuman Chalisa every Tuesday & Saturday evening; offer mustard oil lamp to Lord Shani.
@@ -682,7 +956,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
             </div>
 
             <div className="space-y-3">
-              {dasha.timeline.map((d, idx) => (
+              {dasha.timeline?.map((d, idx) => (
                 <div
                   key={idx}
                   className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm transition-all ${
@@ -702,14 +976,14 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                         {d.lord} Mahadasha
                       </span>
                       <span className="text-xs text-slate-400">
-                        Duration: {d.durationYears} Years
+                        Duration: {d.years || d.durationYears} Years
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <span className="font-mono text-xs sm:text-sm font-semibold text-amber-300 block">
-                      {d.startYear} - {d.endYear}
+                      {d.startDate ? `${d.startDate} - ${d.endDate}` : `${d.startYear} - ${d.endYear}`}
                     </span>
                     {d.isCurrent && (
                       <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500 text-slate-950 uppercase mt-1 tracking-wider shadow">
@@ -794,9 +1068,13 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   <h4 className="font-bold text-base font-cinzel">Recommended Gemstone</h4>
                 </div>
                 <div className="text-xs sm:text-sm space-y-2 text-slate-300">
-                  <div><span className="text-slate-400">Prescribed Gem:</span> <strong className="text-amber-300">{remedies.gemstone.stone}</strong></div>
-                  <div><span className="text-slate-400">Wearing Finger:</span> {remedies.gemstone.finger}</div>
-                  <div><span className="text-slate-400">Auspicious Metal:</span> {remedies.gemstone.metal}</div>
+                  <div><span className="text-slate-400">Prescribed Gem:</span> <strong className="text-amber-300">{typeof remedies.gemstone === 'object' ? remedies.gemstone.stone : remedies.gemstone}</strong></div>
+                  {remedies.gemstone?.finger && (
+                    <div><span className="text-slate-400">Wearing Finger:</span> {remedies.gemstone.finger}</div>
+                  )}
+                  {remedies.gemstone?.metal && (
+                    <div><span className="text-slate-400">Auspicious Metal:</span> {remedies.gemstone.metal}</div>
+                  )}
                 </div>
               </div>
 
@@ -812,13 +1090,12 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                 </p>
               </div>
 
-              {/* Lucky Numbers & Colors */}
+              {/* Charity & Mantras */}
               <div className="p-5 rounded-2xl bg-[#1b0a38] border border-amber-500/30">
-                <h4 className="font-bold text-base font-cinzel text-amber-300 mb-3">Lucky Attunements</h4>
-                <div className="text-xs sm:text-sm space-y-2 text-slate-300">
-                  <div><span className="text-slate-400">Lucky Numbers:</span> <strong className="text-amber-300">{remedies.luckyNumbers.join(', ')}</strong></div>
-                  <div><span className="text-slate-400">Lucky Colors:</span> <strong className="text-amber-300">{remedies.luckyColors.join(', ')}</strong></div>
-                </div>
+                <h4 className="font-bold text-base font-cinzel text-amber-300 mb-3">Charity & Vedic Seva</h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {remedies.charity || 'Support education and distribute sweets/grains on Fridays.'}
+                </p>
               </div>
 
               {/* Sacred Mantra */}
