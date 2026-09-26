@@ -9,16 +9,17 @@ export default function AboutModal({ onClose, lang }) {
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-purple-800/60 bg-gradient-to-r from-[#1c0a3c] via-[#240d4f] to-[#160630] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 font-cinzel font-black text-xl">
-              A
+            <div className="w-12 h-12 rounded-xl overflow-hidden border border-amber-400/80 shadow-gold-glow flex items-center justify-center shrink-0 bg-[#0e0422]">
+              <img 
+                src="/logo.png" 
+                alt="ASTROTANNTRA Logo" 
+                className="w-full h-full object-cover" 
+              />
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold font-cinzel text-amber-300">
                 About ASTROTANNTRA
               </h2>
-              <p className="text-xs text-slate-300">
-                "We Don't Change Destiny, We Change Your Direction"
-              </p>
             </div>
           </div>
           <button

@@ -51,18 +51,16 @@ export default function Header({
           onClick={(e) => { e.preventDefault(); onGoHome?.(); }} 
           className="flex items-center gap-3 group cursor-pointer"
         >
-          <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 via-amber-600 to-purple-900 p-0.5 shadow-gold-glow flex items-center justify-center group-hover:scale-105 transition-transform">
-            <div className="w-full h-full rounded-full bg-[#0e0422] flex items-center justify-center">
-              <span className="font-cinzel font-black text-amber-300 text-lg tracking-tighter">A</span>
-            </div>
-            <span className="absolute -top-1 -right-1 text-amber-400 text-xs animate-ping">✦</span>
+          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-gold-glow flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform bg-[#0e0422]">
+            <img 
+              src="/logo.png" 
+              alt="ASTROTANNTRA Logo" 
+              className="w-full h-full object-cover" 
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-cinzel text-lg md:text-xl font-bold tracking-[0.18em] text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)]">
               ASTROTANNTRA
-            </span>
-            <span className="text-[9px] uppercase tracking-widest text-amber-200/60 font-sans hidden sm:inline">
-              Vedic Astrology & Guidance
             </span>
           </div>
         </a>

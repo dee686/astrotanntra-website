@@ -30,18 +30,17 @@ export default function Footer({
         {/* Col 1: Brand Info */}
         <div className="flex flex-col">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-purple-800 p-0.5 shadow-gold-glow flex items-center justify-center shrink-0">
-              <div className="w-full h-full rounded-full bg-[#0d0421] flex items-center justify-center">
-                <span className="font-cinzel font-black text-amber-300 text-lg">A</span>
-              </div>
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-gold-glow flex items-center justify-center shrink-0 bg-[#0d0421]">
+              <img 
+                src="/logo.png" 
+                alt="ASTROTANNTRA Logo" 
+                className="w-full h-full object-cover" 
+              />
             </div>
             <div>
               <h4 className="font-cinzel font-bold text-lg text-amber-300 tracking-wider">
                 ASTROTANNTRA
               </h4>
-              <span className="text-[10px] text-amber-200/70 block -mt-1 uppercase tracking-widest">
-                We Don't Change Destiny, We Change Direction
-              </span>
             </div>
           </div>
 
