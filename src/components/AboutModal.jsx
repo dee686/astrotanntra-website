@@ -20,6 +20,9 @@ export default function AboutModal({ onClose, lang }) {
               <h2 className="text-xl sm:text-2xl font-bold font-cinzel text-amber-300">
                 About ASTROTANNTRA
               </h2>
+              <p className="text-xs text-amber-200/80 font-medium">
+                "Bhagya nhi, disha badalte hain hum"
+              </p>
             </div>
           </div>
           <button

@@ -62,6 +62,9 @@ export default function Header({
             <span className="font-cinzel text-lg md:text-xl font-bold tracking-[0.18em] text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)]">
               ASTROTANNTRA
             </span>
+            <span className="text-[10px] md:text-[11px] tracking-wide text-amber-200/80 font-sans -mt-0.5 font-medium">
+              Bhagya nhi, disha badalte hain hum
+            </span>
           </div>
         </a>
 

@@ -41,6 +41,9 @@ export default function Footer({
               <h4 className="font-cinzel font-bold text-lg text-amber-300 tracking-wider">
                 ASTROTANNTRA
               </h4>
+              <span className="text-[11px] text-amber-200/80 block -mt-0.5 font-medium tracking-wide">
+                Bhagya nhi, disha badalte hain hum
+              </span>
             </div>
           </div>
 
