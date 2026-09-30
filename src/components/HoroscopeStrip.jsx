@@ -2,6 +2,21 @@ import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HOROSCOPE_DATA } from '../data/horoscopeData';
 
+const ZODIAC_HI = {
+  aries: 'मेष',
+  taurus: 'वृषभ',
+  gemini: 'मिथुन',
+  cancer: 'कर्क',
+  leo: 'सिंह',
+  virgo: 'कन्या',
+  libra: 'तुला',
+  scorpio: 'वृश्चिक',
+  sagittarius: 'धनु',
+  capricorn: 'मकर',
+  aquarius: 'कुम्भ',
+  pisces: 'मीन'
+};
+
 export default function HoroscopeStrip({ onSelectSign, lang }) {
   const scrollRef = useRef(null);
 
@@ -38,7 +53,7 @@ export default function HoroscopeStrip({ onSelectSign, lang }) {
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-[1px] w-12 sm:w-24 bg-amber-600/40" />
           <h3 className="font-cinzel font-bold text-base sm:text-lg tracking-wider text-[#4a154b] uppercase text-center">
-            {lang === 'hi' ? 'आज का राशिफल' : "TODAY'S HOROSCOPE"}
+            {lang === 'hi' ? 'आज का दैनिक राशिफल' : "TODAY'S HOROSCOPE"}
           </h3>
           <div className="h-[1px] w-12 sm:w-24 bg-amber-600/40" />
         </div>
@@ -63,6 +78,8 @@ export default function HoroscopeStrip({ onSelectSign, lang }) {
           >
             {HOROSCOPE_DATA.map((sign) => {
               const styleClass = getSignBg(sign.id);
+              const displayName = lang === 'hi' ? (ZODIAC_HI[sign.id] || sign.sanskrit) : sign.name;
+              const subName = lang === 'hi' ? sign.name : sign.sanskrit;
               return (
                 <button
                   key={sign.id}
@@ -72,11 +89,11 @@ export default function HoroscopeStrip({ onSelectSign, lang }) {
                   <div className={`w-11 h-11 sm:w-12 sm:h-12 lg:w-13 lg:h-13 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all ${styleClass}`}>
                     <span className="font-serif drop-shadow-sm select-none">{sign.symbol}</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 mt-1.5 tracking-tight group-hover:text-amber-800 transition-colors whitespace-nowrap">
-                    {sign.name}
+                  <span className="text-xs sm:text-sm font-bold text-slate-800 mt-1.5 tracking-tight group-hover:text-amber-800 transition-colors whitespace-nowrap">
+                    {displayName}
                   </span>
-                  <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium whitespace-nowrap leading-none mt-0.5">
-                    {sign.sanskrit}
+                  <span className="text-[10px] sm:text-xs text-slate-500 font-medium whitespace-nowrap leading-none mt-0.5">
+                    {subName}
                   </span>
                 </button>
               );

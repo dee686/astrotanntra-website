@@ -6,11 +6,17 @@
   body {
     background-color: #0b031b;
     color: #f1f5f9;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   h1, h2, h3, .font-heading {
-    font-family: 'Cinzel', serif;
+    font-family: 'Cinzel', 'Noto Sans Devanagari', serif;
+  }
+
+  /* When Hindi is active, ensure clear, crisp font rendering and comfortable font sizes */
+  [lang="hi"], .font-hindi {
+    font-family: 'Noto Sans Devanagari', 'Outfit', sans-serif;
+    letter-spacing: 0.01em;
   }
 }
 

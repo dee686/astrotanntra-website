@@ -923,11 +923,20 @@ export function calculateCompleteKundli({
     'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla',
     'Brahma', 'Indra', 'Vaidhriti'
   ];
+  const YOGA_NAMES_HI = [
+    'विष्कम्भ योग', 'प्रीति योग', 'आयुष्मान योग', 'सौभाग्य योग', 'शोभन योग', 'अतिगण्ड योग', 'सुकर्मा योग', 'धृति योग',
+    'शूल योग', 'गण्ड योग', 'वृद्धि योग', 'ध्रुव योग', 'व्याघात योग', 'हर्षण योग', 'वज्र योग', 'सिद्धि योग',
+    'व्यतीपात योग', 'वरीयान योग', 'परिघ योग', 'शिव योग', 'सिद्ध योग', 'साध्य योग', 'शुभ योग', 'शुक्ल योग',
+    'ब्रह्म योग', 'इन्द्र योग', 'वैधृति योग'
+  ];
   const yogaName = YOGA_NAMES[yogaIndex % 27];
+  const yogaNameHi = YOGA_NAMES_HI[yogaIndex % 27];
 
   const karanaIndex = Math.floor(diffDeg / 6);
   const KARANA_NAMES = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
+  const KARANA_NAMES_HI = ['बव करण', 'बालव करण', 'कौलव करण', 'तैतिल करण', 'गर करण', 'वणिज करण', 'विष्टि (भद्रा)'];
   const karanaName = KARANA_NAMES[karanaIndex % 7];
+  const karanaNameHi = KARANA_NAMES_HI[karanaIndex % 7];
 
   // Ascendant entry for tables
   const ascEntry = {
@@ -1018,7 +1027,9 @@ export function calculateCompleteKundli({
       nakshatra: `${moonNakInfo.nakshatra.en} (Pada ${moonNakInfo.pada})`,
       nakshatraHi: `${moonNakInfo.nakshatra.hi} (पाद ${moonNakInfo.pada})`,
       yoga: yogaName,
-      karana: karanaName
+      yogaHi: yogaNameHi,
+      karana: karanaName,
+      karanaHi: karanaNameHi
     },
     planets: allPlanetsWithAsc,
     rawPlanets: processedPlanets,
@@ -1063,39 +1074,58 @@ export function calculateCompleteKundli({
         isManglik,
         hasManglik: isManglik,
         intensity: isManglik ? 'Moderate Manglik (मांगलिक)' : 'Non-Manglik (अमांगलिक)',
-        intensityHi: isManglik ? 'मांगलिक दोष उपस्थित' : 'मांगलिक दोष रहित',
+        intensityHi: isManglik ? 'मांगलिक दोष' : 'अमांगलिक (दोष रहित)',
         details: isManglik 
           ? `Mars is positioned in House ${mars?.house}, which creates Manglik dosha.`
           : 'Mars is placed in an auspicious house, hence native is Non-Manglik.',
+        detailsHi: isManglik
+          ? `मंगल कुण्डली में भाव ${mars?.house} में स्थित है, जिससे मांगलिक प्रभाव बनता है।`
+          : 'मंगल शुभ एवं अनुकूल भाव में स्थित है, जातक पूर्णतः मांगलिक दोष से मुक्त है।',
         remedy: isManglik ? 'Recite Hanuman Chalisa on Tuesdays.' : 'No Mars affliction found in Kendra or Trik houses.',
-        housesChecked: `Mars in House ${mars?.house} from Lagna`
+        remedyHi: isManglik
+          ? 'प्रत्येक मंगलवार को श्री हनुमान चालीसा का पाठ करें एवं लाल मसूर का दान करें।'
+          : 'मंगल का कोई प्रतिकूल प्रभाव नहीं है, किसी विशेष उपाय की आवश्यकता नहीं है।',
+        housesChecked: `Mars in House ${mars?.house} from Lagna`,
+        housesCheckedHi: `मंगल लग्न से भाव ${mars?.house} में स्थित`
       },
       kaalSarp: {
         hasKaalSarp: false,
         status: 'No Kaal Sarp Dosha',
         statusHi: 'कालसर्प दोष मुक्त',
         details: 'All planets are not enclosed between Rahu and Ketu axis.',
-        remedy: 'Chart is free from Kaal Sarp Dosha.'
+        detailsHi: 'राहु और केतु की धुरी के बीच सभी ग्रह नहीं बंधे हैं, कुण्डली कालसर्प दोष से पूर्णतः मुक्त है।',
+        remedy: 'Chart is free from Kaal Sarp Dosha.',
+        remedyHi: 'आपकी कुण्डली कालसर्प दोष से मुक्त है। शुभ एवं स्वतंत्र ग्रह स्थिति।'
       },
       sadeSati: {
         hasSadeSati,
         status: hasSadeSati ? 'Active Shani Sade Sati' : 'No Active Sade Sati',
-        statusHi: hasSadeSati ? 'साढ़े साती सक्रिय' : 'साढ़े साती प्रभाव नहीं',
+        statusHi: hasSadeSati ? 'शनि साढ़े साती सक्रिय' : 'साढ़े साती प्रभाव नहीं',
         phase: hasSadeSati ? 'Active' : 'Inactive',
-        description: hasSadeSati ? 'Shani Sade Sati is currently active.' : 'No active Saturn Sade Sati distress at this time.'
+        description: hasSadeSati ? 'Shani Sade Sati is currently active.' : 'No active Saturn Sade Sati distress at this time.',
+        descriptionHi: hasSadeSati ? 'शनिदेव की साढ़े साती का प्रभाव वर्तमान में चल रहा है।' : 'वर्तमान में शनि की साढ़े साती का कोई प्रतिकूल प्रभाव नहीं है।',
+        remedyHi: 'प्रत्येक शनिवार एवं मंगलवार को श्री हनुमान जी की उपासना करें और सायंकाल सरसों के तेल का दीपक जलाएं।'
       }
     },
     predictions: {
       career: `With ${ascSignInfo.sign.en} (${ascSignInfo.sign.sanskrit}) Lagna, you possess exceptional perseverance and leadership. Your 10th house indicates strong career progression in communications, finance, and technical strategy.`,
+      careerHi: `${ascSignInfo.sign.hi} लग्न के प्रभाव से आपके भीतर असाधारण धैर्य, कर्मठता और नेतृत्व क्षमता है। दशम भाव आपके करियर में सम्मान, वित्तीय व रणनीतिक सफलता का संकेत देता है।`,
       finance: `The 2nd and 11th houses indicate steady accumulation of assets and prudent financial management.`,
+      financeHi: `द्वितीय एवं एकादश भाव धन संचय, स्थिर परिसंपत्तियों और विवेकपूर्ण वित्तीय प्रबंधन का उत्कृष्ट योग दर्शाते हैं।`,
       relationship: `Your 7th house indicates loyal and deeply supportive partnerships. Navamsha chart reflects strong spiritual and inner dharmic alignment.`,
-      health: `Maintain regular daily pranayama and balanced nutrition for sustained vitality.`
+      relationshipHi: `सप्तम भाव निष्ठावान, समझदार एवं सहयोगी जीवनसाथी का संकेत देता है। नवांश कुण्डली सुदृढ़ वैवाहिक एवं आध्यात्मिक सामंजस्य दर्शाती है।`,
+      health: `Maintain regular daily pranayama and balanced nutrition for sustained vitality.`,
+      healthHi: `उत्तम स्वास्थ्य और निरंतर ऊर्जावान रहने के लिए नियमित प्राणायाम और संतुलित दिनचर्या बनाए रखें।`
     },
     remedies: {
       gemstone: ascSignId === 2 ? 'Diamond / White Sapphire (हीरा / श्वेत पुखराज)' : 'Yellow Sapphire / Ruby',
+      gemstoneHi: ascSignId === 2 ? 'हीरा अथवा श्वेत पुखराज (मध्यमा या कनिष्ठिका में, शुक्रवार)' : 'पीला पुखराज अथवा माणिक्य',
       rudraksha: '6 Mukhi or 7 Mukhi Rudraksha',
+      rudrakshaHi: '६ मुखी अथवा ७ मुखी रुद्राक्ष (शुक्र एवं महालक्ष्मी की कृपा हेतु)',
       mantra: 'ॐ नमः शिवाय (Om Namah Shivaya)',
-      charity: 'Support education and distribute sweets/grains on Fridays.'
+      mantraHi: 'ॐ नमः शिवाय',
+      charity: 'Support education and distribute sweets/grains on Fridays.',
+      charityHi: 'शुक्रवार को कन्याओं को खीर या मिष्ठान्न का वितरण करें तथा जरूरतमंदों की सहायता करें।'
     }
   };
 }

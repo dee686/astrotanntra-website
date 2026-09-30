@@ -36,19 +36,19 @@ export {
 
 // Meta information for all Divisional Charts
 export const DIVISIONAL_CHARTS_META = [
-  { id: 'D1', name: 'Rashi', title: 'D-1 (Rashi Chart)', focus: 'Physical body, personality, general life blueprint' },
-  { id: 'D2', name: 'Hora', title: 'D-2 (Hora Chart)', focus: 'Wealth, liquid assets, financial prosperity' },
-  { id: 'D3', name: 'Drekkana', title: 'D-3 (Drekkana Chart)', focus: 'Siblings, courage, vitality, initiatives' },
-  { id: 'D4', name: 'Chaturthamsha', title: 'D-4 (Chaturthamsha)', focus: "Fixed assets, property, home, mother's happiness" },
-  { id: 'D5', name: 'Panchamsha', title: 'D-5 (Panchamsha)', focus: 'Spiritual inclination, higher wisdom, fame' },
-  { id: 'D6', name: 'Shashthamsha', title: 'D-6 (Shashthamsha)', focus: 'Health, litigation, debts, enemies & service' },
-  { id: 'D7', name: 'Saptamsha', title: 'D-7 (Saptamsha)', focus: 'Children, progeny, lineage, creative output' },
-  { id: 'D8', name: 'Ashtamsha', title: 'D-8 (Ashtamsha)', focus: 'Longevity, occult, transformations, sudden events' },
-  { id: 'D9', name: 'Navamsha', title: 'D-9 (Navamsha)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
-  { id: 'D10', name: 'Dashamsha', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' },
-  { id: 'D12', name: 'Dwadashamsha', title: 'D-12 (Dwadashamsha)', focus: 'Parents, ancestral lineage, past lives' },
-  { id: 'D60', name: 'Shashtiamsha', title: 'D-60 (Shashtiamsha)', focus: 'All matters, fine-tuning of destiny, deep karma' },
-  { id: 'PANCHANG', name: 'Janma Panchang', title: 'Panchang Tatva Chart', focus: 'Five Cosmic Elements (Pancha Mahabhuta) at birth' }
+  { id: 'D1', name: 'Rashi', nameHi: 'राशि', title: 'D-1 (Rashi Chart)', focus: 'Physical body, personality, general life blueprint' },
+  { id: 'D2', name: 'Hora', nameHi: 'होरा', title: 'D-2 (Hora Chart)', focus: 'Wealth, liquid assets, financial prosperity' },
+  { id: 'D3', name: 'Drekkana', nameHi: 'द्रेष्काण', title: 'D-3 (Drekkana Chart)', focus: 'Siblings, courage, vitality, initiatives' },
+  { id: 'D4', name: 'Chaturthamsha', nameHi: 'चतुर्थांश', title: 'D-4 (Chaturthamsha)', focus: "Fixed assets, property, home, mother's happiness" },
+  { id: 'D5', name: 'Panchamsha', nameHi: 'पंचमांश', title: 'D-5 (Panchamsha)', focus: 'Spiritual inclination, higher wisdom, fame' },
+  { id: 'D6', name: 'Shashthamsha', nameHi: 'षष्ठांश', title: 'D-6 (Shashthamsha)', focus: 'Health, litigation, debts, enemies & service' },
+  { id: 'D7', name: 'Saptamsha', nameHi: 'सप्तांश', title: 'D-7 (Saptamsha)', focus: 'Children, progeny, lineage, creative output' },
+  { id: 'D8', name: 'Ashtamsha', nameHi: 'अष्टमांश', title: 'D-8 (Ashtamsha)', focus: 'Longevity, occult, transformations, sudden events' },
+  { id: 'D9', name: 'Navamsha', nameHi: 'नवांश', title: 'D-9 (Navamsha)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
+  { id: 'D10', name: 'Dashamsha', nameHi: 'दशमांश', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' },
+  { id: 'D12', name: 'Dwadashamsha', nameHi: 'द्वादशांश', title: 'D-12 (Dwadashamsha)', focus: 'Parents, ancestral lineage, past lives' },
+  { id: 'D60', name: 'Shashtiamsha', nameHi: 'षष्ट्यंश', title: 'D-60 (Shashtiamsha)', focus: 'All matters, fine-tuning of destiny, deep karma' },
+  { id: 'PANCHANG', name: 'Janma Panchang', nameHi: 'जन्म पंचांग', title: 'Panchang Tatva Chart', focus: 'Five Cosmic Elements (Pancha Mahabhuta) at birth' }
 ];
 
 export function calculateDivisionalSign(vargaId, degree) {

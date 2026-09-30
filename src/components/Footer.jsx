@@ -59,24 +59,24 @@ export default function Footer({
         {/* Col 2: Quick Links */}
         <div>
           <h4 className="font-cinzel font-bold text-sm text-amber-300 uppercase tracking-wider mb-4 pb-1 border-b border-purple-800/60 inline-block">
-            QUICK LINKS
+            {lang === 'hi' ? 'महत्वपूर्ण लिंक्स' : 'QUICK LINKS'}
           </h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <button onClick={onGoHome} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› Home</button>
-            <button onClick={onOpenKundli} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› Kundli</button>
-            <button onClick={onOpenAbout} className="text-left hover:text-amber-300 transition-colors">› About Us</button>
-            <button onClick={onOpenTarot} className="text-left hover:text-amber-300 transition-colors">› Tarot</button>
-            <a href="#services" className="hover:text-amber-300 transition-colors">› Services</a>
-            <button onClick={onOpenBlog} className="text-left hover:text-amber-300 transition-colors">› Blog</button>
-            <button onClick={onOpenHoroscope} className="text-left hover:text-amber-300 transition-colors">› Horoscope</button>
-            <button onClick={onOpenConsultation} className="text-left hover:text-amber-300 transition-colors">› Contact</button>
+            <button onClick={onGoHome} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'होम' : 'Home'}</button>
+            <button onClick={onOpenKundli} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'कुण्डली' : 'Kundli'}</button>
+            <button onClick={onOpenAbout} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'हमारे बारे में' : 'About Us'}</button>
+            <button onClick={onOpenTarot} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'टैरो रीडिंग' : 'Tarot'}</button>
+            <a href="#services" className="hover:text-amber-300 transition-colors">› {lang === 'hi' ? 'सेवाएं' : 'Services'}</a>
+            <button onClick={onOpenBlog} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'ब्लॉग' : 'Blog'}</button>
+            <button onClick={onOpenHoroscope} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'राशिफल' : 'Horoscope'}</button>
+            <button onClick={onOpenConsultation} className="text-left hover:text-amber-300 transition-colors cursor-pointer">› {lang === 'hi' ? 'संपर्क करें' : 'Contact'}</button>
           </div>
         </div>
 
         {/* Col 3: Contact Us */}
         <div>
           <h4 className="font-cinzel font-bold text-sm text-amber-300 uppercase tracking-wider mb-4 pb-1 border-b border-purple-800/60 inline-block">
-            CONTACT US
+            {lang === 'hi' ? 'संपर्क करें' : 'CONTACT US'}
           </h4>
           <div className="space-y-3 text-xs">
             <a href="tel:+919993027943" className="flex items-center gap-2.5 hover:text-amber-300 transition-colors">
@@ -89,7 +89,7 @@ export default function Footer({
             </a>
             <div className="flex items-center gap-2.5 text-slate-400">
               <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>New Delhi, India</span>
+              <span>{lang === 'hi' ? 'नई दिल्ली, भारत' : 'New Delhi, India'}</span>
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function Footer({
         {/* Col 4: Follow Us & Newsletter */}
         <div>
           <h4 className="font-cinzel font-bold text-sm text-amber-300 uppercase tracking-wider mb-4 pb-1 border-b border-purple-800/60 inline-block">
-            FOLLOW US
+            {lang === 'hi' ? 'हमसे जुड़ें' : 'FOLLOW US'}
           </h4>
           
           {/* Social Icons */}
@@ -143,7 +143,7 @@ export default function Footer({
           </div>
 
           <span className="text-[11px] text-slate-400 block mb-2 font-medium">
-            Subscribe to our newsletter
+            {lang === 'hi' ? 'दैनिक पंचांग व ज्योतिष अपडेट्स पाएं' : 'Subscribe to our newsletter'}
           </span>
 
           <form onSubmit={handleSubscribe} className="flex items-center">
@@ -152,7 +152,7 @@ export default function Footer({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={lang === 'hi' ? 'अपना ईमेल दर्ज करें' : 'Enter your email'}
               className="w-full px-3 py-2 rounded-l-lg bg-cosmic-950 border border-purple-700/60 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
             />
             <button
@@ -166,7 +166,7 @@ export default function Footer({
           {subscribed && (
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-emerald-400">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Subscribed to daily astrological transits!</span>
+              <span>{lang === 'hi' ? 'दैनिक ज्योतिष सूचनाओं के लिए सदस्यता सफल!' : 'Subscribed to daily astrological transits!'}</span>
             </div>
           )}
         </div>
@@ -175,11 +175,11 @@ export default function Footer({
 
       {/* Copyright Bar */}
       <div className="max-w-7xl mx-auto pt-6 border-t border-purple-900/50 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
-        <span>© {new Date().getFullYear()} ASTROTANNTRA. All Rights Reserved.</span>
+        <span>© {new Date().getFullYear()} ASTROTANNTRA. {lang === 'hi' ? 'सर्वाधिकार सुरक्षित।' : 'All Rights Reserved.'}</span>
         <div className="flex gap-4 mt-2 sm:mt-0">
-          <a href="#" className="hover:text-amber-300">Privacy Policy</a>
-          <a href="#" className="hover:text-amber-300">Terms of Service</a>
-          <a href="#" className="hover:text-amber-300">Vedic Disclaimer</a>
+          <a href="#" className="hover:text-amber-300">{lang === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy'}</a>
+          <a href="#" className="hover:text-amber-300">{lang === 'hi' ? 'सेवा की शर्तें' : 'Terms of Service'}</a>
+          <a href="#" className="hover:text-amber-300">{lang === 'hi' ? 'वैदिक अस्वीकरण' : 'Vedic Disclaimer'}</a>
         </div>
       </div>
     </footer>

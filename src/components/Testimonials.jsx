@@ -5,43 +5,53 @@ export default function Testimonials({ lang }) {
   const reviews = [
     {
       id: 1,
-      name: 'Rahul Sharma',
-      role: 'Software Architect, Bangalore',
+      name: lang === 'hi' ? 'राहुल शर्मा' : 'Rahul Sharma',
+      role: lang === 'hi' ? 'सॉफ्टवेयर आर्किटेक्ट, बैंगलोर' : 'Software Architect, Bangalore',
       rating: 5,
       avatar: '/astrologers/pandit_rajesh.jpg',
-      text: 'The consultation was incredibly accurate and helped me make the right career decision. Highly recommended!'
+      text: lang === 'hi'
+        ? 'परामर्श अत्यंत सटीक और ज्ञानवर्धक था, जिससे मुझे सही करियर निर्णय लेने में बहुत सहायता मिली। अत्यधिक अनुशंसित!'
+        : 'The consultation was incredibly accurate and helped me make the right career decision. Highly recommended!'
     },
     {
       id: 2,
-      name: 'Priya Verma',
-      role: 'Fashion Designer, Mumbai',
+      name: lang === 'hi' ? 'प्रिया वर्मा' : 'Priya Verma',
+      role: lang === 'hi' ? 'फैशन डिजाइनर, मुंबई' : 'Fashion Designer, Mumbai',
       rating: 5,
       avatar: '/testimonials/priya.jpg',
-      text: 'Astrotanntra changed my life! The guidance I received was very clear and practical. Thank you so much!'
+      text: lang === 'hi'
+        ? 'एस्ट्रोटांत्रा ने मेरे जीवन में सकारात्मक बदलाव लाया! मुझे जो मार्गदर्शन मिला वह अत्यंत स्पष्ट और व्यावहारिक था।'
+        : 'Astrotanntra changed my life! The guidance I received was very clear and practical. Thank you so much!'
     },
     {
       id: 3,
-      name: 'Aman Gupta',
-      role: 'Entrepreneur, New Delhi',
+      name: lang === 'hi' ? 'अमन गुप्ता' : 'Aman Gupta',
+      role: lang === 'hi' ? 'उद्यमी, नई दिल्ली' : 'Entrepreneur, New Delhi',
       rating: 5,
       avatar: '/astrologers/acharya_devendra.jpg',
-      text: 'I got clarity and confidence in my life after their tarot and astrology session. Amazing experience!'
+      text: lang === 'hi'
+        ? 'टैरो और ज्योतिषीय सत्र के बाद मुझे अपने जीवन और व्यवसाय में अभूतपूर्व स्पष्टता और आत्मविश्वास मिला।'
+        : 'I got clarity and confidence in my life after their tarot and astrology session. Amazing experience!'
     },
     {
       id: 4,
-      name: 'Dr. Sunita Rao',
-      role: 'Medical Director, Hyderabad',
+      name: lang === 'hi' ? 'डॉ. सुनीता राव' : 'Dr. Sunita Rao',
+      role: lang === 'hi' ? 'चिकित्सा निदेशक, हैदराबाद' : 'Medical Director, Hyderabad',
       rating: 5,
       avatar: '/testimonials/sunita.jpg',
-      text: 'The Kundli matching analysis for my daughter was thorough, scientific, and brought peace of mind to our family.'
+      text: lang === 'hi'
+        ? 'मेरी बेटी के लिए कुण्डली मिलान का विश्लेषण बहुत गहन और प्रामाणिक था, जिससे पूरे परिवार को संतुष्टि मिली।'
+        : 'The Kundli matching analysis for my daughter was thorough, scientific, and brought peace of mind to our family.'
     },
     {
       id: 5,
-      name: 'Vikram Malhotra',
-      role: 'Finance Analyst, London',
+      name: lang === 'hi' ? 'विक्रम मल्होत्रा' : 'Vikram Malhotra',
+      role: lang === 'hi' ? 'वित्तीय विश्लेषक, लंदन' : 'Finance Analyst, London',
       rating: 5,
       avatar: '/astrologers/pandit_rajesh.jpg',
-      text: 'The Sade Sati remedies and gemstone recommendation changed my entire perspective. True masters of Vedic shastra.'
+      text: lang === 'hi'
+        ? 'साढ़े साती के उपाय और रत्न परामर्श ने मेरी पूरी कार्यप्रणाली बदल दी। वैदिक ज्योतिष के सच्चे विद्वान।'
+        : 'The Sade Sati remedies and gemstone recommendation changed my entire perspective. True masters of Vedic shastra.'
     }
   ];
 

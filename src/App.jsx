@@ -36,6 +36,10 @@ export default function App() {
     userRef.current = user;
   }, [user]);
 
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   // Active page state: 'home' | 'kundli'
   const [currentPage, setCurrentPage] = useState('home');
 

@@ -28,43 +28,43 @@ export default function MiddleCardsSection({
   const services = [
     {
       id: 'vedic',
-      title: 'Vedic Astrology',
-      desc: 'Accurate solutions for all life problems',
+      title: lang === 'hi' ? 'वैदिक ज्योतिष' : 'Vedic Astrology',
+      desc: lang === 'hi' ? 'जीवन की सभी समस्याओं का सटीक समाधान' : 'Accurate solutions for all life problems',
       icon: Compass,
       action: () => onOpenConsultation('Vedic Astrology')
     },
     {
       id: 'milan',
-      title: 'Kundli Matching',
-      desc: 'Comprehensive analysis for happy marriage',
+      title: lang === 'hi' ? 'कुण्डली मिलान' : 'Kundli Matching',
+      desc: lang === 'hi' ? 'सुखी वैवाहिक जीवन हेतु अष्टकूट विश्लेषण' : 'Comprehensive analysis for happy marriage',
       icon: Heart,
       action: onOpenMilan
     },
     {
       id: 'palm',
-      title: 'Palm Reading',
-      desc: 'Know your future through palm study',
+      title: lang === 'hi' ? 'हस्तरेखा दर्शन' : 'Palm Reading',
+      desc: lang === 'hi' ? 'हस्तरेखाओं द्वारा अपने भविष्य को जानें' : 'Know your future through palm study',
       icon: Hand,
       action: () => onOpenConsultation('Palm Reading')
     },
     {
       id: 'numerology',
-      title: 'Numerology',
-      desc: 'Discover the power of numbers',
+      title: lang === 'hi' ? 'अंक ज्योतिष' : 'Numerology',
+      desc: lang === 'hi' ? 'मूलांक व भाग्यांक की दिव्य शक्ति को जानें' : 'Discover the power of numbers',
       icon: Hash,
       action: onOpenNumerology
     },
     {
       id: 'vastu',
-      title: 'Vastu Consultation',
-      desc: 'Bring harmony and positivity to life',
+      title: lang === 'hi' ? 'वास्तु परामर्श' : 'Vastu Consultation',
+      desc: lang === 'hi' ? 'घर व कार्यस्थल में सकारात्मक ऊर्जा लाएं' : 'Bring harmony and positivity to life',
       icon: Home,
       action: () => onOpenConsultation('Vastu Consultation')
     },
     {
       id: 'muhurta',
-      title: 'Muhurta Consultation',
-      desc: 'Choose the right time for important events',
+      title: lang === 'hi' ? 'शुभ मुहूर्त' : 'Muhurta Consultation',
+      desc: lang === 'hi' ? 'महत्वपूर्ण कार्यों हेतु शुभ समय चुनें' : 'Choose the right time for important events',
       icon: Hourglass,
       action: () => onOpenConsultation('Muhurta Consultation')
     }
@@ -72,33 +72,33 @@ export default function MiddleCardsSection({
 
   const whyChoosePoints = [
     {
-      title: '10+ Years Experience',
-      desc: 'Of delivering trusted astrology solutions',
+      title: lang === 'hi' ? '10+ वर्षों का अनुभव' : '10+ Years Experience',
+      desc: lang === 'hi' ? 'विश्वसनीय ज्योतिषीय समाधान प्रदान करने का' : 'Of delivering trusted astrology solutions',
       icon: Award
     },
     {
-      title: 'Certified Astrologers',
-      desc: 'Experienced & verified Vedic experts',
+      title: lang === 'hi' ? 'प्रमाणित वैदिक ज्योतिषी' : 'Certified Astrologers',
+      desc: lang === 'hi' ? 'अनुभवी एवं सत्यापित ज्योतिष विशेषज्ञ' : 'Experienced & verified Vedic experts',
       icon: CheckCircle
     },
     {
-      title: '98% Client Satisfaction',
-      desc: 'Thousands of happy clients worldwide',
+      title: lang === 'hi' ? '98% संतुष्ट ग्राहक' : '98% Client Satisfaction',
+      desc: lang === 'hi' ? 'देश-विदेश में हजारों प्रसन्न जातक' : 'Thousands of happy clients worldwide',
       icon: Users
     },
     {
-      title: 'Personalized Guidance',
-      desc: 'Solutions tailored to your birth chart',
+      title: lang === 'hi' ? 'व्यक्तिगत मार्गदर्शन' : 'Personalized Guidance',
+      desc: lang === 'hi' ? 'आपकी जन्मकुण्डली अनुसार सटीक समाधान' : 'Solutions tailored to your birth chart',
       icon: Sparkles
     },
     {
-      title: 'Privacy & Security',
-      desc: 'Your information is 100% safe with us',
+      title: lang === 'hi' ? 'गोपनीयता एवं सुरक्षा' : 'Privacy & Security',
+      desc: lang === 'hi' ? 'आपकी जानकारी 100% गोपनीय व सुरक्षित है' : 'Your information is 100% safe with us',
       icon: ShieldCheck
     },
     {
-      title: '24/7 Support',
-      desc: 'We are here for you anytime, anywhere',
+      title: lang === 'hi' ? '24/7 सहायता उपलब्ध' : '24/7 Support',
+      desc: lang === 'hi' ? 'हम सदैव आपके मार्गदर्शन हेतु तत्पर हैं' : 'We are here for you anytime, anywhere',
       icon: Headphones
     }
   ];
@@ -143,12 +143,14 @@ export default function MiddleCardsSection({
           </div>
 
           <div className="mt-4 pt-3 border-t border-amber-200/80 flex items-center justify-between text-xs text-amber-900">
-            <span className="font-semibold">Need custom horoscope analysis?</span>
+            <span className="font-semibold">
+              {lang === 'hi' ? 'व्यक्तिगत कुण्डली विश्लेषण चाहिए?' : 'Need custom horoscope analysis?'}
+            </span>
             <button
               onClick={() => onOpenConsultation('Custom Consultation')}
               className="text-xs font-bold text-[#531e84] hover:underline cursor-pointer"
             >
-              Consult Now &rarr;
+              {lang === 'hi' ? 'अभी परामर्श लें →' : 'Consult Now →'}
             </button>
           </div>
         </div>
@@ -172,7 +174,9 @@ export default function MiddleCardsSection({
                     <span className="text-sm">🃏</span>
                     <div>
                       <span className="font-bold text-slate-900 block leading-tight">{pkg.name}</span>
-                      <span className="text-[10px] text-slate-600 block">{pkg.cards} {pkg.cards === 1 ? 'Card' : 'Cards'} reading</span>
+                      <span className="text-[10px] text-slate-600 block">
+                        {pkg.cards} {pkg.cards === 1 ? (lang === 'hi' ? 'कार्ड' : 'Card') : (lang === 'hi' ? 'कार्ड्स' : 'Cards')} {lang === 'hi' ? 'रीडिंग' : 'reading'}
+                      </span>
                     </div>
                   </div>
 
@@ -184,7 +188,7 @@ export default function MiddleCardsSection({
                       onClick={() => onOpenTarotWithPackage(pkg)}
                       className="px-2.5 py-1 rounded bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm"
                     >
-                      BOOK NOW
+                      {lang === 'hi' ? 'बुक करें' : 'BOOK NOW'}
                     </button>
                   </div>
                 </div>
@@ -194,7 +198,9 @@ export default function MiddleCardsSection({
 
           <div className="mt-4 pt-3 border-t border-amber-200/80 text-center">
             <span className="text-[11px] text-slate-600">
-              Instant interactive draw + personalized spiritual guidance included
+              {lang === 'hi'
+                ? 'तुरंत इंटरैक्टिव कार्ड चयन + व्यक्तिगत आध्यात्मिक मार्गदर्शन शामिल'
+                : 'Instant interactive draw + personalized spiritual guidance included'}
             </span>
           </div>
         </div>
@@ -235,7 +241,11 @@ export default function MiddleCardsSection({
 
           <div className="mt-4 pt-3 border-t border-amber-200/80 flex items-center justify-center gap-2 text-xs text-amber-900 font-semibold">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>100% Confidential & Secure Vedic Consultations</span>
+            <span>
+              {lang === 'hi' 
+                ? '100% गोपनीय एवं सुरक्षित वैदिक परामर्श' 
+                : '100% Confidential & Secure Vedic Consultations'}
+            </span>
           </div>
         </div>
 

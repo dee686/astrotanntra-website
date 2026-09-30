@@ -29,8 +29,10 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Calendar className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-slate-900">{p.dateFormatted}</span>
-              <span className="text-[11px] text-slate-600 font-medium">{p.dayName}</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">{p.dateFormatted}</span>
+              <span className="text-xs text-slate-700 font-medium">
+                {lang === 'hi' ? (p.dayName === 'Monday' ? 'सोमवार' : p.dayName) : p.dayName}
+              </span>
             </div>
           </div>
 
@@ -40,8 +42,12 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Compass className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Nakshatra</span>
-              <span className="text-xs font-bold text-slate-900">{p.nakshatra}</span>
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
+                {lang === 'hi' ? 'नक्षत्र' : 'Nakshatra'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
+                {lang === 'hi' ? 'स्वाति (तृतीय चरण)' : p.nakshatra}
+              </span>
             </div>
           </div>
 
@@ -51,8 +57,12 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Yoga</span>
-              <span className="text-xs font-bold text-slate-900">{p.yoga}</span>
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
+                {lang === 'hi' ? 'योग' : 'Yoga'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
+                {lang === 'hi' ? 'प्रीति योग' : p.yoga}
+              </span>
             </div>
           </div>
 
@@ -62,8 +72,12 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Shield className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Karana</span>
-              <span className="text-xs font-bold text-slate-900">{p.karana}</span>
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
+                {lang === 'hi' ? 'करण' : 'Karana'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
+                {lang === 'hi' ? 'बालव करण' : p.karana}
+              </span>
             </div>
           </div>
 
@@ -73,8 +87,12 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Moon className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Moon Sign</span>
-              <span className="text-xs font-bold text-slate-900">Sagittarius</span>
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">
+                {lang === 'hi' ? 'चन्द्र राशि' : 'Moon Sign'}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
+                {lang === 'hi' ? 'धनु राशि' : 'Sagittarius'}
+              </span>
             </div>
           </div>
 
