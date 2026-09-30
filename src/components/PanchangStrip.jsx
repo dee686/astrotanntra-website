@@ -29,9 +29,11 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Calendar className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs sm:text-sm font-bold text-slate-900">{p.dateFormatted}</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900">
+                {lang === 'hi' ? (p.dateFormattedHi || p.dateFormatted) : p.dateFormatted}
+              </span>
               <span className="text-xs text-slate-700 font-medium">
-                {lang === 'hi' ? (p.dayName === 'Monday' ? 'सोमवार' : p.dayName) : p.dayName}
+                {lang === 'hi' ? (p.dayNameHi || 'सोमवार') : p.dayName}
               </span>
             </div>
           </div>
