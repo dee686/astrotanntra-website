@@ -182,10 +182,21 @@ export default function Hero({
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-5 font-cinzel">
-            We Change <br />
-            <span className="gold-gradient-text drop-shadow-[0_4px_25px_rgba(245,158,11,0.5)]">
-              Your Direction
-            </span>
+            {lang === 'hi' ? (
+              <>
+                हम बदलते हैं <br />
+                <span className="gold-gradient-text drop-shadow-[0_4px_25px_rgba(245,158,11,0.5)]">
+                  आपकी दिशा
+                </span>
+              </>
+            ) : (
+              <>
+                We Change <br />
+                <span className="gold-gradient-text drop-shadow-[0_4px_25px_rgba(245,158,11,0.5)]">
+                  Your Direction
+                </span>
+              </>
+            )}
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-xl mb-8 leading-relaxed font-normal">
@@ -222,7 +233,7 @@ export default function Hero({
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-white text-base">10K+</span>
-                <span className="text-xs text-slate-300">Happy Clients</span>
+                <span className="text-xs text-slate-300">{lang === 'hi' ? 'संतुष्ट ग्राहक' : 'Happy Clients'}</span>
               </div>
             </div>
 
@@ -232,7 +243,7 @@ export default function Hero({
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-white text-base">50+</span>
-                <span className="text-xs text-slate-300">Expert Astrologers</span>
+                <span className="text-xs text-slate-300">{lang === 'hi' ? 'विशेषज्ञ ज्योतिषी' : 'Expert Astrologers'}</span>
               </div>
             </div>
 
@@ -242,7 +253,7 @@ export default function Hero({
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-white text-base">98%</span>
-                <span className="text-xs text-slate-300">Accurate Guidance</span>
+                <span className="text-xs text-slate-300">{lang === 'hi' ? 'सटीक मार्गदर्शन' : 'Accurate Guidance'}</span>
               </div>
             </div>
 
@@ -252,7 +263,7 @@ export default function Hero({
               </div>
               <div className="flex flex-col">
                 <span className="font-bold text-white text-base">24/7</span>
-                <span className="text-xs text-slate-300">Support Available</span>
+                <span className="text-xs text-slate-300">{lang === 'hi' ? 'सहायता उपलब्ध' : 'Support Available'}</span>
               </div>
             </div>
 
