@@ -3,6 +3,7 @@ import { X, Calendar, Sun, Moon, Sparkles, AlertCircle, ShieldAlert, Compass, Cl
 import { TODAY_PANCHANG } from '../data/panchangData';
 
 export default function PanchangModal({ onClose, lang }) {
+  const isHi = lang === 'hi';
   const p = TODAY_PANCHANG;
 
   return (
@@ -17,16 +18,19 @@ export default function PanchangModal({ onClose, lang }) {
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold font-cinzel text-amber-300">
-                Daily Vedic Panchang (दैनिक पंचांग)
+                {isHi ? 'दैनिक वैदिक पंचांग' : 'Daily Vedic Panchang'}
               </h2>
-              <p className="text-xs text-slate-300">
-                {p.dateFormatted}, {p.dayName} ({p.sanskritDay}) • Vikram Samvat {p.samvat.vikram}
+              <p className="text-xs sm:text-sm text-slate-300">
+                {isHi 
+                  ? `${p.dateFormatted}, ${p.dayNameHi || p.sanskritDay || p.dayName} • विक्रम संवत ${p.samvat.vikram}` 
+                  : `${p.dateFormatted}, ${p.dayName} (${p.sanskritDay}) • Vikram Samvat ${p.samvat.vikram}`}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-cosmic-800 hover:bg-rose-500/20 border border-purple-700/60 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            aria-label={isHi ? "बंद करें" : "Close"}
           >
             <X className="w-5 h-5" />
           </button>
@@ -38,36 +42,42 @@ export default function PanchangModal({ onClose, lang }) {
           {/* Top 4 Core Pillars Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             
-            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-3.5">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-1">
-                Tithi (तिथि)
+            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">
+                {isHi ? 'तिथि' : 'Tithi'}
               </span>
-              <span className="text-sm font-bold text-amber-300 block leading-tight">{p.tithi}</span>
-              <span className="text-[10px] text-slate-400 block mt-1">{p.paksha}</span>
+              <span className="text-sm sm:text-base font-bold text-amber-300 block leading-tight">{p.tithi}</span>
+              <span className="text-xs text-slate-400 block mt-1">{p.paksha}</span>
             </div>
 
-            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-3.5">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-1">
-                Nakshatra (नक्षत्र)
+            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">
+                {isHi ? 'नक्षत्र' : 'Nakshatra'}
               </span>
-              <span className="text-sm font-bold text-amber-300 block leading-tight">{p.nakshatra}</span>
-              <span className="text-[10px] text-slate-400 block mt-1">Lord: {p.nakshatraLord}</span>
+              <span className="text-sm sm:text-base font-bold text-amber-300 block leading-tight">{p.nakshatra}</span>
+              <span className="text-xs text-slate-400 block mt-1">
+                {isHi ? `स्वामी: ${p.nakshatraLord}` : `Lord: ${p.nakshatraLord}`}
+              </span>
             </div>
 
-            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-3.5">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-1">
-                Yoga (योग)
+            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">
+                {isHi ? 'योग' : 'Yoga'}
               </span>
-              <span className="text-sm font-bold text-amber-300 block leading-tight">{p.yoga}</span>
-              <span className="text-[10px] text-slate-400 block mt-1">Auspicious</span>
+              <span className="text-sm sm:text-base font-bold text-amber-300 block leading-tight">{p.yoga}</span>
+              <span className="text-xs text-emerald-400 block mt-1">
+                {isHi ? 'शुभ एवं कल्याणकारी' : 'Auspicious'}
+              </span>
             </div>
 
-            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-3.5">
-              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold block mb-1">
-                Karana (करण)
+            <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4">
+              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">
+                {isHi ? 'करण' : 'Karana'}
               </span>
-              <span className="text-sm font-bold text-amber-300 block leading-tight">{p.karana}</span>
-              <span className="text-[10px] text-slate-400 block mt-1">First Half</span>
+              <span className="text-sm sm:text-base font-bold text-amber-300 block leading-tight">{p.karana}</span>
+              <span className="text-xs text-slate-400 block mt-1">
+                {isHi ? 'प्रथम प्रहर' : 'First Half'}
+              </span>
             </div>
 
           </div>
@@ -78,12 +88,16 @@ export default function PanchangModal({ onClose, lang }) {
             {/* Sun Card */}
             <div className="bg-gradient-to-br from-amber-950/40 to-[#180b33] border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                   <Sun className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block">Surya (Sun) in {p.sunSign}</span>
-                  <span className="font-bold text-sm text-slate-100">Sunrise: {p.sunrise} | Sunset: {p.sunset}</span>
+                  <span className="text-xs sm:text-sm text-slate-300 block font-medium">
+                    {isHi ? `सूर्य देव: ${p.sunSign} राशि में` : `Surya (Sun) in ${p.sunSign}`}
+                  </span>
+                  <span className="font-bold text-sm sm:text-base text-slate-100">
+                    {isHi ? `सूर्योदय: ${p.sunrise} | सूर्यास्त: ${p.sunset}` : `Sunrise: ${p.sunrise} | Sunset: ${p.sunset}`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -91,12 +105,16 @@ export default function PanchangModal({ onClose, lang }) {
             {/* Moon Card */}
             <div className="bg-gradient-to-br from-purple-950/40 to-[#180b33] border border-purple-500/30 rounded-2xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-sky-300 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-purple-500/20 text-sky-300 flex items-center justify-center shrink-0">
                   <Moon className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block">Chandra (Moon) in {p.moonSign}</span>
-                  <span className="font-bold text-sm text-slate-100">Moonrise: {p.moonrise} | Moonset: {p.moonset}</span>
+                  <span className="text-xs sm:text-sm text-slate-300 block font-medium">
+                    {isHi ? `चंद्र देव: ${p.moonSign} राशि में` : `Chandra (Moon) in ${p.moonSign}`}
+                  </span>
+                  <span className="font-bold text-sm sm:text-base text-slate-100">
+                    {isHi ? `चंद्रोदय: ${p.moonrise} | चंद्रास्त: ${p.moonset}` : `Moonrise: ${p.moonrise} | Moonset: ${p.moonset}`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -108,18 +126,18 @@ export default function PanchangModal({ onClose, lang }) {
             
             {/* Shubh Muhurat (Green/Gold) */}
             <div className="bg-[#170932] border border-emerald-500/40 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-emerald-500/20 text-emerald-400 font-cinzel font-bold text-sm">
-                <Sparkles className="w-4 h-4" />
-                <span>Shubh Muhurat (शुभ मुहूर्त - Auspicious)</span>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-emerald-500/20 text-emerald-400 font-cinzel font-bold text-sm sm:text-base">
+                <Sparkles className="w-4 h-4 shrink-0" />
+                <span>{isHi ? 'शुभ मुहूर्त' : 'Shubh Muhurat (Auspicious)'}</span>
               </div>
               <div className="space-y-3">
                 {p.shubhMuhurat.map((m, idx) => (
-                  <div key={idx} className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs">
+                  <div key={idx} className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs sm:text-sm">
                     <div className="flex items-center justify-between font-bold text-slate-200">
                       <span>{m.name}</span>
-                      <span className="text-emerald-400 font-mono">{m.time}</span>
+                      <span className="text-emerald-400 font-mono text-xs sm:text-sm">{m.time}</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">{m.desc}</p>
+                    <p className="text-xs text-slate-300 mt-1">{m.desc}</p>
                   </div>
                 ))}
               </div>
@@ -127,18 +145,18 @@ export default function PanchangModal({ onClose, lang }) {
 
             {/* Ashubh Muhurat (Red) */}
             <div className="bg-[#170932] border border-rose-500/40 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-rose-500/20 text-rose-400 font-cinzel font-bold text-sm">
-                <ShieldAlert className="w-4 h-4" />
-                <span>Ashubh Muhurat (अशुभ समय - Inauspicious)</span>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-rose-500/20 text-rose-400 font-cinzel font-bold text-sm sm:text-base">
+                <ShieldAlert className="w-4 h-4 shrink-0" />
+                <span>{isHi ? 'अशुभ मुहूर्त / वर्जित समय' : 'Ashubh Muhurat (Inauspicious)'}</span>
               </div>
               <div className="space-y-3">
                 {p.ashubhMuhurat.map((m, idx) => (
-                  <div key={idx} className="p-2.5 rounded-xl bg-rose-950/20 border border-rose-500/20 text-xs">
+                  <div key={idx} className="p-3 rounded-xl bg-rose-950/20 border border-rose-500/20 text-xs sm:text-sm">
                     <div className="flex items-center justify-between font-bold text-slate-200">
                       <span>{m.name}</span>
-                      <span className="text-rose-400 font-mono">{m.time}</span>
+                      <span className="text-rose-400 font-mono text-xs sm:text-sm">{m.time}</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">{m.desc}</p>
+                    <p className="text-xs text-slate-300 mt-1">{m.desc}</p>
                   </div>
                 ))}
               </div>
@@ -147,12 +165,16 @@ export default function PanchangModal({ onClose, lang }) {
           </div>
 
           {/* Disha Shool & Travel Guidance */}
-          <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="bg-[#1a0a38] border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
             <div className="flex items-center gap-3">
-              <Compass className="w-5 h-5 text-amber-400 shrink-0" />
+              <Compass className="w-6 h-6 text-amber-400 shrink-0" />
               <div>
-                <strong className="text-amber-300">Disha Shool (दिशा शूल): {p.dishaShool}</strong>
-                <p className="text-slate-300 mt-0.5">{p.remedy}</p>
+                <strong className="text-amber-300 text-sm sm:text-base">
+                  {isHi ? `दिशा शूल: ${p.dishaShool}` : `Disha Shool: ${p.dishaShool}`}
+                </strong>
+                <p className="text-slate-200 mt-0.5 text-xs sm:text-sm">
+                  {isHi ? `निवारक उपाय: ${p.remedy}` : p.remedy}
+                </p>
               </div>
             </div>
           </div>
@@ -163,9 +185,9 @@ export default function PanchangModal({ onClose, lang }) {
         <div className="p-4 sm:p-5 border-t border-purple-800/60 bg-[#160731] flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase cursor-pointer"
+            className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm uppercase cursor-pointer"
           >
-            Close Panchang
+            {isHi ? 'पंचांग बंद करें' : 'Close Panchang'}
           </button>
         </div>
 

@@ -58,20 +58,26 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
   const [couponCode, setCouponCode] = useState('ASTROFIRST');
   const [couponApplied, setCouponApplied] = useState(true);
 
+  const isHi = lang === 'hi';
+
   // Generate next 7 days for quick calendar chips
   const quickDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(today.getDate() + i);
     const dateStr = formatDateStr(d);
-    const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
-    const formattedDate = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    const dayName = i === 0 
+      ? (isHi ? 'आज' : 'Today') 
+      : i === 1 
+        ? (isHi ? 'कल' : 'Tomorrow') 
+        : d.toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { weekday: 'short' });
+    const formattedDate = d.toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { day: 'numeric', month: 'short' });
     return { dateStr, dayName, formattedDate, raw: d };
   });
 
   // Time Slots categorized by time of day
   const slotCategories = [
     {
-      label: 'Morning Slots',
+      label: isHi ? 'प्रातःकालीन स्लॉट' : 'Morning Slots',
       icon: '🌅',
       slots: [
         '09:30 AM - 10:00 AM',
@@ -81,7 +87,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
       ]
     },
     {
-      label: 'Afternoon Slots',
+      label: isHi ? 'दोपहर स्लॉट' : 'Afternoon Slots',
       icon: '☀️',
       slots: [
         '02:00 PM - 02:30 PM',
@@ -91,7 +97,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
       ]
     },
     {
-      label: 'Evening & Night Slots',
+      label: isHi ? 'सांध्य एवं रात्रि स्लॉट' : 'Evening & Night Slots',
       icon: '🌙',
       slots: [
         '06:00 PM - 06:30 PM',
@@ -111,7 +117,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
   const handleProceedToPayment = (e) => {
     e.preventDefault();
     if (!userName || !userPhone || !selectedDate || !selectedSlot) {
-      alert('Please fill all required consultation details');
+      alert(isHi ? 'कृपया परामर्श हेतु सभी आवश्यक विवरण भरें' : 'Please fill all required consultation details');
       return;
     }
     setStep('payment');
@@ -150,61 +156,64 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl sm:text-2xl font-bold font-cinzel text-amber-300">
-                  Book Vedic Consultation
+                  {isHi ? 'वैदिक ज्योतिष परामर्श बुक करें' : 'Book Vedic Consultation'}
                 </h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
-                  Live & Confidential
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                  {isHi ? 'लाइव एवं पूर्णतः गोपनीय' : 'Live & Confidential'}
                 </span>
               </div>
-              <p className="text-xs text-slate-300">
-                Direct 1-on-1 private consultation with verified Vedic Masters & Jyotish Acharyas
+              <p className="text-xs sm:text-sm text-slate-300">
+                {isHi 
+                  ? 'सत्यापित वैदिक आचार्यों एवं ज्योतिषियों से सीधा 1-on-1 निजी परामर्श' 
+                  : 'Direct 1-on-1 private consultation with verified Vedic Masters & Jyotish Acharyas'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-cosmic-800 hover:bg-rose-500/20 border border-purple-700/60 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            aria-label={isHi ? "बंद करें" : "Close"}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Multi-step Progress Bar */}
-        <div className="px-6 py-2.5 bg-[#170836] border-b border-purple-900/60 flex items-center justify-between text-xs shrink-0">
+        <div className="px-6 py-2.5 bg-[#170836] border-b border-purple-900/60 flex items-center justify-between text-xs sm:text-sm shrink-0">
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] ${
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
               step === 'schedule' ? 'bg-amber-400 text-slate-950 shadow-gold-glow' : 'bg-emerald-500 text-white'
             }`}>
               {step !== 'schedule' ? <Check className="w-3.5 h-3.5" /> : '1'}
             </span>
             <span className={step === 'schedule' ? 'font-bold text-amber-300' : 'text-slate-300'}>
-              Select Date & Timing
+              {isHi ? 'दिनांक एवं समय' : 'Select Date & Timing'}
             </span>
           </div>
 
           <ChevronRight className="w-4 h-4 text-purple-600" />
 
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] ${
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
               step === 'payment' ? 'bg-amber-400 text-slate-950 shadow-gold-glow' : step === 'confirmed' ? 'bg-emerald-500 text-white' : 'bg-purple-900/60 text-slate-400'
             }`}>
               {step === 'confirmed' ? <Check className="w-3.5 h-3.5" /> : '2'}
             </span>
             <span className={step === 'payment' ? 'font-bold text-amber-300' : 'text-slate-400'}>
-              Payment Options
+              {isHi ? 'भुगतान विकल्प' : 'Payment Options'}
             </span>
           </div>
 
           <ChevronRight className="w-4 h-4 text-purple-600" />
 
           <div className="flex items-center gap-2">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] ${
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
               step === 'confirmed' ? 'bg-emerald-500 text-white' : 'bg-purple-900/60 text-slate-400'
             }`}>
               3
             </span>
             <span className={step === 'confirmed' ? 'font-bold text-emerald-400' : 'text-slate-400'}>
-              Confirmation
+              {isHi ? 'बुकिंग पुष्टि' : 'Confirmation'}
             </span>
           </div>
         </div>
@@ -219,11 +228,13 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
               {/* 1. Astrologer Selector */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                  <label className="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
-                    1. Choose Astrologer
+                    {isHi ? '1. ज्योतिषी चुनें' : '1. Choose Astrologer'}
                   </label>
-                  <span className="text-[11px] text-emerald-400 font-medium">● Available Online Today</span>
+                  <span className="text-xs text-emerald-400 font-medium">
+                    {isHi ? '● आज ऑनलाइन उपलब्ध' : '● Available Online Today'}
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -244,16 +255,16 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-sm text-slate-100 truncate">{astro.name}</h4>
+                          <h4 className="font-bold text-sm sm:text-base text-slate-100 truncate">{astro.name}</h4>
                           <span className="text-xs text-amber-400 font-bold flex items-center gap-0.5">
                             ★ {astro.rating}
                           </span>
                         </div>
-                        <span className="text-[11px] text-amber-200/70 block truncate">{astro.title}</span>
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-400">
+                        <span className="text-xs text-amber-200/80 block truncate">{astro.title}</span>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                           <span>{astro.experience}</span>
                           <span>•</span>
-                          <span className="text-emerald-400 font-semibold">₹{astro.pricePerMin * 30} / 30 min</span>
+                          <span className="text-emerald-400 font-semibold">₹{astro.pricePerMin * 30} / 30 {isHi ? 'मिनट' : 'min'}</span>
                         </div>
                       </div>
                     </div>
@@ -261,13 +272,12 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                 </div>
               </div>
 
-
               {/* 2. Consultation Mode */}
               <div>
-                <label className="text-xs font-bold text-amber-300 uppercase tracking-wider block mb-2.5">
-                  2. Select Consultation Mode
+                <label className="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider block mb-2.5">
+                  {isHi ? '2. परामर्श का माध्यम चुनें' : '2. Select Consultation Mode'}
                 </label>
-                <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
                   <button
                     type="button"
                     onClick={() => setConsultationMode('call')}
@@ -278,8 +288,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                     }`}
                   >
                     <Phone className="w-5 h-5 text-amber-400" />
-                    <span>Audio Call</span>
-                    <span className="text-[10px] text-slate-400 font-normal">HD Voice Line</span>
+                    <span>{isHi ? 'ऑडियो कॉल' : 'Audio Call'}</span>
+                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'HD वॉयस लाइन' : 'HD Voice Line'}</span>
                   </button>
 
                   <button
@@ -292,8 +302,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                     }`}
                   >
                     <Video className="w-5 h-5 text-amber-400" />
-                    <span>Video Call</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Face-to-Face Kundli</span>
+                    <span>{isHi ? 'वीडियो कॉल' : 'Video Call'}</span>
+                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'फेस-टू-फेस' : 'Face-to-Face Kundli'}</span>
                   </button>
 
                   <button
@@ -306,8 +316,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                     }`}
                   >
                     <MessageSquare className="w-5 h-5 text-amber-400" />
-                    <span>Live Chat</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Instant Q&A Messaging</span>
+                    <span>{isHi ? 'लाइव चैट' : 'Live Chat'}</span>
+                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'त्वरित प्रश्नोत्तर' : 'Instant Q&A Messaging'}</span>
                   </button>
                 </div>
               </div>
@@ -317,13 +327,13 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-800/60 pb-3">
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="w-5 h-5 text-amber-400" />
-                    <label className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                      3. Select Consultation Date
+                    <label className="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider">
+                      {isHi ? '3. परामर्श का दिन चुनें' : '3. Select Consultation Date'}
                     </label>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Custom Date:</span>
+                    <span className="text-xs text-slate-400">{isHi ? 'अन्य दिनांक:' : 'Custom Date:'}</span>
                     <input
                       type="date"
                       min={formatDateStr(today)}
@@ -349,7 +359,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                             : 'bg-[#1f0c43] border-purple-700/60 text-slate-200 hover:border-amber-500/50 hover:bg-[#271054]'
                         }`}
                       >
-                        <span className={`text-[10px] uppercase font-semibold ${isSelected ? 'text-slate-900' : 'text-amber-300/80'}`}>
+                        <span className={`text-[10px] sm:text-xs uppercase font-semibold ${isSelected ? 'text-slate-900' : 'text-amber-300/80'}`}>
                           {day.dayName}
                         </span>
                         <span className="text-xs font-bold mt-0.5">
@@ -360,10 +370,10 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                   })}
                 </div>
 
-                <div className="text-[11px] text-slate-300 flex items-center justify-between">
-                  <span>Selected Date: <strong className="text-amber-300">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong></span>
-                  <span className="text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> 8 Slots Available
+                <div className="text-xs text-slate-300 flex items-center justify-between">
+                  <span>{isHi ? 'चयनित दिन:' : 'Selected Date:'} <strong className="text-amber-300">{new Date(selectedDate).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</strong></span>
+                  <span className="text-emerald-400 flex items-center gap-1 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> {isHi ? '8 स्लॉट उपलब्ध' : '8 Slots Available'}
                   </span>
                 </div>
               </div>
@@ -372,15 +382,15 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
               <div className="bg-[#180935] border border-purple-800/80 rounded-2xl p-4 sm:p-5 space-y-4">
                 <div className="flex items-center gap-2 border-b border-purple-800/60 pb-3">
                   <Clock className="w-5 h-5 text-amber-400" />
-                  <label className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                    4. Select Available Time Slot ({new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                  <label className="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider">
+                    {isHi ? '4. उपलब्ध समय स्लॉट चुनें' : `4. Select Available Time Slot (${new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`}
                   </label>
                 </div>
 
                 <div className="space-y-4">
                   {slotCategories.map((cat, idx) => (
                     <div key={idx} className="space-y-2">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-amber-200/90">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-amber-200/90">
                         <span>{cat.icon}</span>
                         <span>{cat.label}</span>
                       </div>
@@ -393,7 +403,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                               key={slot}
                               type="button"
                               onClick={() => setSelectedSlot(slot)}
-                              className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                              className={`px-3 py-2 rounded-xl border text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                 isSelected
                                   ? 'bg-amber-400 text-slate-950 font-bold border-amber-300 shadow-gold-glow'
                                   : 'bg-[#14062c] border-purple-700/50 text-slate-200 hover:border-amber-400/50 hover:bg-[#1e0a41]'
@@ -409,62 +419,72 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                   ))}
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-800 text-[11px] text-slate-300 flex items-center justify-between">
-                  <span>Selected Time Slot: <strong className="text-amber-300">{selectedSlot}</strong> (30 Mins)</span>
-                  <span className="text-emerald-400 font-medium">Guaranteed Astrologer Attention</span>
+                <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-800 text-xs text-slate-300 flex items-center justify-between">
+                  <span>{isHi ? 'चयनित समय स्लॉट:' : 'Selected Time Slot:'} <strong className="text-amber-300">{selectedSlot}</strong> (30 {isHi ? 'मिनट' : 'Mins'})</span>
+                  <span className="text-emerald-400 font-medium">{isHi ? 'सत्यापित व्यक्तिगत ध्यान' : 'Guaranteed Astrologer Attention'}</span>
                 </div>
               </div>
 
               {/* 5. User Details & Query */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1 font-medium">Your Full Name *</label>
+                  <label className="text-xs text-slate-300 block mb-1 font-medium">
+                    {isHi ? 'आपका पूरा नाम *' : 'Your Full Name *'}
+                  </label>
                   <input
                     type="text"
                     required
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    placeholder={isHi ? 'उदा. राहुल शर्मा' : 'Enter your name'}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1 font-medium">WhatsApp / Mobile Number *</label>
+                  <label className="text-xs text-slate-300 block mb-1 font-medium">
+                    {isHi ? 'व्हाट्सएप / मोबाइल नंबर *' : 'WhatsApp / Mobile Number *'}
+                  </label>
                   <input
                     type="tel"
                     required
                     value={userPhone}
                     onChange={(e) => setUserPhone(e.target.value)}
                     placeholder="+91 99930 27943"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1 font-medium">Email Address (For Appointment & PDF)</label>
+                  <label className="text-xs text-slate-300 block mb-1 font-medium">
+                    {isHi ? 'ईमेल पता (अपॉइंटमेंट विवरण व रिपोर्ट हेतु)' : 'Email Address (For Appointment & PDF)'}
+                  </label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     placeholder="yourname@gmail.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1 font-medium">Birth Details (DOB, Time, City)</label>
+                  <label className="text-xs text-slate-300 block mb-1 font-medium">
+                    {isHi ? 'जन्म विवरण (तिथि, समय, जन्म स्थान)' : 'Birth Details (DOB, Time, City)'}
+                  </label>
                   <input
                     type="text"
                     value={birthDetails}
                     onChange={(e) => setBirthDetails(e.target.value)}
-                    placeholder="e.g. 15 Oct 1998, 2:30 PM, Tezpur"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    placeholder={isHi ? 'उदा. 15 अक्टूबर 1998, 2:30 PM, नई दिल्ली' : 'e.g. 15 Oct 1998, 2:30 PM, Tezpur'}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#180935] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-[11px] text-slate-300 block mb-1 font-medium">Your Specific Question / Concern *</label>
+                  <label className="text-xs text-slate-300 block mb-1 font-medium">
+                    {isHi ? 'आपका मुख्य प्रश्न या समस्या *' : 'Your Specific Question / Concern *'}
+                  </label>
                   <input
                     type="text"
                     required
@@ -480,14 +500,14 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-purple-800/60">
                 <div className="flex items-center gap-2 text-xs text-emerald-400">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>100% Confidential • Verified Vedic Lineage</span>
+                  <span>{isHi ? '100% गोपनीय • प्रामाणिक वैदिक परंपरा' : '100% Confidential • Verified Vedic Lineage'}</span>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto gold-btn px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider cursor-pointer shadow-gold-glow flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto gold-btn px-8 py-3.5 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider cursor-pointer shadow-gold-glow flex items-center justify-center gap-2"
                 >
-                  <span>Proceed to Payment (₹{finalPrice})</span>
+                  <span>{isHi ? `भुगतान हेतु आगे बढ़ें (₹${finalPrice})` : `Proceed to Payment (₹${finalPrice})`}</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -503,10 +523,10 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
               <button
                 type="button"
                 onClick={() => setStep('schedule')}
-                className="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-amber-300 hover:text-amber-200 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>← Edit Date, Time or Astrologer</span>
+                <span>{isHi ? '← दिनांक, समय या ज्योतिषी बदलें' : '← Edit Date, Time or Astrologer'}</span>
               </button>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -516,9 +536,11 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                   <div className="flex items-center justify-between">
                     <h3 className="font-cinzel text-base font-bold text-amber-300 flex items-center gap-2">
                       <Lock className="w-4 h-4 text-emerald-400" />
-                      Select Payment Option
+                      {isHi ? 'भुगतान विकल्प चुनें' : 'Select Payment Option'}
                     </h3>
-                    <span className="text-[11px] text-slate-400">256-Bit SSL Encrypted</span>
+                    <span className="text-xs text-slate-400">
+                      {isHi ? '256-बिट सुरक्षित एन्क्रिप्शन' : '256-Bit SSL Encrypted'}
+                    </span>
                   </div>
 
                   {/* Payment Method Tabs */}
@@ -533,8 +555,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       }`}
                     >
                       <QrCode className="w-5 h-5 text-amber-400" />
-                      <span className="text-xs">UPI / QR</span>
-                      <span className="text-[9px] text-emerald-400">Instant</span>
+                      <span className="text-xs font-semibold">UPI / QR</span>
+                      <span className="text-[10px] text-emerald-400">{isHi ? 'तत्काल' : 'Instant'}</span>
                     </button>
 
                     <button
@@ -547,8 +569,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       }`}
                     >
                       <CreditCard className="w-5 h-5 text-amber-400" />
-                      <span className="text-xs">Cards</span>
-                      <span className="text-[9px] text-slate-400">Debit / Credit</span>
+                      <span className="text-xs font-semibold">{isHi ? 'कार्ड्स' : 'Cards'}</span>
+                      <span className="text-[10px] text-slate-400">{isHi ? 'डेबिट / क्रेडिट' : 'Debit / Credit'}</span>
                     </button>
 
                     <button
@@ -561,8 +583,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       }`}
                     >
                       <Building2 className="w-5 h-5 text-amber-400" />
-                      <span className="text-xs">Net Banking</span>
-                      <span className="text-[9px] text-slate-400">All Banks</span>
+                      <span className="text-xs font-semibold">{isHi ? 'नेट बैंकिंग' : 'Net Banking'}</span>
+                      <span className="text-[10px] text-slate-400">{isHi ? 'सभी बैंक' : 'All Banks'}</span>
                     </button>
 
                     <button
@@ -575,8 +597,8 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       }`}
                     >
                       <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                      <span className="text-xs">Pay Later</span>
-                      <span className="text-[9px] text-emerald-400">Post-Call</span>
+                      <span className="text-xs font-semibold">{isHi ? 'बाद में भुगतान' : 'Pay Later'}</span>
+                      <span className="text-[10px] text-emerald-400">{isHi ? 'कॉल के बाद' : 'Post-Call'}</span>
                     </button>
                   </div>
 
@@ -726,7 +748,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                 <div className="lg:col-span-5 space-y-4">
                   <div className="bg-[#180935] border border-amber-500/30 rounded-2xl p-4 sm:p-5 space-y-4">
                     <h3 className="font-cinzel text-base font-bold text-amber-300 border-b border-purple-800/80 pb-2">
-                      Appointment Summary
+                      {isHi ? 'अपॉइंटमेंट सारांश' : 'Appointment Summary'}
                     </h3>
 
                     {/* Astrologer mini card */}
@@ -737,52 +759,52 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                         className="w-12 h-12 rounded-full object-cover border border-amber-400 shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="font-bold text-xs text-white truncate">{selectedAstrologer.name}</h4>
-                        <span className="text-[10px] text-amber-200/70 block truncate">{selectedAstrologer.title}</span>
-                        <span className="text-[10px] text-amber-400 font-semibold">★ {selectedAstrologer.rating} Verified Acharya</span>
+                        <h4 className="font-bold text-xs sm:text-sm text-white truncate">{selectedAstrologer.name}</h4>
+                        <span className="text-xs text-amber-200/80 block truncate">{selectedAstrologer.title}</span>
+                        <span className="text-xs text-amber-400 font-semibold">★ {selectedAstrologer.rating} {isHi ? 'सत्यापित आचार्य' : 'Verified Acharya'}</span>
                       </div>
                     </div>
 
                     {/* Session details */}
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-2 text-xs sm:text-sm">
                       <div className="flex justify-between py-1 border-b border-purple-900/60">
-                        <span className="text-slate-400">Date:</span>
-                        <strong className="text-amber-200">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                        <span className="text-slate-400">{isHi ? 'दिनांक:' : 'Date:'}</span>
+                        <strong className="text-amber-200">{new Date(selectedDate).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
                       </div>
                       <div className="flex justify-between py-1 border-b border-purple-900/60">
-                        <span className="text-slate-400">Timing Slot:</span>
+                        <span className="text-slate-400">{isHi ? 'समय स्लॉट:' : 'Timing Slot:'}</span>
                         <strong className="text-amber-200">{selectedSlot}</strong>
                       </div>
                       <div className="flex justify-between py-1 border-b border-purple-900/60">
-                        <span className="text-slate-400">Mode:</span>
-                        <span className="text-emerald-400 font-bold uppercase">{consultationMode} (30 Mins)</span>
+                        <span className="text-slate-400">{isHi ? 'माध्यम:' : 'Mode:'}</span>
+                        <span className="text-emerald-400 font-bold uppercase">{consultationMode} (30 {isHi ? 'मिनट' : 'Mins'})</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-purple-900/60">
-                        <span className="text-slate-400">Client:</span>
-                        <span className="text-slate-200">{userName}</span>
+                        <span className="text-slate-400">{isHi ? 'परामर्शार्थी:' : 'Client:'}</span>
+                        <span className="text-slate-200 font-medium">{userName}</span>
                       </div>
                     </div>
 
                     {/* Pricing Breakdown */}
-                    <div className="pt-2 space-y-1.5 text-xs">
+                    <div className="pt-2 space-y-1.5 text-xs sm:text-sm">
                       <div className="flex justify-between text-slate-300">
-                        <span>Consultation Fee (30 mins):</span>
+                        <span>{isHi ? 'परामर्श शुल्क (30 मिनट):' : 'Consultation Fee (30 mins):'}</span>
                         <span>₹{basePrice}</span>
                       </div>
-                      <div className="flex justify-between text-emerald-400 text-[11px]">
-                        <span>Horoscope Chart Prep:</span>
-                        <span>FREE</span>
+                      <div className="flex justify-between text-emerald-400 text-xs">
+                        <span>{isHi ? 'कुण्डली विश्लेषण:' : 'Horoscope Chart Prep:'}</span>
+                        <span>{isHi ? 'निःशुल्क' : 'FREE'}</span>
                       </div>
                       {couponApplied && (
-                        <div className="flex justify-between text-amber-300 text-[11px]">
-                          <span>Welcome Coupon ({couponCode}):</span>
+                        <div className="flex justify-between text-amber-300 text-xs">
+                          <span>{isHi ? `स्वागत कूपन (${couponCode}):` : `Welcome Coupon (${couponCode}):`}</span>
                           <span>-₹{discountAmount}</span>
                         </div>
                       )}
 
-                      <div className="pt-2 border-t border-purple-800 flex justify-between items-center text-sm font-bold">
-                        <span className="text-white font-cinzel">Total Payable:</span>
-                        <span className="text-amber-300 text-lg">₹{finalPrice}</span>
+                      <div className="pt-2 border-t border-purple-800 flex justify-between items-center text-sm sm:text-base font-bold">
+                        <span className="text-white font-cinzel">{isHi ? 'कुल देय राशि:' : 'Total Payable:'}</span>
+                        <span className="text-amber-300 text-lg sm:text-xl">₹{finalPrice}</span>
                       </div>
                     </div>
 
@@ -791,16 +813,18 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                       type="button"
                       onClick={handleCompletePayment}
                       disabled={isProcessingPayment}
-                      className="w-full py-3.5 rounded-xl gold-btn font-bold text-xs uppercase tracking-wider cursor-pointer shadow-gold-glow flex items-center justify-center gap-2 mt-3 disabled:opacity-50"
+                      className="w-full py-3.5 rounded-xl gold-btn font-bold text-xs sm:text-sm uppercase tracking-wider cursor-pointer shadow-gold-glow flex items-center justify-center gap-2 mt-3 disabled:opacity-50"
                     >
                       {isProcessingPayment ? (
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                          <span>Securing Appointment...</span>
+                          <span>{isHi ? 'अपॉइंटमेंट सुरक्षित किया जा रहा है...' : 'Securing Appointment...'}</span>
                         </div>
                       ) : (
                         <span>
-                          {paymentMethod === 'paylater' ? 'Confirm Booking (Pay Later)' : `Pay ₹${finalPrice} & Confirm`}
+                          {paymentMethod === 'paylater' 
+                            ? (isHi ? 'बुकिंग की पुष्टि करें (कॉल के बाद भुगतान)' : 'Confirm Booking (Pay Later)') 
+                            : (isHi ? `₹${finalPrice} भुगतान करें एवं पुष्टि करें` : `Pay ₹${finalPrice} & Confirm`)}
                         </span>
                       )}
                     </button>
@@ -822,40 +846,46 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
 
               <div>
                 <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold block mb-1">
-                  Booking & Payment Successful
+                  {isHi ? 'बुकिंग एवं भुगतान सफल' : 'Booking & Payment Successful'}
                 </span>
                 <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-amber-300">
-                  Consultation Confirmed!
+                  {isHi ? 'परामर्श की पुष्टि हो गई!' : 'Consultation Confirmed!'}
                 </h3>
-                <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                  Your appointment with <strong className="text-amber-200">{selectedAstrologer.name}</strong> has been secured for <strong className="text-amber-200">{new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedSlot}</strong>.
+                <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto mt-1 leading-relaxed">
+                  {isHi 
+                    ? <>{selectedAstrologer.name} जी के साथ आपका परामर्श <strong className="text-amber-200">{new Date(selectedDate).toLocaleDateString('hi-IN', { month: 'short', day: 'numeric' })} को {selectedSlot}</strong> हेतु सफलतापूर्वक सुरक्षित हो गया है।</>
+                    : <>Your appointment with <strong className="text-amber-200">{selectedAstrologer.name}</strong> has been secured for <strong className="text-amber-200">{new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedSlot}</strong>.</>}
                 </p>
               </div>
 
               {/* Receipt Summary Card */}
-              <div className="p-5 rounded-2xl bg-[#1a0a38] border border-amber-500/40 text-xs text-left max-w-md w-full space-y-2 shadow-2xl">
+              <div className="p-5 rounded-2xl bg-[#1a0a38] border border-amber-500/40 text-xs sm:text-sm text-left max-w-md w-full space-y-2 shadow-2xl">
                 <div className="flex justify-between items-center pb-2 border-b border-purple-800/80">
-                  <span className="text-slate-400">Booking Reference:</span>
-                  <span className="font-mono text-emerald-400 font-bold text-sm">{bookingId}</span>
+                  <span className="text-slate-400">{isHi ? 'बुकिंग संदर्भ संख्या:' : 'Booking Reference:'}</span>
+                  <span className="font-mono text-emerald-400 font-bold text-sm sm:text-base">{bookingId}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Astrologer:</span>
+                  <span className="text-slate-400">{isHi ? 'ज्योतिषी:' : 'Astrologer:'}</span>
                   <strong className="text-amber-200">{selectedAstrologer.name}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Mode of Call:</span>
-                  <strong className="text-emerald-300 uppercase">{consultationMode} (30 Mins)</strong>
+                  <span className="text-slate-400">{isHi ? 'परामर्श का माध्यम:' : 'Mode of Call:'}</span>
+                  <strong className="text-emerald-300 uppercase">{consultationMode} (30 {isHi ? 'मिनट' : 'Mins'})</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Scheduled Time:</span>
-                  <span className="text-slate-100">{new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, {selectedSlot}</span>
+                  <span className="text-slate-400">{isHi ? 'निर्धारित समय:' : 'Scheduled Time:'}</span>
+                  <span className="text-slate-100">{new Date(selectedDate).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}, {selectedSlot}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Amount Paid:</span>
-                  <span className="text-amber-300 font-bold">{paymentMethod === 'paylater' ? 'Pay After Call (₹' + finalPrice + ')' : '₹' + finalPrice + ' (Paid)'}</span>
+                  <span className="text-slate-400">{isHi ? 'भुगतान राशि:' : 'Amount Paid:'}</span>
+                  <span className="text-amber-300 font-bold">
+                    {paymentMethod === 'paylater' 
+                      ? (isHi ? `कॉल के बाद देय (₹${finalPrice})` : `Pay After Call (₹${finalPrice})`) 
+                      : `₹${finalPrice} (${isHi ? 'भुगतान संपन्न' : 'Paid'})`}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-purple-800/80">
-                  <span className="text-slate-400">Meeting Access Code:</span>
+                  <span className="text-slate-400">{isHi ? 'मीटिंग एक्सेस कोड:' : 'Meeting Access Code:'}</span>
                   <span className="font-mono text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded font-bold">LIVE-{bookingId.replace('ASTRO-', '')}</span>
                 </div>
               </div>
@@ -866,17 +896,17 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                   href={`https://wa.me/919993027943?text=Namaste%20Astrotanntra,%20I%20have%20booked%20consultation%20ID%20${bookingId}%20for%20${selectedDate}%20at%20${selectedSlot}.%20My%20name%20is%20${encodeURIComponent(userName)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-md"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-md"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>Connect on WhatsApp Now</span>
+                  <span>{isHi ? 'व्हाट्सएप पर तुरंत जुड़ें' : 'Connect on WhatsApp Now'}</span>
                 </a>
 
                 <button
                   onClick={onClose}
-                  className="px-6 py-2.5 rounded-xl gold-btn font-bold text-xs uppercase cursor-pointer shadow-gold-glow"
+                  className="px-6 py-2.5 rounded-xl gold-btn font-bold text-xs sm:text-sm uppercase cursor-pointer shadow-gold-glow"
                 >
-                  Done
+                  {isHi ? 'संपन्न' : 'Done'}
                 </button>
               </div>
 

@@ -4,7 +4,20 @@ import { calculateGunMilan } from '../utils/ashtakootMilan';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import { resolveLocation } from '../services/geoService';
 
+const KOOT_HI = {
+  'Varna': 'वर्ण कूट',
+  'Vashya': 'वश्य कूट',
+  'Tara': 'तारा कूट',
+  'Yoni': 'योनि कूट',
+  'Graha Maitri': 'ग्रहमैत्री कूट',
+  'Gana': 'गण कूट',
+  'Bhakoot': 'भकूट कूट',
+  'Nadi': 'नाड़ी कूट'
+};
+
 export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) {
+  const isHi = lang === 'hi';
+
   // Default sample inputs
   const [groomName, setGroomName] = useState('Rahul Sharma');
   const [groomDob, setGroomDob] = useState('1996-05-18');
@@ -77,16 +90,19 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-bold font-cinzel text-amber-300">
-                Kundli Milan (36 Gun Matching)
+                {isHi ? 'कुंडली मिलान (36 गुण मिलान)' : 'Kundli Milan (36 Gun Matching)'}
               </h2>
-              <p className="text-xs text-slate-300">
-                Ashtakoot Vedic matrimonial horoscope compatibility calculation
+              <p className="text-xs sm:text-sm text-slate-300">
+                {isHi 
+                  ? 'अष्टकूट पद्धति द्वारा वैदिक विवाह अनुकूलता एवं दोष विश्लेषण'
+                  : 'Ashtakoot Vedic matrimonial horoscope compatibility calculation'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-cosmic-800 hover:bg-rose-500/20 border border-purple-700/60 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            aria-label={isHi ? "बंद करें" : "Close"}
           >
             <X className="w-5 h-5" />
           </button>
@@ -100,43 +116,51 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
             
             {/* Groom Details */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-amber-300 font-cinzel font-bold text-sm border-b border-purple-800 pb-1.5">
-                <span>🤵 Groom's Details (वर विवरण)</span>
+              <div className="flex items-center gap-2 text-amber-300 font-cinzel font-bold text-sm sm:text-base border-b border-purple-800 pb-1.5">
+                <span>🤵 {isHi ? 'वर का विवरण (Groom Details)' : "Groom's Details"}</span>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Full Name</label>
+                <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                  {isHi ? 'पूरा नाम' : 'Full Name'}
+                </label>
                 <input
                   type="text"
                   required
                   value={groomName}
                   onChange={(e) => setGroomName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1">Date of Birth</label>
+                  <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                    {isHi ? 'जन्म तिथि' : 'Date of Birth'}
+                  </label>
                   <input
                     type="date"
                     required
                     value={groomDob}
                     onChange={(e) => setGroomDob(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1">Time of Birth</label>
+                  <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                    {isHi ? 'जन्म समय' : 'Time of Birth'}
+                  </label>
                   <input
                     type="time"
                     required
                     value={groomTob}
                     onChange={(e) => setGroomTob(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Birth Place (जन्म स्थान)</label>
+                <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                  {isHi ? 'जन्म स्थान (शहर / जिला)' : 'Birth Place'}
+                </label>
                 <PlaceAutocomplete
                   value={groomPlace}
                   onChange={(e) => setGroomPlace(e.target.value)}
@@ -145,51 +169,59 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
                     setGroomCoords({ lat: loc.lat, lng: loc.lng, tz: loc.tz });
                   }}
                   dateStr={groomDob}
-                  placeholder="Groom's Birth City/Town"
-                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
+                  placeholder={isHi ? 'वर का जन्म शहर/कस्बा' : "Groom's Birth City/Town"}
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* Bride Details */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-pink-300 font-cinzel font-bold text-sm border-b border-purple-800 pb-1.5">
-                <span>👰 Bride's Details (कन्या विवरण)</span>
+              <div className="flex items-center gap-2 text-pink-300 font-cinzel font-bold text-sm sm:text-base border-b border-purple-800 pb-1.5">
+                <span>👰 {isHi ? 'कन्या का विवरण (Bride Details)' : "Bride's Details"}</span>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Full Name</label>
+                <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                  {isHi ? 'पूरा नाम' : 'Full Name'}
+                </label>
                 <input
                   type="text"
                   required
                   value={brideName}
                   onChange={(e) => setBrideName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1">Date of Birth</label>
+                  <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                    {isHi ? 'जन्म तिथि' : 'Date of Birth'}
+                  </label>
                   <input
                     type="date"
                     required
                     value={brideDob}
                     onChange={(e) => setBrideDob(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-300 block mb-1">Time of Birth</label>
+                  <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                    {isHi ? 'जन्म समय' : 'Time of Birth'}
+                  </label>
                   <input
                     type="time"
                     required
                     value={brideTob}
                     onChange={(e) => setBrideTob(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-slate-300 block mb-1">Birth Place (जन्म स्थान)</label>
+                <label className="text-xs sm:text-sm text-slate-300 block mb-1">
+                  {isHi ? 'जन्म स्थान (शहर / जिला)' : 'Birth Place'}
+                </label>
                 <PlaceAutocomplete
                   value={bridePlace}
                   onChange={(e) => setBridePlace(e.target.value)}
@@ -198,8 +230,8 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
                     setBrideCoords({ lat: loc.lat, lng: loc.lng, tz: loc.tz });
                   }}
                   dateStr={brideDob}
-                  placeholder="Bride's Birth City/Town"
-                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#231248] border border-purple-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
+                  placeholder={isHi ? 'कन्या का जन्म शहर/कस्बा' : "Bride's Birth City/Town"}
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-[#231248] border border-purple-700 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
@@ -208,10 +240,14 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
               <button
                 type="submit"
                 disabled={isCalculating}
-                className="gold-btn px-8 py-3 rounded-xl font-bold text-sm tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed"
+                className="gold-btn px-8 py-3 rounded-xl font-bold text-xs sm:text-sm tracking-wider uppercase flex items-center gap-2 cursor-pointer shadow-gold-glow disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <Sparkles className="w-4 h-4 text-slate-900" />
-                <span>{isCalculating ? 'Calculating Live Charts...' : 'Calculate 36 Guna Milan'}</span>
+                <span>
+                  {isCalculating 
+                    ? (isHi ? 'गणना की जा रही है...' : 'Calculating Live Charts...') 
+                    : (isHi ? '36 गुण मिलान की गणना करें' : 'Calculate 36 Guna Milan')}
+                </span>
               </button>
             </div>
 
@@ -223,8 +259,8 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
               
               {/* Score Summary Box */}
               <div className="p-6 rounded-2xl bg-gradient-to-br from-[#1e0c42] to-[#2b125a] border border-amber-500/50 shadow-lg text-center">
-                <span className="text-xs uppercase tracking-widest text-amber-300 font-semibold block mb-1">
-                  Gun Milan Compatibility Score
+                <span className="text-xs sm:text-sm uppercase tracking-widest text-amber-300 font-semibold block mb-1">
+                  {isHi ? 'गुण मिलान अनुकूलता स्कोर' : 'Gun Milan Compatibility Score'}
                 </span>
 
                 <div className="flex items-center justify-center gap-3 my-2">
@@ -244,47 +280,49 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
                   />
                 </div>
 
-                <p className={`text-base font-bold ${matchResult.statusColor} mb-2`}>
+                <p className={`text-base sm:text-lg font-bold ${matchResult.statusColor} mb-2`}>
                   {matchResult.verdict}
                 </p>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/30 border border-purple-600/40 text-xs text-slate-200">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 border border-purple-600/40 text-xs sm:text-sm text-slate-200">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{matchResult.manglikMatch}</span>
                 </div>
               </div>
 
               {/* 8 Ashtakoot Breakdown Table */}
               <div className="overflow-x-auto rounded-2xl border border-purple-800/60 bg-[#170932]">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse">
                   <thead>
                     <tr className="bg-[#26104c] text-amber-300 font-cinzel border-b border-purple-700/60">
-                      <th className="p-3">Koota</th>
-                      <th className="p-3">Max Points</th>
-                      <th className="p-3">Obtained Points</th>
-                      <th className="p-3">Significance & Compatibility</th>
-                      <th className="p-3">Status</th>
+                      <th className="p-3">{isHi ? 'कूट' : 'Koota'}</th>
+                      <th className="p-3">{isHi ? 'अधिकतम अंक' : 'Max Points'}</th>
+                      <th className="p-3">{isHi ? 'प्राप्त अंक' : 'Obtained Points'}</th>
+                      <th className="p-3">{isHi ? 'महत्व एवं अनुकूलता' : 'Significance & Compatibility'}</th>
+                      <th className="p-3">{isHi ? 'स्थिति' : 'Status'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-purple-900/50">
                     {matchResult.scores.map((k, idx) => (
                       <tr key={idx} className="hover:bg-white/5 transition-colors">
-                        <td className="p-3 font-bold text-slate-100">{k.koot} Koota</td>
+                        <td className="p-3 font-bold text-slate-100">
+                          {isHi ? (KOOT_HI[k.koot] || `${k.koot} कूट`) : `${k.koot} Koota`}
+                        </td>
                         <td className="p-3 text-slate-400">{k.max} pts</td>
-                        <td className="p-3 font-bold text-amber-300 font-mono text-sm">{k.obtained} pts</td>
+                        <td className="p-3 font-bold text-amber-300 font-mono text-sm sm:text-base">{k.obtained} pts</td>
                         <td className="p-3 text-slate-300">{k.desc}</td>
                         <td className="p-3">
                           {k.dosha ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-600">
-                              Dosha Detected
+                            <span className="px-2.5 py-1 rounded text-xs font-bold bg-rose-950 text-rose-300 border border-rose-600">
+                              {isHi ? 'दोष उपस्थित' : 'Dosha Detected'}
                             </span>
                           ) : k.passed ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600">
-                              Matched
+                            <span className="px-2.5 py-1 rounded text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-600">
+                              {isHi ? 'अनुकूल' : 'Matched'}
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-600">
-                              Average
+                            <span className="px-2.5 py-1 rounded text-xs font-bold bg-amber-950 text-amber-300 border border-amber-600">
+                              {isHi ? 'सामान्य' : 'Average'}
                             </span>
                           )}
                         </td>
@@ -301,24 +339,26 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
 
         {/* Footer */}
         <div className="p-4 sm:p-5 border-t border-purple-800/60 bg-[#160731] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-xs text-slate-400">
-            For complex Nadi Dosha cancellation or Manglik remedies, consult our Acharya.
+          <span className="text-xs sm:text-sm text-slate-300">
+            {isHi 
+              ? 'जटिल नाड़ी दोष परिहार अथवा मांगलिक मिलान हेतु हमारे वरिष्ठ ज्योतिषाचार्य से संपर्क करें।' 
+              : 'For complex Nadi Dosha cancellation or Manglik remedies, consult our Acharya.'}
           </span>
           <div className="flex gap-3">
             <button
               onClick={() => {
                 onClose();
-                onOpenConsultation('Marriage & Kundli Milan Consultation');
+                onOpenConsultation(isHi ? 'विवाह एवं कुंडली मिलान परामर्श' : 'Marriage & Kundli Milan Consultation');
               }}
-              className="gold-btn px-5 py-2.5 rounded-xl font-bold text-xs uppercase cursor-pointer"
+              className="gold-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm uppercase cursor-pointer whitespace-nowrap"
             >
-              Consult Marriage Expert
+              {isHi ? 'विवाह विशेषज्ञ से बात करें' : 'Consult Marriage Expert'}
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-cosmic-800 text-slate-300 text-xs font-semibold cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-cosmic-800 hover:bg-cosmic-700 text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer"
             >
-              Close
+              {isHi ? 'बंद करें' : 'Close'}
             </button>
           </div>
         </div>
