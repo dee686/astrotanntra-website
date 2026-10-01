@@ -354,22 +354,20 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
               ) : (
                 <div className="space-y-8">
                   
-                  {/* Cards Display Grid */}
-                  <div className={`grid gap-6 justify-center ${
-                    drawnCards.length === 1 ? 'grid-cols-1 max-w-sm mx-auto' : drawnCards.length <= 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-3 lg:grid-cols-4'
-                  }`}>
+                  {/* Cards Display Container */}
+                  <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-4xl mx-auto">
                     {drawnCards.map((card, idx) => {
                       const revealed = isRevealed[card.id];
                       return (
                         <div key={card.id} className="flex flex-col items-center">
-                          <span className="text-xs uppercase tracking-wider text-amber-400 font-bold mb-2">
+                          <span className="text-[11px] sm:text-xs uppercase tracking-wider text-amber-400 font-bold mb-2 text-center max-w-[200px]">
                             {getSpreadPositionName(idx)}
                           </span>
 
                           {/* 3D Flip Card Container */}
                           <div
                             onClick={() => setIsRevealed(prev => ({ ...prev, [card.id]: !prev[card.id] }))}
-                            className="w-52 h-76 sm:w-56 sm:h-80 perspective-1000 cursor-pointer group"
+                            className="w-44 h-64 sm:w-52 sm:h-76 md:w-56 md:h-80 perspective-1000 cursor-pointer group"
                           >
                             <div className={`relative w-full h-full duration-700 transform-style-3d transition-transform rounded-2xl shadow-2xl ${
                               revealed ? 'rotate-y-180' : ''

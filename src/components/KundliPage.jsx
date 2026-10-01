@@ -313,7 +313,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
         </div>
 
         {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-1.5 p-1.5 bg-[#120629] border border-amber-500/30 rounded-2xl overflow-x-auto scrollbar-none shadow-md">
+        <div className="flex items-center gap-1.5 p-1.5 bg-[#120629] border border-amber-500/30 rounded-2xl overflow-x-auto scrollbar-none shadow-md touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
           {[
             { id: 'chart', label: lang === 'hi' ? 'कुण्डली एवं वर्ग चार्ट' : 'Kundli & Divisional Charts', icon: Layers },
             { id: 'planets', label: lang === 'hi' ? 'ग्रह स्थिति एवं अवस्थाएं' : 'Planetary Positions & Avasthas', icon: Sun },
@@ -329,7 +329,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-gold-glow font-bold'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -344,7 +344,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
 
         {/* TAB 1: KUNDLI & DIVISIONAL CHARTS (ASTROSAGE SIDE-BY-SIDE + AUTHENTIC TABLES) */}
         {activeTab === 'chart' && (
-          <div className="bg-[#120629] border border-amber-500/30 rounded-3xl p-5 sm:p-7 space-y-6 shadow-xl">
+          <div className="bg-[#120629] border border-amber-500/30 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-7 space-y-5 sm:space-y-6 shadow-xl">
             
             {/* Controls Bar: Language Toggle, Theme Toggle & Chart Style Switcher */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1b0a38] border border-purple-800/80">
@@ -547,8 +547,8 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-purple-800/60">
-                  <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <div className="overflow-x-auto rounded-xl border border-purple-800/60 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[620px]">
                     <thead>
                       <tr className="bg-[#240e49] text-amber-300 font-cinzel border-b border-purple-700/60 text-xs sm:text-sm">
                         <th className="p-3 font-bold">{chartLang === 'hi' ? 'ग्रह' : 'Planets'}</th>
@@ -738,8 +738,8 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-purple-800/60">
-                  <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <div className="overflow-x-auto rounded-xl border border-purple-800/60 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[460px]">
                     <thead>
                       <tr className="bg-[#240e49] text-amber-300 font-cinzel border-b border-purple-700/60">
                         <th className="p-3 font-bold">{chartLang === 'hi' ? 'ग्रह' : 'Planets'}</th>
@@ -789,8 +789,8 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               </p>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-purple-800/60 bg-[#170932]">
-              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+            <div className="overflow-x-auto rounded-2xl border border-purple-800/60 bg-[#170932] touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[650px]">
                 <thead>
                   <tr className="bg-[#26104c] text-amber-300 font-cinzel border-b border-purple-700/60 text-xs sm:text-sm">
                     <th className="p-3.5 font-bold">{chartLang === 'hi' || lang === 'hi' ? 'ग्रह' : 'Planet'}</th>

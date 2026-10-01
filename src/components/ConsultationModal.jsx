@@ -277,47 +277,47 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                 <label className="text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wider block mb-2.5">
                   {isHi ? '2. परामर्श का माध्यम चुनें' : '2. Select Consultation Mode'}
                 </label>
-                <div className="grid grid-cols-3 gap-3 text-xs sm:text-sm">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <button
                     type="button"
                     onClick={() => setConsultationMode('call')}
-                    className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border flex flex-col items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
                       consultationMode === 'call'
                         ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold shadow-gold-glow'
                         : 'bg-[#180935] border-purple-800 text-slate-300 hover:border-purple-600'
                     }`}
                   >
-                    <Phone className="w-5 h-5 text-amber-400" />
-                    <span>{isHi ? 'ऑडियो कॉल' : 'Audio Call'}</span>
-                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'HD वॉयस लाइन' : 'HD Voice Line'}</span>
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                    <span className="truncate">{isHi ? 'ऑडियो कॉल' : 'Audio Call'}</span>
+                    <span className="text-[10px] sm:text-xs text-slate-400 font-normal truncate max-w-full">{isHi ? 'HD वॉयस लाइन' : 'HD Voice'}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setConsultationMode('video')}
-                    className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border flex flex-col items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
                       consultationMode === 'video'
                         ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold shadow-gold-glow'
                         : 'bg-[#180935] border-purple-800 text-slate-300 hover:border-purple-600'
                     }`}
                   >
-                    <Video className="w-5 h-5 text-amber-400" />
-                    <span>{isHi ? 'वीडियो कॉल' : 'Video Call'}</span>
-                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'फेस-टू-फेस' : 'Face-to-Face Kundli'}</span>
+                    <Video className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                    <span className="truncate">{isHi ? 'वीडियो कॉल' : 'Video Call'}</span>
+                    <span className="text-[10px] sm:text-xs text-slate-400 font-normal truncate max-w-full">{isHi ? 'फेस-टू-फेस' : 'Face-to-Face'}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setConsultationMode('chat')}
-                    className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border flex flex-col items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
                       consultationMode === 'chat'
                         ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold shadow-gold-glow'
                         : 'bg-[#180935] border-purple-800 text-slate-300 hover:border-purple-600'
                     }`}
                   >
-                    <MessageSquare className="w-5 h-5 text-amber-400" />
-                    <span>{isHi ? 'लाइव चैट' : 'Live Chat'}</span>
-                    <span className="text-xs text-slate-400 font-normal">{isHi ? 'त्वरित प्रश्नोत्तर' : 'Instant Q&A Messaging'}</span>
+                    <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                    <span className="truncate">{isHi ? 'लाइव चैट' : 'Live Chat'}</span>
+                    <span className="text-[10px] sm:text-xs text-slate-400 font-normal truncate max-w-full">{isHi ? 'त्वरित प्रश्नोत्तर' : 'Instant Q&A'}</span>
                   </button>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                 </div>
 
                 {/* Quick Date Chips */}
-                <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+                <div className="flex gap-2 overflow-x-auto pb-1.5 sm:grid sm:grid-cols-7 scrollbar-none touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
                   {quickDays.map((day) => {
                     const isSelected = selectedDate === day.dateStr;
                     return (
@@ -353,7 +353,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                         key={day.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(day.dateStr)}
-                        className={`p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                        className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer shrink-0 sm:shrink min-w-[70px] sm:min-w-0 ${
                           isSelected
                             ? 'bg-gradient-to-b from-amber-400 to-amber-500 text-slate-950 border-amber-300 font-bold shadow-gold-glow scale-105'
                             : 'bg-[#1f0c43] border-purple-700/60 text-slate-200 hover:border-amber-500/50 hover:bg-[#271054]'
@@ -362,7 +362,7 @@ export default function ConsultationModal({ initialTopic, onClose, lang }) {
                         <span className={`text-[10px] sm:text-xs uppercase font-semibold ${isSelected ? 'text-slate-900' : 'text-amber-300/80'}`}>
                           {day.dayName}
                         </span>
-                        <span className="text-xs font-bold mt-0.5">
+                        <span className="text-xs font-bold mt-0.5 whitespace-nowrap">
                           {day.formattedDate}
                         </span>
                       </button>

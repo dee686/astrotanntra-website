@@ -34,11 +34,11 @@ export default function WhatsAppButton() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end max-w-[calc(100vw-2rem)]">
       
       {/* Popover Chat Window */}
       {isOpen && (
-        <div className="mb-3 w-80 sm:w-96 bg-[#170932] border border-amber-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fadeIn transition-all">
+        <div className="mb-3 w-[calc(100vw-2rem)] sm:w-96 max-w-sm bg-[#170932] border border-amber-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-fadeIn transition-all">
           
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-3.5 text-white flex items-center justify-between">

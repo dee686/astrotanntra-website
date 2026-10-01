@@ -73,8 +73,8 @@ export default function HoroscopeStrip({ onSelectSign, lang }) {
           {/* Signs List: Distributed evenly across the full width */}
           <div
             ref={scrollRef}
-            className="flex-1 flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-none py-1 scroll-smooth w-full"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="flex-1 flex items-center justify-start lg:justify-between gap-2 sm:gap-3 lg:gap-1.5 overflow-x-auto lg:overflow-x-visible scrollbar-none py-1.5 scroll-smooth w-full touch-pan-x"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
           >
             {HOROSCOPE_DATA.map((sign) => {
               const styleClass = getSignBg(sign.id);
@@ -84,7 +84,7 @@ export default function HoroscopeStrip({ onSelectSign, lang }) {
                 <button
                   key={sign.id}
                   onClick={() => onSelectSign(sign)}
-                  className="flex-1 min-w-[70px] lg:min-w-0 flex flex-col items-center justify-center group transition-transform duration-200 hover:-translate-y-1 focus:outline-none cursor-pointer py-1 px-0.5 text-center"
+                  className="shrink-0 lg:shrink lg:flex-1 min-w-[74px] sm:min-w-[82px] lg:min-w-0 flex flex-col items-center justify-center group transition-transform duration-200 hover:-translate-y-1 focus:outline-none cursor-pointer py-1 px-0.5 text-center"
                 >
                   <div className={`w-11 h-11 sm:w-12 sm:h-12 lg:w-13 lg:h-13 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all ${styleClass}`}>
                     <span className="font-serif drop-shadow-sm select-none">{sign.symbol}</span>

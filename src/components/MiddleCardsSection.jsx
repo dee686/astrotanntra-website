@@ -105,10 +105,10 @@ export default function MiddleCardsSection({
 
   return (
     <section id="services" className="w-full max-w-7xl mx-auto px-4 md:px-8 mt-6 relative z-20">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
         
         {/* CARD 1: OUR PREMIUM SERVICES */}
-        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-5 flex flex-col justify-between">
+        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div className="text-center pb-3 mb-4 border-b border-amber-200">
               <h3 className="font-cinzel font-bold text-base sm:text-lg tracking-wider text-[#4a154b] uppercase">
@@ -116,20 +116,20 @@ export default function MiddleCardsSection({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
               {services.map((item) => {
                 const IconComponent = item.icon;
                 return (
                   <button
                     key={item.id}
                     onClick={item.action}
-                    className="flex items-center gap-3 p-2.5 rounded-xl border border-amber-200/90 bg-white hover:bg-amber-50 hover:border-amber-400 transition-all text-left group cursor-pointer shadow-sm"
+                    className="flex items-center gap-2.5 sm:gap-3 p-2.5 rounded-xl border border-amber-200/90 bg-white hover:bg-amber-50 hover:border-amber-400 transition-all text-left group cursor-pointer shadow-sm"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-[#531e84] text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#531e84] text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                       <IconComponent className="w-4 h-4" />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-900 group-hover:text-amber-800 transition-colors leading-tight">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-amber-800 transition-colors leading-tight truncate">
                         {item.title}
                       </span>
                       <span className="text-[10px] text-slate-600 line-clamp-1 mt-0.5">
@@ -156,7 +156,7 @@ export default function MiddleCardsSection({
         </div>
 
         {/* CARD 2: TAROT READING PACKAGES */}
-        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-5 flex flex-col justify-between">
+        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div className="text-center pb-3 mb-4 border-b border-amber-200">
               <h3 className="font-cinzel font-bold text-base sm:text-lg tracking-wider text-[#4a154b] uppercase">
@@ -170,23 +170,23 @@ export default function MiddleCardsSection({
                   key={pkg.id}
                   className="flex items-center justify-between p-2 rounded-xl bg-white border border-amber-200/80 hover:border-amber-400 transition-all text-xs"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm">🃏</span>
-                    <div>
-                      <span className="font-bold text-slate-900 block leading-tight">{pkg.name}</span>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="text-sm shrink-0">🃏</span>
+                    <div className="min-w-0">
+                      <span className="font-bold text-slate-900 block leading-tight truncate">{pkg.name}</span>
                       <span className="text-[10px] text-slate-600 block">
                         {pkg.cards} {pkg.cards === 1 ? (lang === 'hi' ? 'कार्ड' : 'Card') : (lang === 'hi' ? 'कार्ड्स' : 'Cards')} {lang === 'hi' ? 'रीडिंग' : 'reading'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="font-bold text-amber-700 text-sm">
                       ${pkg.price}
                     </span>
                     <button
                       onClick={() => onOpenTarotWithPackage(pkg)}
-                      className="px-2.5 py-1 rounded bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm"
+                      className="px-2.5 py-1 rounded bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm whitespace-nowrap"
                     >
                       {lang === 'hi' ? 'बुक करें' : 'BOOK NOW'}
                     </button>
@@ -206,7 +206,7 @@ export default function MiddleCardsSection({
         </div>
 
         {/* CARD 3: WHY CHOOSE ASTROTANNTRA? */}
-        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-5 flex flex-col justify-between">
+        <div className="bg-[#fef9f0] text-slate-900 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-amber-400/60 p-4 sm:p-5 flex flex-col justify-between md:col-span-2 lg:col-span-1">
           <div>
             <div className="text-center pb-3 mb-4 border-b border-amber-200">
               <h3 className="font-cinzel font-bold text-base sm:text-lg tracking-wider text-[#4a154b] uppercase">
@@ -214,7 +214,7 @@ export default function MiddleCardsSection({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-2.5 sm:gap-3.5">
               {whyChoosePoints.map((item, idx) => {
                 const IconComponent = item.icon;
                 return (

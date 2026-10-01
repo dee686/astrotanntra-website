@@ -181,7 +181,7 @@ export default function Hero({
             <span>{lang === 'hi' ? 'हम भाग्य नहीं बदलते' : "WE DON'T CHANGE DESTINY"}</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-5 font-cinzel">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-4 sm:mb-5 font-cinzel">
             {lang === 'hi' ? (
               <>
                 हम बदलते हैं <br />
@@ -199,17 +199,17 @@ export default function Hero({
             )}
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-xl mb-8 leading-relaxed font-normal">
+          <p className="text-sm sm:text-lg text-slate-300 max-w-xl mb-6 sm:mb-8 leading-relaxed font-normal">
             {lang === 'hi' 
               ? 'वैदिक ज्योतिष और टैरो कार्ड्स के माध्यम से सटीक मार्गदर्शन प्राप्त करें और जीवन के हर मोड़ पर सही और आत्मविश्वासपूर्ण निर्णय लें।'
               : 'Get accurate guidance through Vedic Astrology and Tarot Reading to make confident life decisions.'}
           </p>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4 mb-12 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-8 sm:mb-12 w-full sm:w-auto">
             <button
               onClick={onOpenConsultation}
-              className="gold-btn px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 w-full sm:w-auto cursor-pointer shadow-lg"
+              className="gold-btn px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 w-full sm:w-auto cursor-pointer shadow-lg"
             >
               <Sparkles className="w-4 h-4 text-slate-900" />
               <span>{lang === 'hi' ? 'वैदिक परामर्श बुक करें' : 'Book Vedic Consultation'}</span>
@@ -217,7 +217,7 @@ export default function Hero({
 
             <button
               onClick={onOpenTarot}
-              className="purple-btn px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 w-full sm:w-auto cursor-pointer shadow-md backdrop-blur-sm"
+              className="purple-btn px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 w-full sm:w-auto cursor-pointer shadow-md backdrop-blur-sm"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
               <span>{lang === 'hi' ? 'टैरो रीडिंग बुक करें' : 'Book Tarot Reading'}</span>
@@ -225,45 +225,45 @@ export default function Hero({
           </div>
 
           {/* Trust Badges Bar (10K+ Happy Clients, 50+ Expert Astrologers, 98% Accurate Guidance, 24/7 Support) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-purple-800/40 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-6 border-t border-purple-800/40 w-full">
             
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
-                <Calendar className="w-5 h-5" />
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-white text-base">10K+</span>
-                <span className="text-xs text-slate-300">{lang === 'hi' ? 'संतुष्ट ग्राहक' : 'Happy Clients'}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
-                <Users className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-white text-base">50+</span>
-                <span className="text-xs text-slate-300">{lang === 'hi' ? 'विशेषज्ञ ज्योतिषी' : 'Expert Astrologers'}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-white text-sm sm:text-base">10K+</span>
+                <span className="text-[11px] sm:text-xs text-slate-300 truncate">{lang === 'hi' ? 'संतुष्ट ग्राहक' : 'Happy Clients'}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-white text-base">98%</span>
-                <span className="text-xs text-slate-300">{lang === 'hi' ? 'सटीक मार्गदर्शन' : 'Accurate Guidance'}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-white text-sm sm:text-base">50+</span>
+                <span className="text-[11px] sm:text-xs text-slate-300 truncate">{lang === 'hi' ? 'विशेषज्ञ ज्योतिषी' : 'Expert Astrologers'}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
-                <Headphones className="w-5 h-5" />
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-white text-base">24/7</span>
-                <span className="text-xs text-slate-300">{lang === 'hi' ? 'सहायता उपलब्ध' : 'Support Available'}</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-white text-sm sm:text-base">98%</span>
+                <span className="text-[11px] sm:text-xs text-slate-300 truncate">{lang === 'hi' ? 'सटीक मार्गदर्शन' : 'Accurate Guidance'}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Headphones className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-white text-sm sm:text-base">24/7</span>
+                <span className="text-[11px] sm:text-xs text-slate-300 truncate">{lang === 'hi' ? 'सहायता उपलब्ध' : 'Support Available'}</span>
               </div>
             </div>
 
@@ -272,15 +272,15 @@ export default function Hero({
         </div>
 
         {/* Right Column: "CREATE YOUR KUNDLI" Card + Divine Ganesha Art */}
-        <div className="lg:col-span-5 relative flex items-center justify-center">
+        <div className="lg:col-span-5 relative flex items-center justify-center w-full">
           
           {/* Golden Ganesha & Diya artwork positioning beside/behind card on large screens */}
           <div className="absolute -right-28 -top-14 w-[340px] h-[480px] opacity-40 lg:opacity-50 pointer-events-none hidden xl:block animate-glow">
             <GaneshaArtwork />
           </div>
 
-          {/* Form Card matching screenshot 1 */}
-          <div id="kundli-form" className="w-full max-w-md bg-[#180b33]/95 backdrop-blur-xl border border-amber-500/40 rounded-3xl p-6 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.25)] relative z-20">
+          {/* Form Card */}
+          <div id="kundli-form" className="w-full max-w-md bg-[#180b33]/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.25)] relative z-20">
             
             {/* Ornate corner flourishes */}
             <div className="absolute top-2 left-2 text-amber-400/40 text-xs">❖</div>

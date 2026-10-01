@@ -291,8 +291,8 @@ export default function KundliMilanModal({ onClose, onOpenConsultation, lang }) 
               </div>
 
               {/* 8 Ashtakoot Breakdown Table */}
-              <div className="overflow-x-auto rounded-2xl border border-purple-800/60 bg-[#170932]">
-                <table className="w-full text-left text-xs sm:text-sm border-collapse">
+              <div className="overflow-x-auto rounded-2xl border border-purple-800/60 bg-[#170932] touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[560px]">
                   <thead>
                     <tr className="bg-[#26104c] text-amber-300 font-cinzel border-b border-purple-700/60">
                       <th className="p-3">{isHi ? 'कूट' : 'Koota'}</th>

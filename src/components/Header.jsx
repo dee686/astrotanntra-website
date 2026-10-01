@@ -42,34 +42,34 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0d0421]/95 backdrop-blur-md border-b border-amber-500/20 px-4 md:px-8 py-3.5 transition-all">
+    <header className="sticky top-0 z-40 w-full bg-[#0d0421]/95 backdrop-blur-md border-b border-amber-500/20 px-3 sm:px-6 md:px-8 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Brand Logo & Name */}
         <a 
           href="#" 
           onClick={(e) => { e.preventDefault(); onGoHome?.(); }} 
-          className="flex items-center gap-3 group cursor-pointer"
+          className="flex items-center gap-2 sm:gap-3 group cursor-pointer min-w-0"
         >
-          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-gold-glow flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform bg-[#0e0422]">
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-amber-400/80 shadow-gold-glow flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform bg-[#0e0422]">
             <img 
               src="/logo.png" 
               alt="ASTROTANNTRA Logo" 
               className="w-full h-full object-cover" 
             />
           </div>
-          <div className="flex flex-col">
-            <span className="font-cinzel text-lg md:text-xl font-bold tracking-[0.18em] text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)]">
+          <div className="flex flex-col min-w-0">
+            <span className="font-cinzel text-base sm:text-lg md:text-xl font-bold tracking-[0.12em] sm:tracking-[0.18em] text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)] truncate">
               ASTROTANNTRA
             </span>
-            <span className="text-[10px] md:text-[11px] tracking-wide text-amber-200/80 font-sans -mt-0.5 font-medium">
+            <span className="text-[9px] sm:text-[10px] md:text-[11px] tracking-wide text-amber-200/80 font-sans -mt-0.5 font-medium truncate max-w-[190px] sm:max-w-none">
               Bhagya nhi, disha badalte hain hum
             </span>
           </div>
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-200">
+        <nav className="hidden md:flex items-center gap-4 lg:gap-7 text-sm font-medium text-slate-200">
           <button 
             onClick={onGoHome}
             className="hover:text-amber-300 transition-colors cursor-pointer"
@@ -91,9 +91,9 @@ export default function Header({
         </nav>
 
         {/* Language Selector & User Profile / Login Button */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="relative flex items-center bg-cosmic-900/90 border border-amber-500/30 rounded-lg px-2.5 py-1.5 text-xs text-amber-200">
-            <Globe className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+        <div className="hidden md:flex items-center gap-2.5 lg:gap-4">
+          <div className="relative flex items-center bg-cosmic-900/90 border border-amber-500/30 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs text-amber-200">
+            <Globe className="w-3.5 h-3.5 mr-1 text-amber-400" />
             <select 
               value={lang} 
               onChange={(e) => setLang(e.target.value)}
@@ -109,13 +109,13 @@ export default function Header({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-[#1e0a3c] border border-amber-400/50 hover:border-amber-400 text-slate-100 transition-all shadow-md cursor-pointer group"
+                className="flex items-center gap-2 pl-2 pr-2.5 sm:pr-3 py-1.5 rounded-full bg-[#1e0a3c] border border-amber-400/50 hover:border-amber-400 text-slate-100 transition-all shadow-md cursor-pointer group"
               >
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-bold text-slate-950 text-xs shadow-sm">
                   {getInitials(user.name)}
                 </div>
                 <div className="flex flex-col text-left">
-                  <span className="text-xs font-bold text-amber-300 max-w-[110px] truncate leading-tight">
+                  <span className="text-xs font-bold text-amber-300 max-w-[80px] lg:max-w-[110px] truncate leading-tight">
                     {user.name || 'Vedic Seeker'}
                   </span>
                   <span className="text-[9px] text-emerald-400 flex items-center gap-0.5">
