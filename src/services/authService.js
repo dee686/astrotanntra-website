@@ -213,17 +213,17 @@ export function loginWithEmail(email, password) {
 }
 
 /**
- * Login with phone and simulated OTP
+ * Login with phone and verified OTP
+ * If user does not exist yet, automatically creates verified seeker account
  */
-export function loginWithPhone(phone, otp) {
+export function loginWithPhone(phone, otp, autoCreateIfNew = true) {
   const users = getRegisteredUsers();
   const cleanPhone = phone ? phone.replace(/\D/g, '').slice(-10) : '';
-  const user = users.find(u => u.phone && u.phone.replace(/\D/g, '').slice(-10) === cleanPhone);
 
-  if (!user) {
+  if (!cleanPhone || cleanPhone.length < 10) {
     return {
       success: false,
-      message: 'No account registered with this phone number. Please Sign Up first.'
+      message: 'Please enter a valid 10-digit phone number.'
     };
   }
 
@@ -234,8 +234,93 @@ export function loginWithPhone(phone, otp) {
     };
   }
 
+  let user = users.find(u => u.phone && u.phone.replace(/\D/g, '').slice(-10) === cleanPhone);
+
+  if (!user) {
+    if (autoCreateIfNew) {
+      // Seamlessly register new user verified via real-time phone OTP
+      user = {
+        id: 'user_' + Date.now(),
+        name: `Vedic Seeker (${cleanPhone.slice(-4)})`,
+        email: '',
+        phone: '+91 ' + cleanPhone,
+        provider: 'phone',
+        createdAt: new Date().toISOString()
+      };
+      users.push(user);
+      try {
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+      } catch (e) {}
+    } else {
+      return {
+        success: false,
+        message: 'No account registered with this phone number. Please Sign Up first.'
+      };
+    }
+  }
+
   setActiveUser(user);
   return { success: true, user };
+}
+
+/**
+ * Find user by email or phone identifier (for password reset lookup)
+ */
+export function findUserByIdentifier(identifier) {
+  if (!identifier) return null;
+  const users = getRegisteredUsers();
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanDigits = identifier.replace(/\D/g, '').slice(-10);
+
+  return users.find(u => {
+    const uEmail = (u.email || '').trim().toLowerCase();
+    const uPhone = (u.phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanId && uEmail && cleanId === uEmail) return true;
+    if (cleanDigits && uPhone && cleanDigits === uPhone) return true;
+    return false;
+  });
+}
+
+/**
+ * Reset password for an account identified by email or phone
+ */
+export function resetUserPassword({ identifier, newPassword }) {
+  if (!identifier || !newPassword) {
+    return {
+      success: false,
+      message: 'Email/Phone and new password are required.'
+    };
+  }
+
+  const users = getRegisteredUsers();
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanDigits = identifier.replace(/\D/g, '').slice(-10);
+
+  const user = users.find(u => {
+    const uEmail = (u.email || '').trim().toLowerCase();
+    const uPhone = (u.phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanId && uEmail && cleanId === uEmail) return true;
+    if (cleanDigits && uPhone && cleanDigits === uPhone) return true;
+    return false;
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: 'No registered account found with this email or phone number.'
+    };
+  }
+
+  user.password = newPassword;
+  try {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  } catch (e) {}
+
+  return {
+    success: true,
+    message: 'Password reset successfully. You can now sign in with your new password.',
+    user
+  };
 }
 
 /**
