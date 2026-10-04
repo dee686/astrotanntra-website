@@ -27,7 +27,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
   const [isLogin, setIsLogin] = useState(true);
 
   // Sign In method: 'phone' | 'email'
-  const [authMethod, setAuthMethod] = useState('phone');
+  const [authMethod, setAuthMethod] = useState(authReason === 'editor_login' ? 'email' : 'phone');
 
   // Sign In fields
   const [signInPhone, setSignInPhone] = useState('+91 99930 27943');
@@ -180,16 +180,20 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
               <h3 className="font-cinzel font-bold text-base sm:text-lg text-amber-300">
                 {isSuccess 
                   ? (lang === 'hi' ? 'प्रमाणीकरण सफल' : 'Authentication Complete') 
-                  : authReason === 'premium_kundli'
-                    ? (isLogin 
-                        ? (lang === 'hi' ? '★ कुण्डली हेतु साइन इन करें' : '★ Sign In to Unlock Kundli') 
-                        : (lang === 'hi' ? '★ नया खाता बनाएं (साइन अप)' : '★ Sign Up to Unlock Kundli'))
-                    : (isLogin ? (lang === 'hi' ? 'ASTROTANNTRA में आपका स्वागत है' : 'Welcome to ASTROTANNTRA') : (lang === 'hi' ? 'निःशुल्क खाता बनाएं' : 'Create Free Account'))}
+                  : authReason === 'editor_login'
+                    ? (lang === 'hi' ? '🛡️ अधिकृत ज्योतिषी संपादक लॉगिन' : '🛡️ Astrologer & Editor Sign In')
+                    : authReason === 'premium_kundli'
+                      ? (isLogin 
+                          ? (lang === 'hi' ? '★ कुण्डली हेतु साइन इन करें' : '★ Sign In to Unlock Kundli') 
+                          : (lang === 'hi' ? '★ नया खाता बनाएं (साइन अप)' : '★ Sign Up to Unlock Kundli'))
+                      : (isLogin ? (lang === 'hi' ? 'ASTROTANNTRA में आपका स्वागत है' : 'Welcome to ASTROTANNTRA') : (lang === 'hi' ? 'निःशुल्क खाता बनाएं' : 'Create Free Account'))}
               </h3>
               <span className="text-[11px] text-amber-200/70">
-                {authReason === 'premium_kundli'
-                  ? (lang === 'hi' ? 'सम्पूर्ण वैदिक कुण्डली अनलॉक करने के लिए लॉगिन या साइन अप करें' : 'Sign In or Sign Up to unlock your detailed Vedic Kundli charts')
-                  : (isLogin ? 'Sign in to access your Vedic charts & readings' : 'Join thousands of Vedic seekers worldwide')}
+                {authReason === 'editor_login'
+                  ? (lang === 'hi' ? 'साप्ताहिक राशिफल संपादित और प्रकाशित करने के लिए संपादक आईडी से लॉगिन करें' : 'Sign in with your authorized editor ID to publish weekly horoscopes')
+                  : authReason === 'premium_kundli'
+                    ? (lang === 'hi' ? 'सम्पूर्ण वैदिक कुण्डली अनलॉक करने के लिए लॉगिन या साइन अप करें' : 'Sign In or Sign Up to unlock your detailed Vedic Kundli charts')
+                    : (isLogin ? 'Sign in to access your Vedic charts & readings' : 'Join thousands of Vedic seekers worldwide')}
               </span>
             </div>
           </div>
@@ -225,6 +229,28 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
             </div>
           ) : (
             <>
+              {/* EDITOR LOGIN NOTICE BANNER */}
+              {authReason === 'editor_login' && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-purple-900/40 to-amber-500/10 border border-amber-400/60 flex items-start gap-3 shadow-md animate-fadeIn">
+                  <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center shrink-0 text-amber-300">
+                    <ShieldCheck className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-cinzel font-bold text-xs text-amber-300 flex items-center gap-2">
+                      <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md">
+                        {lang === 'hi' ? 'संपादक पहुंच' : 'EDITOR ACCESS'}
+                      </span>
+                      <span>{lang === 'hi' ? 'साप्ताहिक राशिफल संपादन' : 'Weekly Horoscope Authoring'}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-relaxed">
+                      {lang === 'hi'
+                        ? 'अपनी अधिकृत ईमेल आईडी (deepak.kumar686@gmail.com या admin@astrotanntra.com) से लॉगिन करें। केवल इसी आईडी द्वारा राशिफल संपादित किया जा सकता है।'
+                        : 'Sign in with your authorized editor ID (deepak.kumar686@gmail.com or admin@astrotanntra.com). Only authorized IDs have write permissions; all other users have read-only access.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* PREMIUM KUNDLI NOTICE BANNER (WHEN USER CLICKS GENERATE KUNDLI) */}
               {authReason === 'premium_kundli' && (
                 <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-purple-900/30 border border-amber-400/60 flex items-start gap-3 shadow-[0_4px_25px_rgba(245,158,11,0.2)] animate-fadeIn">

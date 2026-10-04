@@ -7,6 +7,25 @@
 const USERS_STORAGE_KEY = 'astrotanntra_registered_users';
 const ACTIVE_USER_STORAGE_KEY = 'astrotanntra_active_user';
 
+// Authorized Editor accounts allowed to write and post weekly horoscopes
+export const AUTHORIZED_EDITOR_EMAILS = [
+  'deepak.kumar686@gmail.com',
+  'admin@astrotanntra.com'
+];
+
+/**
+ * Check if a given user object has permission to edit and publish weekly horoscopes
+ */
+export function isHoroscopeEditor(user) {
+  if (!user) return false;
+  const cleanEmail = (user.email || '').trim().toLowerCase();
+  return (
+    AUTHORIZED_EDITOR_EMAILS.includes(cleanEmail) ||
+    user.role === 'admin' ||
+    user.isEditor === true
+  );
+}
+
 // Initial pre-registered users for seamless demonstration
 const DEFAULT_USERS = [
   {
@@ -15,6 +34,19 @@ const DEFAULT_USERS = [
     email: 'deepak.kumar686@gmail.com',
     phone: '+91 99930 27943',
     password: 'Password@123',
+    role: 'admin',
+    isEditor: true,
+    provider: 'local',
+    createdAt: '2026-09-01T10:00:00.000Z'
+  },
+  {
+    id: 'user_admin',
+    name: 'Astrotanntra Astrologer & Chief Editor',
+    email: 'admin@astrotanntra.com',
+    phone: '+91 98765 43210',
+    password: 'Password@123',
+    role: 'admin',
+    isEditor: true,
     provider: 'local',
     createdAt: '2026-09-01T10:00:00.000Z'
   }
@@ -31,7 +63,18 @@ export function getRegisteredUsers() {
       return DEFAULT_USERS;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_USERS;
+    const users = Array.isArray(parsed) ? parsed : DEFAULT_USERS;
+
+    // Ensure authorized accounts retain admin/editor role
+    users.forEach(u => {
+      const email = (u.email || '').toLowerCase().trim();
+      if (AUTHORIZED_EDITOR_EMAILS.includes(email)) {
+        u.role = 'admin';
+        u.isEditor = true;
+      }
+    });
+
+    return users;
   } catch (e) {
     return DEFAULT_USERS;
   }
@@ -43,7 +86,13 @@ export function getRegisteredUsers() {
 export function getActiveUser() {
   try {
     const raw = localStorage.getItem(ACTIVE_USER_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    if (user && isHoroscopeEditor(user)) {
+      user.role = 'admin';
+      user.isEditor = true;
+    }
+    return user;
   } catch (e) {
     return null;
   }
@@ -55,6 +104,10 @@ export function getActiveUser() {
 export function setActiveUser(user) {
   try {
     if (user) {
+      if (isHoroscopeEditor(user)) {
+        user.role = 'admin';
+        user.isEditor = true;
+      }
       localStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(user));
     } else {
       localStorage.removeItem(ACTIVE_USER_STORAGE_KEY);

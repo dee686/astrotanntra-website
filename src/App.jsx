@@ -384,6 +384,11 @@ export default function App() {
           onClose={() => setIsHoroscopeOpen(false)}
           onOpenConsultation={handleOpenConsultationWithTopic}
           lang={lang}
+          user={user}
+          onOpenAuth={(reason) => {
+            setAuthReason(reason || null);
+            setIsAuthOpen(true);
+          }}
         />
       )}
 
