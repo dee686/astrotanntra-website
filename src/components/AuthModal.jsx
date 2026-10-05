@@ -16,7 +16,8 @@ import {
   MessageSquare,
   KeyRound,
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  Settings
 } from 'lucide-react';
 import { 
   registerUser, 
@@ -27,6 +28,13 @@ import {
   findUserByIdentifier,
   resetUserPassword
 } from '../services/authService';
+import {
+  sendRealEmailOtp,
+  sendRealSmsOtp,
+  getWhatsAppOtpUrl,
+  getOtpServiceConfig,
+  saveOtpServiceConfig
+} from '../services/otpDeliveryService';
 
 export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authReason = null }) {
   // Tab: 'signin' | 'signup'
@@ -76,6 +84,12 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
   const [isSuccess, setIsSuccess] = useState(false);
   const [successUser, setSuccessUser] = useState(null);
 
+  // Real OTP Delivery Status & Gateway Settings
+  const [deliveryStatus, setDeliveryStatus] = useState(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [apiKeys, setApiKeys] = useState(() => getOtpServiceConfig());
+  const [keySavedNotice, setKeySavedNotice] = useState(false);
+
   // Google Account Picker Dialog
   const [showGooglePicker, setShowGooglePicker] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState('');
@@ -95,9 +109,10 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
   }, []);
 
   // Handle Send Real-Time OTP for Phone Sign-In
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e?.preventDefault();
     setErrorMessage('');
+    setDeliveryStatus(null);
     const cleanDigits = signInPhone.replace(/\D/g, '').slice(-10);
     if (!cleanDigits || cleanDigits.length < 10) {
       setErrorMessage(
@@ -120,31 +135,49 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
       'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
     );
 
-    setTimeout(() => {
-      setIsSendingPhoneOtp(false);
-      setOtpSent(true);
+    // Attempt real SMS dispatch
+    const smsResult = await sendRealSmsOtp(signInPhone, randomCode);
+    if (smsResult.success) {
+      setDeliveryStatus({
+        type: 'success',
+        text: lang === 'hi' 
+          ? `सत्यापन OTP आपके मोबाइल नंबर पर SMS द्वारा भेजा गया (${smsResult.provider})!` 
+          : `Real OTP successfully dispatched to your phone via ${smsResult.provider}!`
+      });
+    } else if (smsResult.missingConfig) {
+      setDeliveryStatus({
+        type: 'warning',
+        text: lang === 'hi'
+          ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
+          : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+        whatsappUrl: getWhatsAppOtpUrl(signInPhone, randomCode)
+      });
+    }
 
-      // Start 60-second real-time countdown
-      setPhoneOtpCountdown(60);
-      if (phoneTimerRef.current) clearInterval(phoneTimerRef.current);
-      phoneTimerRef.current = setInterval(() => {
-        setPhoneOtpCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(phoneTimerRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }, 450);
+    setIsSendingPhoneOtp(false);
+    setOtpSent(true);
+
+    // Start 60-second real-time countdown
+    setPhoneOtpCountdown(60);
+    if (phoneTimerRef.current) clearInterval(phoneTimerRef.current);
+    phoneTimerRef.current = setInterval(() => {
+      setPhoneOtpCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(phoneTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   // Handle Resend Real-Time OTP for Phone Sign-In
-  const handleResendPhoneOtp = () => {
+  const handleResendPhoneOtp = async () => {
     const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedPhoneOtp(randomCode);
     setOtp('');
     setErrorMessage('');
+    setDeliveryStatus(null);
 
     console.log(
       `%c[ASTROTANNTRA SMS GATEWAY]%c Resent verification OTP to ${signInPhone}: %c${randomCode}`,
@@ -152,6 +185,25 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
       'color: #f1f5f9; padding-left: 6px;',
       'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
     );
+
+    const smsResult = await sendRealSmsOtp(signInPhone, randomCode);
+    if (smsResult.success) {
+      setDeliveryStatus({
+        type: 'success',
+        text: lang === 'hi' 
+          ? `सत्यापन OTP पुनः आपके मोबाइल नंबर पर भेज दिया गया (${smsResult.provider})!` 
+          : `Real OTP re-dispatched to your phone via ${smsResult.provider}!`
+      });
+    } else if (smsResult.missingConfig) {
+      setDeliveryStatus({
+        type: 'warning',
+        text: lang === 'hi'
+          ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
+          : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+        whatsappUrl: getWhatsAppOtpUrl(signInPhone, randomCode)
+      });
+    }
+
     setPhoneOtpCountdown(60);
     if (phoneTimerRef.current) clearInterval(phoneTimerRef.current);
     phoneTimerRef.current = setInterval(() => {
@@ -242,9 +294,10 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
   };
 
   // Handle Send Reset OTP for Forgot Password
-  const handleSendForgotOtp = (e) => {
-    e.preventDefault();
+  const handleSendForgotOtp = async (e) => {
+    e?.preventDefault();
     setErrorMessage('');
+    setDeliveryStatus(null);
 
     if (!forgotIdentifier.trim()) {
       setErrorMessage(
@@ -277,38 +330,49 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
       'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
     );
 
-    setTimeout(() => {
-      setIsSendingForgotOtp(false);
-      setForgotStep('verify');
-
-      // Start 60-second timer
-      setForgotCountdown(60);
-      if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
-      forgotTimerRef.current = setInterval(() => {
-        setForgotCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(forgotTimerRef.current);
-            return 0;
-          }
-          return prev - 1;
+    // If identifier is Email: send real email to Gmail
+    if (forgotIdentifier.includes('@')) {
+      const emailResult = await sendRealEmailOtp(forgotIdentifier, code, 'Password Reset');
+      if (emailResult.success) {
+        setDeliveryStatus({
+          type: 'success',
+          text: lang === 'hi'
+            ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर भेज दिया गया है (${emailResult.provider})!`
+            : `Real OTP successfully delivered to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`
         });
-      }, 1000);
-    }, 450);
-  };
+      } else if (emailResult.missingConfig) {
+        setDeliveryStatus({
+          type: 'warning',
+          text: lang === 'hi'
+            ? 'जीमेल पर वास्तविक ईमेल भेजने हेतु Resend / EmailJS कुंजी आवश्यक है। नीचे सेटिंग्स में कुंजी दर्ज करें।'
+            : 'To send real emails to your Gmail inbox, please enter your free Resend / EmailJS key below.'
+        });
+      }
+    } else {
+      // If identifier is Phone: send real SMS
+      const smsResult = await sendRealSmsOtp(forgotIdentifier, code);
+      if (smsResult.success) {
+        setDeliveryStatus({
+          type: 'success',
+          text: lang === 'hi'
+            ? `सत्यापन कोड आपके फोन पर SMS द्वारा भेज दिया गया है (${smsResult.provider})!`
+            : `Real OTP successfully delivered to your phone via ${smsResult.provider}!`
+        });
+      } else if (smsResult.missingConfig) {
+        setDeliveryStatus({
+          type: 'warning',
+          text: lang === 'hi'
+            ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
+            : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+          whatsappUrl: getWhatsAppOtpUrl(forgotIdentifier, code)
+        });
+      }
+    }
 
-  // Handle Resend Reset OTP
-  const handleResendForgotOtp = () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setForgotGeneratedOtp(code);
-    setForgotOtp('');
-    setErrorMessage('');
+    setIsSendingForgotOtp(false);
+    setForgotStep('verify');
 
-    console.log(
-      `%c[ASTROTANNTRA DISPATCH GATEWAY]%c Resent Password Reset OTP to ${forgotIdentifier}: %c${code}`,
-      'background: #10b981; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
-      'color: #f1f5f9; padding-left: 6px;',
-      'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
-    );
+    // Start 60-second timer
     setForgotCountdown(60);
     if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
     forgotTimerRef.current = setInterval(() => {
@@ -320,6 +384,86 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
         return prev - 1;
       });
     }, 1000);
+  };
+
+  // Handle Resend Reset OTP
+  const handleResendForgotOtp = async () => {
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    setForgotGeneratedOtp(code);
+    setForgotOtp('');
+    setErrorMessage('');
+    setDeliveryStatus(null);
+
+    console.log(
+      `%c[ASTROTANNTRA DISPATCH GATEWAY]%c Resent Password Reset OTP to ${forgotIdentifier}: %c${code}`,
+      'background: #10b981; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
+      'color: #f1f5f9; padding-left: 6px;',
+      'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
+    );
+
+    if (forgotIdentifier.includes('@')) {
+      const emailResult = await sendRealEmailOtp(forgotIdentifier, code, 'Password Reset');
+      if (emailResult.success) {
+        setDeliveryStatus({
+          type: 'success',
+          provider: emailResult.provider,
+          text: lang === 'hi'
+            ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर पुनः भेज दिया गया है (${emailResult.provider})!`
+            : `Real OTP successfully re-dispatched to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`
+        });
+      } else if (emailResult.missingConfig) {
+        setDeliveryStatus({
+          type: 'warning',
+          provider: 'email',
+          text: lang === 'hi'
+            ? 'जीमेल पर वास्तविक ईमेल भेजने हेतु Resend / EmailJS कुंजी आवश्यक है। नीचे सेटिंग्स में कुंजी दर्ज करें।'
+            : 'To deliver real OTPs to your Gmail inbox, configure your free Resend / EmailJS API key.'
+        });
+      }
+    } else {
+      const smsResult = await sendRealSmsOtp(forgotIdentifier, code);
+      if (smsResult.success) {
+        setDeliveryStatus({
+          type: 'success',
+          provider: smsResult.provider,
+          text: lang === 'hi'
+            ? `सत्यापन कोड आपके फोन पर SMS द्वारा पुनः भेज दिया गया है (${smsResult.provider})!`
+            : `Real OTP successfully re-dispatched to your phone via ${smsResult.provider}!`
+        });
+      } else if (smsResult.missingConfig) {
+        setDeliveryStatus({
+          type: 'warning',
+          provider: 'sms',
+          text: lang === 'hi'
+            ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
+            : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+          whatsappUrl: getWhatsAppOtpUrl(forgotIdentifier, code)
+        });
+      }
+    }
+
+    setForgotCountdown(60);
+    if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
+    forgotTimerRef.current = setInterval(() => {
+      setForgotCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(forgotTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Handle Save Gateway API Keys
+  const handleSaveApiKeys = (e) => {
+    e.preventDefault();
+    saveOtpServiceConfig(apiKeys);
+    setKeySavedNotice(true);
+    setTimeout(() => {
+      setKeySavedNotice(false);
+      setShowConfigModal(false);
+    }, 1200);
   };
 
   // Handle Reset Password Submit
@@ -433,13 +577,23 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
               </span>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-cosmic-800 hover:bg-rose-500/20 border border-purple-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowConfigModal(true)}
+              title={lang === 'hi' ? 'वास्तविक SMS / जीमेल गेटवे सेटिंग्स' : 'Real SMS & Gmail Gateway Settings'}
+              className="p-2 rounded-xl bg-purple-900/40 hover:bg-amber-500/20 border border-purple-700/80 text-amber-300 transition-colors cursor-pointer"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-cosmic-800 hover:bg-rose-500/20 border border-purple-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Content Container */}
@@ -599,6 +753,60 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
                       </span>
                     </div>
                   </div>
+
+                  {/* Real Gateway Delivery Status Feedback */}
+                  {deliveryStatus && (
+                    <div className={`p-3 rounded-xl border text-xs space-y-2 animate-fadeIn ${
+                      deliveryStatus.type === 'success'
+                        ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-200'
+                        : deliveryStatus.type === 'warning'
+                        ? 'bg-amber-950/60 border-amber-500/50 text-amber-200'
+                        : 'bg-rose-950/60 border-rose-500/50 text-rose-200'
+                    }`}>
+                      <div className="flex items-start gap-2">
+                        {deliveryStatus.type === 'success' ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${deliveryStatus.type === 'warning' ? 'text-amber-400' : 'text-rose-400'}`} />
+                        )}
+                        <div className="flex-1 leading-relaxed">
+                          <p className="font-medium">{deliveryStatus.text}</p>
+                          {deliveryStatus.type === 'warning' && (
+                            <p className="text-[10px] text-amber-300/80 mt-1">
+                              {lang === 'hi'
+                                ? 'बिना API कुंजी के तुरंत परीक्षण हेतु आप डिफ़ॉल्ट कोड 1234 का भी उपयोग कर सकते हैं।'
+                                : 'For instant local testing without API keys, you can also use demo code: 1234'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5 pl-6">
+                        {deliveryStatus.whatsappUrl && (
+                          <a
+                            href={deliveryStatus.whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>{lang === 'hi' ? 'व्हाट्सएप द्वारा प्राप्त करें ↗' : 'Send via WhatsApp ↗'}</span>
+                          </a>
+                        )}
+
+                        {deliveryStatus.type === 'warning' && (
+                          <button
+                            type="button"
+                            onClick={() => setShowConfigModal(true)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-800/80 hover:bg-purple-700 text-amber-300 border border-purple-600 text-[11px] font-semibold transition-colors cursor-pointer"
+                          >
+                            <Settings className="w-3.5 h-3.5" />
+                            <span>{lang === 'hi' ? '⚙️ गेटवे कुंजी सेट करें' : '⚙️ Configure Gateway'}</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* 4-Digit Reset OTP Input */}
                   <div>
@@ -955,6 +1163,60 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
                           </div>
                         </div>
 
+                        {/* Real Gateway Delivery Status Feedback */}
+                        {deliveryStatus && (
+                          <div className={`p-3 rounded-xl border text-xs space-y-2 animate-fadeIn ${
+                            deliveryStatus.type === 'success'
+                              ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-200'
+                              : deliveryStatus.type === 'warning'
+                              ? 'bg-amber-950/60 border-amber-500/50 text-amber-200'
+                              : 'bg-rose-950/60 border-rose-500/50 text-rose-200'
+                          }`}>
+                            <div className="flex items-start gap-2">
+                              {deliveryStatus.type === 'success' ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                              ) : (
+                                <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${deliveryStatus.type === 'warning' ? 'text-amber-400' : 'text-rose-400'}`} />
+                              )}
+                              <div className="flex-1 leading-relaxed">
+                                <p className="font-medium">{deliveryStatus.text}</p>
+                                {deliveryStatus.type === 'warning' && (
+                                  <p className="text-[10px] text-amber-300/80 mt-1">
+                                    {lang === 'hi'
+                                      ? 'बिना API कुंजी के तुरंत परीक्षण हेतु आप डिफ़ॉल्ट कोड 1234 का भी उपयोग कर सकते हैं।'
+                                      : 'For instant local testing without API keys, you can also use demo code: 1234'}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 pt-0.5 pl-6">
+                              {deliveryStatus.whatsappUrl && (
+                                <a
+                                  href={deliveryStatus.whatsappUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition-colors"
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                  <span>{lang === 'hi' ? 'व्हाट्सएप द्वारा प्राप्त करें ↗' : 'Send via WhatsApp ↗'}</span>
+                                </a>
+                              )}
+
+                              {deliveryStatus.type === 'warning' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setShowConfigModal(true)}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-800/80 hover:bg-purple-700 text-amber-300 border border-purple-600 text-[11px] font-semibold transition-colors cursor-pointer"
+                                >
+                                  <Settings className="w-3.5 h-3.5" />
+                                  <span>{lang === 'hi' ? '⚙️ गेटवे कुंजी सेट करें' : '⚙️ Configure Gateway'}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         <div>
                           <div className="flex items-center justify-between mb-1.5">
                             <label className="text-xs text-slate-300 block font-medium">
@@ -1292,6 +1554,18 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
                     {lang === 'hi' ? 'गूगल खाते से लॉगिन करें' : 'Continue with Google Account'}
                   </span>
                 </button>
+
+                {/* Gateway API Keys Config Link */}
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowConfigModal(true)}
+                    className="text-[11px] text-purple-300/70 hover:text-amber-300 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Settings className="w-3 h-3 text-amber-400" />
+                    <span>{lang === 'hi' ? '⚙️ वास्तविक SMS एवं जीमेल गेटवे सेटिंग्स' : '⚙️ Real SMS & Gmail Gateway Settings'}</span>
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -1439,6 +1713,152 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
               >
                 Go Back
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* REAL SMS & GMAIL GATEWAY CONFIGURATION MODAL */}
+        {showConfigModal && (
+          <div className="absolute inset-0 z-50 bg-[#120527]/98 backdrop-blur-md p-5 sm:p-6 flex flex-col justify-between animate-fadeIn overflow-y-auto custom-scrollbar">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-purple-800/60">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-amber-300">
+                    <Settings className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-cinzel font-bold text-sm text-amber-300">
+                      {lang === 'hi' ? 'वास्तविक SMS एवं जीमेल गेटवे सेटिंग्स' : 'Real SMS & Gmail Gateway Settings'}
+                    </h4>
+                    <p className="text-[10px] text-slate-400">
+                      {lang === 'hi' ? 'वास्तविक फोन एवं इनबॉक्स में OTP भेजने हेतु अपनी मुफ्त API कुंजी दर्ज करें' : 'Enter your free API keys to dispatch physical OTPs to real inboxes & phones'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowConfigModal(false)}
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {keySavedNotice && (
+                <div className="my-3 p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/80 text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{lang === 'hi' ? 'गेटवे कुंजियाँ सफलतापूर्वक सहेजी गईं!' : 'Gateway API keys saved successfully!'}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveApiKeys} className="py-4 space-y-4 text-xs">
+                
+                {/* Resend API Key for Gmail */}
+                <div className="p-3.5 rounded-2xl bg-[#1b0a39] border border-purple-700/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-amber-300 flex items-center gap-1.5">
+                      <Mail className="w-4 h-4 text-rose-400" />
+                      <span>{lang === 'hi' ? '1. जीमेल OTP डिलीवरी (Resend API Key)' : '1. Gmail OTP Delivery (Resend API Key)'}</span>
+                    </label>
+                    <a
+                      href="https://resend.com/api-keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-amber-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>resend.com (Free) ↗</span>
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    {lang === 'hi'
+                      ? 'Resend से मुफ्त API कुंजी प्राप्त करें (3,000 मुफ्त ईमेल प्रतिमाह) ताकि OTP सीधे उपयोगकर्ता के Gmail इनबॉक्स में पहुंचे।'
+                      : 'Get a free API key from resend.com (3,000 free emails/mo) to deliver real OTPs straight to any Gmail inbox.'}
+                  </p>
+                  <input
+                    type="password"
+                    value={apiKeys.resendApiKey || ''}
+                    onChange={(e) => setApiKeys({ ...apiKeys, resendApiKey: e.target.value })}
+                    placeholder="re_123456789_abcdef..."
+                    className="w-full px-3 py-2 rounded-xl bg-[#210f44] border border-purple-700 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {/* Fast2SMS API Key for India Phone SMS */}
+                <div className="p-3.5 rounded-2xl bg-[#1b0a39] border border-purple-700/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-amber-300 flex items-center gap-1.5">
+                      <Phone className="w-4 h-4 text-emerald-400" />
+                      <span>{lang === 'hi' ? '2. भारतीय मोबाइल SMS (Fast2SMS API Key)' : '2. India Mobile SMS (Fast2SMS API Key)'}</span>
+                    </label>
+                    <a
+                      href="https://www.fast2sms.com/dashboard/dev-api"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-amber-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>fast2sms.com ↗</span>
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    {lang === 'hi'
+                      ? 'भारत के किसी भी 10-अंकीय मोबाइल नंबर पर वास्तविक SMS भेजने के लिए Fast2SMS की मुफ्त कुंजी दर्ज करें।'
+                      : 'Free API key from fast2sms.com to deliver real SMS OTPs directly to Indian mobile numbers (+91).'}
+                  </p>
+                  <input
+                    type="password"
+                    value={apiKeys.fast2smsApiKey || ''}
+                    onChange={(e) => setApiKeys({ ...apiKeys, fast2smsApiKey: e.target.value })}
+                    placeholder="Enter Fast2SMS Authorization Key..."
+                    className="w-full px-3 py-2 rounded-xl bg-[#210f44] border border-purple-700 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {/* Web3Forms Access Key (Zero-setup free email alternative) */}
+                <div className="p-3.5 rounded-2xl bg-[#1b0a39] border border-purple-700/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-purple-200 flex items-center gap-1.5">
+                      <KeyRound className="w-4 h-4 text-amber-400" />
+                      <span>{lang === 'hi' ? '3. वैकल्पिक ईमेल कुंजी (Web3Forms Access Key)' : '3. Alternative Email Key (Web3Forms Access Key)'}</span>
+                    </label>
+                    <a
+                      href="https://web3forms.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-amber-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>web3forms.com ↗</span>
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    value={apiKeys.web3FormsKey || ''}
+                    onChange={(e) => setApiKeys({ ...apiKeys, web3FormsKey: e.target.value })}
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    className="w-full px-3 py-2 rounded-xl bg-[#210f44] border border-purple-700 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl gold-btn text-xs font-bold uppercase tracking-wider cursor-pointer shadow-gold-glow"
+                  >
+                    {lang === 'hi' ? 'सेटिंग्स सुरक्षित सहेजें' : 'Save Gateway Settings'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfigModal(false)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 hover:text-white cursor-pointer"
+                  >
+                    {lang === 'hi' ? 'रद्द करें' : 'Close'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="pt-3 border-t border-purple-900/60 text-[10px] text-slate-400 flex items-center justify-between">
+              <span>{lang === 'hi' ? '🛡️ कुंजियाँ आपके स्थानीय ब्राउज़र में सुरक्षित हैं' : '🛡️ Keys saved securely in browser localStorage'}</span>
+              <span className="text-amber-400 font-mono">Demo OTP: 1234</span>
             </div>
           </div>
         )}
