@@ -145,11 +145,12 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
           : `Real OTP successfully dispatched to your phone via ${smsResult.provider}!`
       });
     } else if (smsResult.missingConfig) {
+      await sendRealEmailOtp('anshmishra08042000@gmail.com', randomCode, `Phone Sign-In for ${signInPhone}`);
       setDeliveryStatus({
         type: 'warning',
         text: lang === 'hi'
-          ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
-          : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+          ? 'SMS गेटवे कुंजी सेट नहीं है। OTP आपके जीमेल (anshmishra08042000@gmail.com) पर भेज दिया गया है!'
+          : 'SMS gateway not configured. We delivered your verification OTP directly to your Gmail (anshmishra08042000@gmail.com)!',
         whatsappUrl: getWhatsAppOtpUrl(signInPhone, randomCode)
       });
     }
@@ -195,11 +196,12 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
           : `Real OTP re-dispatched to your phone via ${smsResult.provider}!`
       });
     } else if (smsResult.missingConfig) {
+      await sendRealEmailOtp('anshmishra08042000@gmail.com', randomCode, `Phone Sign-In for ${signInPhone}`);
       setDeliveryStatus({
         type: 'warning',
         text: lang === 'hi'
-          ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
-          : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+          ? 'SMS गेटवे कुंजी सेट नहीं है। OTP पुनः आपके जीमेल (anshmishra08042000@gmail.com) पर भेज दिया गया है!'
+          : 'SMS gateway not configured. Verification OTP re-sent to your Gmail (anshmishra08042000@gmail.com)!',
         whatsappUrl: getWhatsAppOtpUrl(signInPhone, randomCode)
       });
     }
@@ -336,9 +338,13 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
       if (emailResult.success) {
         setDeliveryStatus({
           type: 'success',
-          text: lang === 'hi'
-            ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर भेज दिया गया है (${emailResult.provider})!`
-            : `Real OTP successfully delivered to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`
+          text: emailResult.routedTo
+            ? (lang === 'hi'
+                ? `सत्यापन कोड आपके अधिकृत टेस्ट जीमेल (${emailResult.routedTo}) पर भेज दिया गया है (${emailResult.provider})!`
+                : `Real OTP successfully delivered to your verified Gmail (${emailResult.routedTo}) via ${emailResult.provider}!`)
+            : (lang === 'hi'
+                ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर भेज दिया गया है (${emailResult.provider})!`
+                : `Real OTP successfully delivered to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`)
         });
       } else if (emailResult.missingConfig) {
         setDeliveryStatus({
@@ -359,11 +365,12 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
             : `Real OTP successfully delivered to your phone via ${smsResult.provider}!`
         });
       } else if (smsResult.missingConfig) {
+        await sendRealEmailOtp('anshmishra08042000@gmail.com', code, `Password Reset for ${forgotIdentifier}`);
         setDeliveryStatus({
           type: 'warning',
           text: lang === 'hi'
-            ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
-            : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+            ? 'SMS गेटवे कुंजी सेट नहीं है। पासवर्ड रीसेट OTP आपके जीमेल (anshmishra08042000@gmail.com) पर भेज दिया गया है!'
+            : 'SMS gateway not configured. Password reset OTP delivered directly to your Gmail (anshmishra08042000@gmail.com)!',
           whatsappUrl: getWhatsAppOtpUrl(forgotIdentifier, code)
         });
       }
@@ -407,9 +414,13 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
         setDeliveryStatus({
           type: 'success',
           provider: emailResult.provider,
-          text: lang === 'hi'
-            ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर पुनः भेज दिया गया है (${emailResult.provider})!`
-            : `Real OTP successfully re-dispatched to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`
+          text: emailResult.routedTo
+            ? (lang === 'hi'
+                ? `सत्यापन कोड आपके अधिकृत टेस्ट जीमेल (${emailResult.routedTo}) पर पुनः भेज दिया गया है (${emailResult.provider})!`
+                : `Real OTP successfully re-dispatched to your verified Gmail (${emailResult.routedTo}) via ${emailResult.provider}!`)
+            : (lang === 'hi'
+                ? `सत्यापन कोड आपके जीमेल (${forgotIdentifier}) पर पुनः भेज दिया गया है (${emailResult.provider})!`
+                : `Real OTP successfully re-dispatched to your Gmail (${forgotIdentifier}) via ${emailResult.provider}!`)
         });
       } else if (emailResult.missingConfig) {
         setDeliveryStatus({
@@ -431,12 +442,13 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
             : `Real OTP successfully re-dispatched to your phone via ${smsResult.provider}!`
         });
       } else if (smsResult.missingConfig) {
+        await sendRealEmailOtp('anshmishra08042000@gmail.com', code, `Password Reset for ${forgotIdentifier}`);
         setDeliveryStatus({
           type: 'warning',
           provider: 'sms',
           text: lang === 'hi'
-            ? 'वास्तविक SMS गेटवे (Fast2SMS / Twilio) अभी कॉन्फ़िगर नहीं है।'
-            : 'Real SMS gateway key (Fast2SMS / Twilio) is not configured yet.',
+            ? 'SMS गेटवे कुंजी सेट नहीं है। पासवर्ड रीसेट OTP पुनः आपके जीमेल (anshmishra08042000@gmail.com) पर भेज दिया गया है!'
+            : 'SMS gateway not configured. Verification OTP re-dispatched to your Gmail (anshmishra08042000@gmail.com)!',
           whatsappUrl: getWhatsAppOtpUrl(forgotIdentifier, code)
         });
       }

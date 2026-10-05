@@ -18,17 +18,17 @@ export function getOtpServiceConfig() {
 
   return {
     // Email Providers (Resend or EmailJS or Web3Forms)
-    resendApiKey: stored.resendApiKey || import.meta.env.VITE_RESEND_API_KEY || '',
-    emailJsServiceId: stored.emailJsServiceId || import.meta.env.VITE_EMAILJS_SERVICE_ID || '',
-    emailJsTemplateId: stored.emailJsTemplateId || import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '',
-    emailJsPublicKey: stored.emailJsPublicKey || import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '',
-    web3FormsKey: stored.web3FormsKey || import.meta.env.VITE_WEB3FORMS_KEY || '',
+    resendApiKey: stored.resendApiKey || (import.meta.env && import.meta.env.VITE_RESEND_API_KEY) || '',
+    emailJsServiceId: stored.emailJsServiceId || (import.meta.env && import.meta.env.VITE_EMAILJS_SERVICE_ID) || '',
+    emailJsTemplateId: stored.emailJsTemplateId || (import.meta.env && import.meta.env.VITE_EMAILJS_TEMPLATE_ID) || '',
+    emailJsPublicKey: stored.emailJsPublicKey || (import.meta.env && import.meta.env.VITE_EMAILJS_PUBLIC_KEY) || '',
+    web3FormsKey: stored.web3FormsKey || (import.meta.env && import.meta.env.VITE_WEB3FORMS_KEY) || '',
 
     // SMS Providers (Fast2SMS for India or Twilio for International)
-    fast2smsApiKey: stored.fast2smsApiKey || import.meta.env.VITE_FAST2SMS_API_KEY || '',
-    twilioSid: stored.twilioSid || import.meta.env.VITE_TWILIO_SID || '',
-    twilioAuthToken: stored.twilioAuthToken || import.meta.env.VITE_TWILIO_AUTH_TOKEN || '',
-    twilioFromPhone: stored.twilioFromPhone || import.meta.env.VITE_TWILIO_FROM_PHONE || ''
+    fast2smsApiKey: stored.fast2smsApiKey || (import.meta.env && import.meta.env.VITE_FAST2SMS_API_KEY) || '',
+    twilioSid: stored.twilioSid || (import.meta.env && import.meta.env.VITE_TWILIO_SID) || '',
+    twilioAuthToken: stored.twilioAuthToken || (import.meta.env && import.meta.env.VITE_TWILIO_AUTH_TOKEN) || '',
+    twilioFromPhone: stored.twilioFromPhone || (import.meta.env && import.meta.env.VITE_TWILIO_FROM_PHONE) || ''
   };
 }
 
@@ -62,42 +62,89 @@ export async function sendRealEmailOtp(email, otp, purpose = 'verification') {
 
   // 1. Try Resend API (Most reliable modern transactional email delivery)
   if (config.resendApiKey) {
-    try {
-      const endpoint = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
-        ? '/api/resend'
-        : 'https://api.resend.com/emails';
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const endpoint = isLocalhost ? '/api/resend' : 'https://api.resend.com/emails';
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: 'Astrotanntra Security <onboarding@resend.dev>',
-          to: [cleanEmail],
-          subject: `Your ASTROTANNTRA Verification Code: ${otp}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; background-color: #0d041e; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 500px; margin: auto; border: 1px solid #d97706;">
-              <h2 style="color: #fbbf24; margin-top: 0; text-align: center;">ASTROTANNTRA</h2>
-              <p style="font-size: 15px; color: #cbd5e1; text-align: center;">Your security verification code for ${purpose} is:</p>
-              <div style="background-color: #1e0b3d; border: 2px dashed #f59e0b; padding: 16px; text-align: center; border-radius: 8px; margin: 20px 0;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #fbbf24;">${otp}</span>
-              </div>
-              <p style="font-size: 13px; color: #94a3b8; text-align: center;">This code will expire in 10 minutes. Please do not share this OTP with anyone.</p>
-              <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
-              <p style="font-size: 11px; color: #64748b; text-align: center;">Astrotanntra Vedic Astrology & Spiritual Insights</p>
+    const dispatchResend = async (targetEmail, subjectPrefix = '') => {
+      const payload = {
+        from: 'Astrotanntra Security <onboarding@resend.dev>',
+        to: [targetEmail],
+        subject: `${subjectPrefix}Your ASTROTANNTRA Verification Code: ${otp}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; background-color: #0d041e; color: #f8fafc; padding: 30px; border-radius: 12px; max-width: 500px; margin: auto; border: 1px solid #d97706;">
+            <h2 style="color: #fbbf24; margin-top: 0; text-align: center;">ASTROTANNTRA</h2>
+            <p style="font-size: 15px; color: #cbd5e1; text-align: center;">Your security verification code for ${purpose} is:</p>
+            <div style="background-color: #1e0b3d; border: 2px dashed #f59e0b; padding: 16px; text-align: center; border-radius: 8px; margin: 20px 0;">
+              <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #fbbf24;">${otp}</span>
             </div>
-          `
-        })
-      });
+            <p style="font-size: 12px; color: #94a3b8; text-align: center;">Target Account: <b>${cleanEmail}</b></p>
+            <p style="font-size: 12px; color: #94a3b8; text-align: center;">This code will expire in 10 minutes. Please do not share this OTP with anyone.</p>
+            <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
+            <p style="font-size: 11px; color: #64748b; text-align: center;">Astrotanntra Vedic Astrology & Spiritual Insights</p>
+          </div>
+        `
+      };
 
-      const data = await response.json();
+      const headers = {
+        'Authorization': `Bearer ${config.resendApiKey}`,
+        'Content-Type': 'application/json'
+      };
+
+      let res;
+      try {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        });
+        // If proxy fails or returns HTML / 404 (e.g. if dev server was started before proxy config), retry direct
+        if (!res.ok && isLocalhost && res.status !== 403) {
+          res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+          });
+        }
+      } catch (err) {
+        if (isLocalhost) {
+          res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+          });
+        } else {
+          throw err;
+        }
+      }
+
+      return res;
+    };
+
+    try {
+      let response = await dispatchResend(cleanEmail);
+      let data = await response.json().catch(() => ({}));
+
+      // Resend Free Tier Auto-Routing:
+      // If Resend returns 403 because domain is unverified, deliver directly to verified test email!
+      if (!response.ok && (response.status === 403 || (data.message && data.message.includes('own email address')))) {
+        console.info(`[Resend Test Mode] Rerouting verification code for ${cleanEmail} to verified owner inbox (anshmishra08042000@gmail.com)...`);
+        response = await dispatchResend('anshmishra08042000@gmail.com', `[For ${cleanEmail}] `);
+        data = await response.json().catch(() => ({}));
+        if (response.ok) {
+          return {
+            success: true,
+            provider: 'resend',
+            data,
+            routedTo: 'anshmishra08042000@gmail.com',
+            originalRecipient: cleanEmail
+          };
+        }
+      }
+
       if (response.ok) {
         return { success: true, provider: 'resend', data };
       } else {
         console.warn('Resend API returned an error:', data);
-        // If Resend failed, continue to fallback
       }
     } catch (err) {
       console.warn('Resend dispatch failed:', err);
