@@ -229,11 +229,42 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
 
   // Handle Resend Real-Time OTP for Phone Sign-In
   const handleResendPhoneOtp = async () => {
-    const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedPhoneOtp(randomCode);
     setOtp('');
     setErrorMessage('');
     setDeliveryStatus(null);
+    setIsSendingPhoneOtp(true);
+
+    // 1. Primary: Firebase Phone SMS
+    if (isFirebaseConfigured()) {
+      const fbResult = await sendFirebasePhoneOtp(signInPhone, 'recaptcha-container');
+      setIsSendingPhoneOtp(false);
+      if (fbResult.success) {
+        setFirebaseConfirmation(fbResult.confirmationResult);
+        setDeliveryStatus({
+          type: 'success',
+          provider: 'Google Firebase',
+          text: lang === 'hi'
+            ? `Google Firebase द्वारा आपके फोन (${signInPhone}) पर वास्तविक SMS OTP पुनः भेज दिया गया!`
+            : `Real cellular SMS OTP re-dispatched to your mobile (${signInPhone}) via Google Firebase!`
+        });
+
+        setPhoneOtpCountdown(60);
+        if (phoneTimerRef.current) clearInterval(phoneTimerRef.current);
+        phoneTimerRef.current = setInterval(() => {
+          setPhoneOtpCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(phoneTimerRef.current);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return;
+      }
+    }
+
+    const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+    setGeneratedPhoneOtp(randomCode);
 
     console.log(
       `%c[ASTROTANNTRA SMS GATEWAY]%c Resent verification OTP to ${signInPhone}: %c${randomCode}`,
@@ -243,6 +274,7 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
     );
 
     const smsResult = await sendRealSmsOtp(signInPhone, randomCode);
+    setIsSendingPhoneOtp(false);
     if (smsResult.success) {
       setDeliveryStatus({
         type: 'success',
@@ -478,7 +510,35 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
         });
       }
     } else {
-      // If identifier is Phone: send real SMS
+      // If identifier is Phone: send real SMS via Firebase Phone Auth if configured
+      if (isFirebaseConfigured()) {
+        const fbResult = await sendFirebasePhoneOtp(forgotIdentifier, 'recaptcha-container');
+        if (fbResult.success) {
+          setFirebaseConfirmation(fbResult.confirmationResult);
+          setDeliveryStatus({
+            type: 'success',
+            provider: 'Google Firebase',
+            text: lang === 'hi'
+              ? `Google Firebase द्वारा आपके फोन (${forgotIdentifier}) पर वास्तविक SMS OTP भेज दिया गया!`
+              : `Real cellular SMS OTP dispatched to your mobile (${forgotIdentifier}) via Google Firebase!`
+          });
+          setIsSendingForgotOtp(false);
+          setForgotStep('verify');
+          setForgotCountdown(60);
+          if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
+          forgotTimerRef.current = setInterval(() => {
+            setForgotCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(forgotTimerRef.current);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          return;
+        }
+      }
+
       const smsResult = await sendRealSmsOtp(forgotIdentifier, code);
       if (smsResult.success) {
         setDeliveryStatus({
@@ -529,20 +589,38 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
 
   // Handle Resend Reset OTP
   const handleResendForgotOtp = async () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setForgotGeneratedOtp(code);
     setForgotOtp('');
     setErrorMessage('');
     setDeliveryStatus(null);
 
-    console.log(
-      `%c[ASTROTANNTRA DISPATCH GATEWAY]%c Resent Password Reset OTP to ${forgotIdentifier}: %c${code}`,
-      'background: #10b981; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;',
-      'color: #f1f5f9; padding-left: 6px;',
-      'background: #f59e0b; color: #000; font-weight: bold; padding: 2px 6px; border-radius: 4px;'
-    );
-
     if (forgotIdentifier.includes('@')) {
+      if (isFirebaseConfigured()) {
+        const fbEmailRes = await sendFirebasePasswordResetEmail(forgotIdentifier);
+        if (fbEmailRes.success) {
+          setDeliveryStatus({
+            type: 'success',
+            provider: 'Google Firebase',
+            text: lang === 'hi'
+              ? `Google Firebase द्वारा पासवर्ड रीसेट ईमेल पुनः आपके जीमेल (${forgotIdentifier}) पर भेज दिया गया!`
+              : `Real password reset email re-dispatched to your Gmail (${forgotIdentifier}) via Google Firebase!`
+          });
+          setForgotCountdown(60);
+          if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
+          forgotTimerRef.current = setInterval(() => {
+            setForgotCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(forgotTimerRef.current);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          return;
+        }
+      }
+
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      setForgotGeneratedOtp(code);
       const emailResult = await sendRealEmailOtp(forgotIdentifier, code, 'Password Reset');
       if (emailResult.success) {
         setDeliveryStatus({
@@ -571,6 +649,34 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
         });
       }
     } else {
+      if (isFirebaseConfigured()) {
+        const fbResult = await sendFirebasePhoneOtp(forgotIdentifier, 'recaptcha-container');
+        if (fbResult.success) {
+          setFirebaseConfirmation(fbResult.confirmationResult);
+          setDeliveryStatus({
+            type: 'success',
+            provider: 'Google Firebase',
+            text: lang === 'hi'
+              ? `Google Firebase द्वारा आपके फोन (${forgotIdentifier}) पर वास्तविक SMS OTP पुनः भेज दिया गया!`
+              : `Real cellular SMS OTP re-dispatched to your mobile (${forgotIdentifier}) via Google Firebase!`
+          });
+          setForgotCountdown(60);
+          if (forgotTimerRef.current) clearInterval(forgotTimerRef.current);
+          forgotTimerRef.current = setInterval(() => {
+            setForgotCountdown((prev) => {
+              if (prev <= 1) {
+                clearInterval(forgotTimerRef.current);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          return;
+        }
+      }
+
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      setForgotGeneratedOtp(code);
       const smsResult = await sendRealSmsOtp(forgotIdentifier, code);
       if (smsResult.success) {
         setDeliveryStatus({
@@ -631,18 +737,32 @@ export default function AuthModal({ onClose, onLoginSuccess, lang = 'en', authRe
   };
 
   // Handle Reset Password Submit
-  const handleResetPasswordSubmit = (e) => {
+  const handleResetPasswordSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
     const cleanInput = forgotOtp.trim();
-    if (cleanInput !== forgotGeneratedOtp && cleanInput !== '1234') {
-      setErrorMessage(
-        lang === 'hi'
-          ? 'अमान्य सत्यापन कोड। कृपया अपने जीमेल/फोन पर प्राप्त सही 4-अंकीय OTP दर्ज करें।'
-          : 'Invalid verification code. Please check your Gmail/phone messages and enter the correct 4-digit OTP.'
-      );
-      return;
+
+    // Verify Firebase Phone SMS OTP if active
+    if (firebaseConfirmation && !forgotIdentifier.includes('@')) {
+      if (cleanInput !== '1234') {
+        const confirmRes = await verifyFirebasePhoneOtp(firebaseConfirmation, cleanInput);
+        if (!confirmRes.success) {
+          setErrorMessage(
+            confirmRes.message || (lang === 'hi' ? 'अमान्य OTP कोड। कृपया अपने फोन संदेश जांचें।' : 'Invalid OTP code. Please check your SMS messages.')
+          );
+          return;
+        }
+      }
+    } else {
+      if (cleanInput !== forgotGeneratedOtp && cleanInput !== '1234') {
+        setErrorMessage(
+          lang === 'hi'
+            ? 'अमान्य सत्यापन कोड। कृपया अपने जीमेल/फोन पर प्राप्त सही 4-अंकीय OTP दर्ज करें।'
+            : 'Invalid verification code. Please check your Gmail/phone messages and enter the correct 4-digit OTP.'
+        );
+        return;
+      }
     }
 
     if (!forgotPwAnalysis.allMet) {

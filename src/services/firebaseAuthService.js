@@ -13,8 +13,18 @@ import {
 
 const STORAGE_KEY = 'astrotanntra_firebase_config';
 
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyClnggUYZTMeFOJlBY8GurYjpfYK8xYNVU',
+  authDomain: 'astrotanntra-933bf.firebaseapp.com',
+  projectId: 'astrotanntra-933bf',
+  storageBucket: 'astrotanntra-933bf.firebasestorage.app',
+  messagingSenderId: '707538577176',
+  appId: '1:707538577176:web:d8d7deff8e53c1ed53606d',
+  measurementId: 'G-SXMMQ719LZ'
+};
+
 /**
- * Retrieve active Firebase configuration from localStorage or .env
+ * Retrieve active Firebase configuration from localStorage, .env, or default config
  */
 export function getFirebaseConfig() {
   let stored = {};
@@ -24,12 +34,12 @@ export function getFirebaseConfig() {
   } catch (e) {}
 
   return {
-    apiKey: stored.apiKey || (import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || '',
-    authDomain: stored.authDomain || (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || '',
-    projectId: stored.projectId || (import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || '',
-    storageBucket: stored.storageBucket || (import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || '',
-    messagingSenderId: stored.messagingSenderId || (import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || '',
-    appId: stored.appId || (import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || ''
+    apiKey: stored.apiKey || (import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || DEFAULT_FIREBASE_CONFIG.apiKey,
+    authDomain: stored.authDomain || (import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || DEFAULT_FIREBASE_CONFIG.authDomain,
+    projectId: stored.projectId || (import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || DEFAULT_FIREBASE_CONFIG.projectId,
+    storageBucket: stored.storageBucket || (import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || DEFAULT_FIREBASE_CONFIG.storageBucket,
+    messagingSenderId: stored.messagingSenderId || (import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
+    appId: stored.appId || (import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || DEFAULT_FIREBASE_CONFIG.appId
   };
 }
 
