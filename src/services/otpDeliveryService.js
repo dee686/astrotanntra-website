@@ -63,7 +63,11 @@ export async function sendRealEmailOtp(email, otp, purpose = 'verification') {
   // 1. Try Resend API (Most reliable modern transactional email delivery)
   if (config.resendApiKey) {
     try {
-      const response = await fetch('https://api.resend.com/emails', {
+      const endpoint = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+        ? '/api/resend'
+        : 'https://api.resend.com/emails';
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${config.resendApiKey}`,
