@@ -124,28 +124,23 @@ export async function sendRealEmailOtp(email, otp, purpose = 'verification') {
       let response = await dispatchResend(cleanEmail);
       let data = await response.json().catch(() => ({}));
 
-      // Resend Free Tier Auto-Routing:
-      // If Resend returns 403 because domain is unverified, deliver directly to verified test email!
-      if (!response.ok && (response.status === 403 || (data.message && data.message.includes('own email address')))) {
-        console.info(`[Resend Test Mode] Rerouting verification code for ${cleanEmail} to verified owner inbox (anshmishra08042000@gmail.com)...`);
-        response = await dispatchResend('anshmishra08042000@gmail.com', `[For ${cleanEmail}] `);
-        data = await response.json().catch(() => ({}));
-        if (response.ok) {
-          return {
-            success: true,
-            provider: 'resend',
-            data,
-            routedTo: 'anshmishra08042000@gmail.com',
-            originalRecipient: cleanEmail
-          };
-        }
+      if (response.ok) {
+        return { success: true, provider: 'resend', data, recipient: cleanEmail };
       }
 
-      if (response.ok) {
-        return { success: true, provider: 'resend', data };
-      } else {
-        console.warn('Resend API returned an error:', data);
+      // Check if Resend failed due to free-tier single-recipient restriction
+      if (response.status === 403 || (data.message && data.message.includes('own email address'))) {
+        console.warn(`Resend blocked sending to ${cleanEmail}:`, data.message);
+        return {
+          success: false,
+          unverifiedDomain: true,
+          provider: 'resend',
+          recipient: cleanEmail,
+          message: data.message || `Resend free test mode only allows sending to its registered account owner.`
+        };
       }
+
+      console.warn('Resend API returned an error:', data);
     } catch (err) {
       console.warn('Resend dispatch failed:', err);
     }
