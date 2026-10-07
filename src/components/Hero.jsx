@@ -176,24 +176,16 @@ export default function Hero({
         {/* Left Column: Hero Text, CTAs, & Stats */}
         <div className="lg:col-span-7 flex flex-col items-start text-left pt-2">
           
-          <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-semibold uppercase mb-4 shadow-sm ${
-            lang === 'hi' 
-              ? 'tracking-normal [word-spacing:0.25em]' 
-              : 'tracking-widest [word-spacing:0.05em]'
-          }`}>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-semibold tracking-wide [word-spacing:0.06em] uppercase mb-4 shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '8s' }} />
             <span>{lang === 'hi' ? 'हम भाग्य नहीं बदलते' : "WE DON'T CHANGE DESTINY"}</span>
           </div>
 
-          <h1 className={`text-3xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.2] sm:leading-[1.25] mb-4 sm:mb-5 ${
-            lang === 'hi' 
-              ? 'font-hindi tracking-normal [word-spacing:0.32em]' 
-              : 'font-cinzel tracking-tight [word-spacing:0.06em]'
-          }`}>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white leading-[1.18] sm:leading-[1.22] mb-4 sm:mb-5 font-cinzel [word-spacing:0.08em]">
             {lang === 'hi' ? (
               <>
-                <span className="inline-block [word-spacing:0.32em]">हम बदलते हैं</span> <br />
-                <span className="gold-gradient-text drop-shadow-[0_4px_25px_rgba(245,158,11,0.5)] inline-block [word-spacing:0.32em] mt-1">
+                हम बदलते हैं <br />
+                <span className="gold-gradient-text drop-shadow-[0_4px_25px_rgba(245,158,11,0.5)]">
                   आपकी दिशा
                 </span>
               </>
@@ -207,9 +199,7 @@ export default function Hero({
             )}
           </h1>
 
-          <p className={`text-sm sm:text-lg text-slate-300 max-w-xl mb-6 sm:mb-8 leading-relaxed font-normal ${
-            lang === 'hi' ? '[word-spacing:0.14em]' : ''
-          }`}>
+          <p className="text-sm sm:text-lg text-slate-300 max-w-xl mb-6 sm:mb-8 leading-relaxed font-normal">
             {lang === 'hi' 
               ? 'वैदिक ज्योतिष और टैरो कार्ड्स के माध्यम से सटीक मार्गदर्शन प्राप्त करें और जीवन के हर मोड़ पर सही और आत्मविश्वासपूर्ण निर्णय लें।'
               : 'Get accurate guidance through Vedic Astrology and Tarot Reading to make confident life decisions.'}
@@ -299,14 +289,10 @@ export default function Hero({
             <div className="absolute bottom-2 right-2 text-amber-400/40 text-xs">❖</div>
 
             <div className="text-center mb-6">
-              <h2 className={`text-xl sm:text-2xl font-bold text-amber-300 drop-shadow ${
-                lang === 'hi' ? 'font-hindi tracking-normal [word-spacing:0.22em]' : 'font-cinzel tracking-wider'
-              }`}>
+              <h2 className="font-cinzel text-xl sm:text-2xl font-bold tracking-wider text-amber-300 drop-shadow">
                 {lang === 'hi' ? 'अपनी कुण्डली बनाएं' : 'CREATE YOUR KUNDLI'}
               </h2>
-              <p className={`text-xs sm:text-sm text-slate-300 mt-1 font-light ${
-                lang === 'hi' ? '[word-spacing:0.12em]' : ''
-              }`}>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 font-light">
                 {lang === 'hi' ? 'कुछ ही पलों में अपनी व्यक्तिगत जन्म कुण्डली पाएं' : 'Get your personalized birth chart in just a few clicks'}
               </p>
             </div>
