@@ -548,7 +548,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                       <span className={`px-1.5 py-0.5 text-[10px] rounded font-bold ${
                         isSelected ? 'bg-black text-amber-300' : 'bg-purple-950 text-amber-300'
                       }`}>
-                        {metaItem.id}
+                        {metaItem.badge || metaItem.id}
                       </span>
                       <span>{isHi ? (metaItem.nameHi || metaItem.name) : metaItem.name}</span>
                     </button>

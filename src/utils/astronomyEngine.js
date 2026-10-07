@@ -804,10 +804,13 @@ export function calculateCompleteKundli({
   // D-9 Navamsha Chart Occupants
   const d9Occupants = buildHouseOccupants(d9AscSignId, 'D9');
 
-  // Divisional Charts dictionary (D-1 through D-10, D-12, D-60)
+  // Divisional Charts dictionary (D-1, D-9, D-10 active; others commented out)
   const divisionalCharts = {};
   const vargas = [
     { id: 'D1', name: 'Rashi (D1)', nameHi: 'लग्न (D1)', title: 'D-1 (Rashi Chart)', focus: 'Physical body, personality, general life blueprint' },
+    { id: 'D9', name: 'Navamsha (D9)', nameHi: 'नवांश (D9)', title: 'D-9 (Navamsha Chart)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
+    { id: 'D10', name: 'Dashamsha (D10)', nameHi: 'दशमांश (D10)', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' }
+    /*
     { id: 'D2', name: 'Hora', nameHi: 'होरा', title: 'D-2 (Hora Chart)', focus: 'Wealth, liquid assets, financial prosperity' },
     { id: 'D3', name: 'Drekkana', nameHi: 'द्रेष्काण', title: 'D-3 (Drekkana Chart)', focus: 'Siblings, courage, vitality, initiatives' },
     { id: 'D4', name: 'Chaturthamsha', nameHi: 'चतुर्थांश', title: 'D-4 (Chaturthamsha)', focus: "Fixed assets, property, home, mother's happiness" },
@@ -815,10 +818,9 @@ export function calculateCompleteKundli({
     { id: 'D6', name: 'Shashthamsha', nameHi: 'षष्ठांश', title: 'D-6 (Shashthamsha)', focus: 'Health, litigation, debts, enemies & service' },
     { id: 'D7', name: 'Saptamsha', nameHi: 'सप्तांश', title: 'D-7 (Saptamsha)', focus: 'Children, progeny, lineage, creative output' },
     { id: 'D8', name: 'Ashtamsha', nameHi: 'अष्टमांश', title: 'D-8 (Ashtamsha)', focus: 'Longevity, occult, transformations, sudden events' },
-    { id: 'D9', name: 'Navamsha (D9)', nameHi: 'नवांश (D9)', title: 'D-9 (Navamsha Chart)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
-    { id: 'D10', name: 'Dashamsha (D10)', nameHi: 'दशमांश (D10)', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' },
     { id: 'D12', name: 'Dwadashamsha', nameHi: 'द्वादशांश', title: 'D-12 (Dwadashamsha)', focus: 'Parents, heritage, past lives' },
     { id: 'D60', name: 'Shashtiamsha', nameHi: 'षष्ट्यंश', title: 'D-60 (Shashtiamsha)', focus: 'Past life karma, all areas fine-tuning' }
+    */
   ];
 
   vargas.forEach(v => {
