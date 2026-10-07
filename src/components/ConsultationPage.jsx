@@ -18,6 +18,7 @@ import {
   Lock, 
   Download, 
   Share2, 
+  ChevronLeft,
   ChevronRight, 
   User, 
   Mail, 
@@ -52,6 +53,13 @@ export default function ConsultationPage({
   const today = new Date();
   const formatDateStr = (d) => d.toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(formatDateStr(today));
+
+  // Interactive Visual Calendar State
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const init = new Date();
+    return new Date(init.getFullYear(), init.getMonth(), 1);
+  });
 
   // Time slot selection
   const [selectedSlot, setSelectedSlot] = useState('11:00 AM - 11:30 AM');
@@ -871,27 +879,181 @@ export default function ConsultationPage({
               </div>
             </div>
 
-            {/* Custom Date Picker */}
-            <div className="p-4 sm:p-5 bg-[#170836] border border-purple-800/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <label className="text-xs sm:text-sm font-bold text-slate-200 block">
-                  {isHi ? 'अथवा कोई अन्य विशिष्ट तिथि चुनें:' : 'Or choose any specific custom date:'}
-                </label>
-                <span className="text-xs text-slate-400">
-                  {isHi ? 'कैलेंडर से अपनी सुविधानुसार कोई भी आगामी तिथि चुनें' : 'Pick any upcoming date from the calendar'}
-                </span>
-              </div>
+            {/* Custom Date Picker Card with Visual Calendar */}
+            {(() => {
+              const year = calendarMonth.getFullYear();
+              const month = calendarMonth.getMonth();
+              const daysInMonth = new Date(year, month + 1, 0).getDate();
+              const firstDayOfWeek = new Date(year, month, 1).getDay();
+              const monthTitle = calendarMonth.toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { month: 'long', year: 'numeric' });
+              const weekDays = isHi 
+                ? ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि']
+                : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  min={formatDateStr(today)}
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-[#0f0422] border border-amber-400/50 text-amber-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-            </div>
+              const todayZero = new Date();
+              todayZero.setHours(0, 0, 0, 0);
+              const currentMonthStart = new Date(todayZero.getFullYear(), todayZero.getMonth(), 1);
+              const canGoPrev = calendarMonth > currentMonthStart;
+
+              const pad = (n) => String(n).padStart(2, '0');
+
+              const handlePrevMonth = () => {
+                setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+              };
+
+              const handleNextMonth = () => {
+                setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+              };
+
+              const handleSelectDay = (dayNum) => {
+                const dateStr = `${year}-${pad(month + 1)}-${pad(dayNum)}`;
+                setSelectedDate(dateStr);
+              };
+
+              return (
+                <div className="bg-[#170836] border border-purple-800/60 rounded-2xl overflow-hidden shadow-lg">
+                  <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-800/40">
+                    <div>
+                      <label className="text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4 text-amber-400" />
+                        <span>{isHi ? 'विशिष्ट तिथि चयन (कैलेंडर):' : 'Custom Date Selector (Calendar):'}</span>
+                      </label>
+                      <span className="text-xs text-slate-400 mt-0.5 block">
+                        {isHi ? 'कैलेंडर खोलें और अपनी सुविधानुसार कोई भी आगामी तिथि चुनें' : 'Open the interactive calendar and pick any upcoming date'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setShowCalendar(prev => !prev)}
+                        className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-400 hover:text-slate-950 border border-amber-400/60 text-amber-300 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer shadow-sm"
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                        <span>{showCalendar ? (isHi ? 'कैलेंडर बंद करें ▲' : 'Close Calendar ▲') : (isHi ? '📅 कैलेंडर खोलें ▼' : '📅 Open Calendar ▼')}</span>
+                      </button>
+
+                      <div className="relative">
+                        <input
+                          type="date"
+                          min={formatDateStr(today)}
+                          value={selectedDate}
+                          onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          className="bg-[#0f0422] border border-amber-400/50 text-amber-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Interactive Visual Calendar Dropdown / Panel */}
+                  {showCalendar && (
+                    <div className="p-4 sm:p-6 bg-[#13062c]/95 backdrop-blur-md animate-fadeIn">
+                      {/* Calendar Header: Month Navigator */}
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-purple-800/50">
+                        <button
+                          type="button"
+                          disabled={!canGoPrev}
+                          onClick={handlePrevMonth}
+                          className="p-2 rounded-xl bg-purple-950/80 border border-purple-700/60 text-slate-300 hover:text-amber-300 hover:border-amber-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                          aria-label="Previous Month"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        <div className="text-center">
+                          <h4 className="font-bold text-sm sm:text-base font-cinzel text-amber-300 uppercase tracking-wide">
+                            {monthTitle}
+                          </h4>
+                          <span className="text-[10px] text-slate-400">
+                            {isHi ? 'तिथि पर क्लिक करके चयन करें' : 'Click any date to select'}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleNextMonth}
+                          className="p-2 rounded-xl bg-purple-950/80 border border-purple-700/60 text-slate-300 hover:text-amber-300 hover:border-amber-400 transition-all cursor-pointer"
+                          aria-label="Next Month"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Weekday Row */}
+                      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center">
+                        {weekDays.map((wd, i) => (
+                          <div key={i} className={`text-[10px] sm:text-xs font-bold uppercase py-1 ${i === 0 ? 'text-amber-400' : 'text-slate-400'}`}>
+                            {wd}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Day Cells Grid */}
+                      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center">
+                        {/* Blank offset days */}
+                        {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                          <div key={`blank-${i}`} className="p-2" />
+                        ))}
+
+                        {/* Day numbers */}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                          const dayNum = i + 1;
+                          const dateStr = `${year}-${pad(month + 1)}-${pad(dayNum)}`;
+                          const dayDate = new Date(year, month, dayNum);
+                          dayDate.setHours(0, 0, 0, 0);
+                          const isPast = dayDate < todayZero;
+                          const isToday = dayDate.getTime() === todayZero.getTime();
+                          const isSelected = selectedDate === dateStr;
+
+                          return (
+                            <button
+                              key={dateStr}
+                              type="button"
+                              disabled={isPast}
+                              onClick={() => handleSelectDay(dayNum)}
+                              className={`p-2 sm:p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all relative flex flex-col items-center justify-center ${
+                                isSelected
+                                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-extrabold shadow-gold-glow scale-105 ring-2 ring-amber-300'
+                                  : isPast
+                                    ? 'opacity-25 cursor-not-allowed text-slate-500'
+                                    : isToday
+                                      ? 'border border-amber-400/80 text-amber-300 hover:bg-amber-400/20 cursor-pointer font-bold'
+                                      : 'bg-[#1a0a38]/60 border border-purple-800/40 text-slate-200 hover:border-amber-400/60 hover:bg-[#250f4f] cursor-pointer'
+                              }`}
+                            >
+                              <span>{dayNum}</span>
+                              {isToday && !isSelected && (
+                                <span className="text-[8px] leading-none text-amber-400 mt-0.5">●</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Calendar Footer Info */}
+                      <div className="mt-4 pt-3 border-t border-purple-800/40 flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded bg-amber-400 inline-block" />
+                          <span>{isHi ? 'चयनित तिथि' : 'Selected Date'}</span>
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedDate(formatDateStr(today));
+                            setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+                          }}
+                          className="text-amber-300 hover:underline font-semibold cursor-pointer"
+                        >
+                          {isHi ? 'आज की तिथि चुनें' : 'Select Today'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Selected Date Indicator Card */}
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-between text-xs sm:text-sm">

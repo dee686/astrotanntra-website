@@ -1,9 +1,9 @@
 import React from 'react';
 import { Calendar, Compass, Sparkles, Moon, ChevronRight, Sun, Shield } from 'lucide-react';
-import { TODAY_PANCHANG } from '../data/panchangData';
+import { TODAY_PANCHANG, getLivePanchang } from '../data/panchangData';
 
 export default function PanchangStrip({ onOpenPanchang, lang }) {
-  const p = TODAY_PANCHANG;
+  const p = getLivePanchang ? getLivePanchang() : TODAY_PANCHANG;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8 -mt-6 relative z-30">
@@ -29,7 +29,7 @@ export default function PanchangStrip({ onOpenPanchang, lang }) {
               <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+              <span className="text-xs sm:text-sm font-bold text-slate-900 whitespace-nowrap">
                 {lang === 'hi' ? (p.dateFormattedHi || p.dateFormatted) : p.dateFormatted}
               </span>
               <span className="text-[11px] sm:text-xs text-slate-700 font-medium">

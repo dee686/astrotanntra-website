@@ -1,10 +1,10 @@
 import React from 'react';
 import { X, Calendar, Sun, Moon, Sparkles, AlertCircle, ShieldAlert, Compass, Clock } from 'lucide-react';
-import { TODAY_PANCHANG } from '../data/panchangData';
+import { TODAY_PANCHANG, getLivePanchang } from '../data/panchangData';
 
 export default function PanchangModal({ onClose, lang }) {
   const isHi = lang === 'hi';
-  const p = TODAY_PANCHANG;
+  const p = getLivePanchang ? getLivePanchang() : TODAY_PANCHANG;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
