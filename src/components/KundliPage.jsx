@@ -97,14 +97,18 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
     houseOccupants: houseOccupants
   };
 
-  // Secondary chart data (D-9 Navamsha or selected divisional chart)
-  const secondaryChartData = (selectedDivChart === 'D9' ? d9Chart : divisionalCharts?.[selectedDivChart]) || d9Chart || {
-    id: 'D9',
-    name: 'Navamsa Chart',
-    nameHi: 'नवांश कुण्डली',
-    ascSign: ascendant,
-    houseOccupants: houseOccupants
-  };
+  // Secondary chart data (D-9 Navamsha or selected divisional/special chart: D1, D9, D10, PANCHANG, GOCHAR, BHAV_CHALIT...)
+  const secondaryChartData = 
+    divisionalCharts?.[selectedDivChart] || 
+    (selectedDivChart === 'D1' ? d1Chart : null) || 
+    (selectedDivChart === 'D9' ? d9Chart : null) || 
+    d9Chart || {
+      id: 'D9',
+      name: 'Navamsa Chart',
+      nameHi: 'नवांश कुण्डली',
+      ascSign: ascendant,
+      houseOccupants: houseOccupants
+    };
 
   const houseMeanings = {
     1: 'Tanu Bhava (House of Self, Appearance, Health, Vitality, Mindset)',
@@ -382,7 +386,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                       `${secondaryChartData.nameHi || secondaryChartData.name} (${secondaryChartData.id})`
                     )}
                     chartLang={chartLang}
-                    showDegrees={secondaryChartData.id === 'D1'}
+                    showDegrees={secondaryChartData.id === 'D1' || secondaryChartData.id === 'BHAV_CHALIT'}
                     theme={chartTheme}
                   />
                 ) : (
@@ -391,6 +395,27 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                     ascendant={secondaryChartData.ascSign}
                     chartTitle={`${secondaryChartData.name} (${secondaryChartData.id})`}
                   />
+                )}
+                {secondaryChartData.id === 'GOCHAR' && (
+                  <div className="mt-2 px-3 py-1.5 rounded-lg bg-rose-950/60 border border-rose-500/40 text-[11px] text-rose-200 text-center max-w-sm">
+                    {isHi 
+                      ? '🔴 लाइव ग्रह गोचर: वर्तमान समय में आकाश में ग्रहों की स्थिति (लग्न के सापेक्ष)' 
+                      : '🔴 Live Transit: Real-time planetary positions active in the sky right now (Lagna overlay)'}
+                  </div>
+                )}
+                {secondaryChartData.id === 'BHAV_CHALIT' && (
+                  <div className="mt-2 px-3 py-1.5 rounded-lg bg-amber-950/60 border border-amber-500/40 text-[11px] text-amber-200 text-center max-w-sm">
+                    {isHi 
+                      ? '☸️ भाव चलित चक्र: वास्तविक लग्न अंशों (±15°) पर आधारित सक्रिय जीवन भाव' 
+                      : '☸️ Bhav Chalit: Cusp-based equal bhava chart (±15° from ascendant degree)'}
+                  </div>
+                )}
+                {secondaryChartData.id === 'PANCHANG' && (
+                  <div className="mt-2 px-3 py-1.5 rounded-lg bg-purple-950/60 border border-purple-500/40 text-[11px] text-purple-200 text-center max-w-sm">
+                    {isHi 
+                      ? '🕉️ जन्म पंचांग तत्व चक्र: पंच महाभूत व पंचांग अंगों (तिथि, वार, नक्षत्र, योग, करण) के स्वामी' 
+                      : '🕉️ Janma Panchang: Rulers of the 5 cosmic pillars (Tithi, Vaara, Nakshatra, Yoga, Karana)'}
+                  </div>
                 )}
               </div>
 

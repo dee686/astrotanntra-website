@@ -399,10 +399,31 @@ export function getDivisionalSign(varga, longitude) {
       return ((rashi - 1 + part * 3) % 12) + 1;
     }
 
+    case 'D5': { // Panchamsha
+      const part = Math.floor(degInSign / 6);
+      return ((rashi - 1 + part * 5) % 12) + 1;
+    }
+
+    case 'D6': { // Shashthamsha
+      const part = Math.floor(degInSign / 5);
+      const isOdd = rashi % 2 !== 0;
+      const start = isOdd ? 1 : 7;
+      return ((start + part - 1) % 12) + 1;
+    }
+
     case 'D7': { // Saptamsha
       const part = Math.floor(degInSign / (30 / 7));
       const isOdd = rashi % 2 !== 0;
       const start = isOdd ? rashi : ((rashi + 6 - 1) % 12 + 1);
+      return ((start + part - 1) % 12) + 1;
+    }
+
+    case 'D8': { // Ashtamsha
+      const part = Math.floor(degInSign / 3.75);
+      let start = 1;
+      if ([1, 4, 7, 10].includes(rashi)) start = 1;
+      else if ([2, 5, 8, 11].includes(rashi)) start = 9;
+      else start = 5;
       return ((start + part - 1) % 12) + 1;
     }
 
@@ -786,15 +807,18 @@ export function calculateCompleteKundli({
   // Divisional Charts dictionary (D-1 through D-10, D-12, D-60)
   const divisionalCharts = {};
   const vargas = [
-    { id: 'D1', name: 'Rashi', title: 'D-1 (Rashi Chart)', focus: 'Physical body, personality, general life blueprint' },
-    { id: 'D2', name: 'Hora', title: 'D-2 (Hora Chart)', focus: 'Wealth, liquid assets, financial prosperity' },
-    { id: 'D3', name: 'Drekkana', title: 'D-3 (Drekkana Chart)', focus: 'Siblings, courage, vitality, initiatives' },
-    { id: 'D4', name: 'Chaturthamsha', title: 'D-4 (Chaturthamsha)', focus: "Fixed assets, property, home, mother's happiness" },
-    { id: 'D7', name: 'Saptamsha', title: 'D-7 (Saptamsha)', focus: 'Children, progeny, lineage, creative output' },
-    { id: 'D9', name: 'Navamsha', title: 'D-9 (Navamsha Chart)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
-    { id: 'D10', name: 'Dashamsha', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' },
-    { id: 'D12', name: 'Dwadashamsha', title: 'D-12 (Dwadashamsha)', focus: 'Parents, heritage, past lives' },
-    { id: 'D60', name: 'Shashtiamsha', title: 'D-60 (Shashtiamsha)', focus: 'Past life karma, all areas fine-tuning' }
+    { id: 'D1', name: 'Rashi (D1)', nameHi: 'लग्न (D1)', title: 'D-1 (Rashi Chart)', focus: 'Physical body, personality, general life blueprint' },
+    { id: 'D2', name: 'Hora', nameHi: 'होरा', title: 'D-2 (Hora Chart)', focus: 'Wealth, liquid assets, financial prosperity' },
+    { id: 'D3', name: 'Drekkana', nameHi: 'द्रेष्काण', title: 'D-3 (Drekkana Chart)', focus: 'Siblings, courage, vitality, initiatives' },
+    { id: 'D4', name: 'Chaturthamsha', nameHi: 'चतुर्थांश', title: 'D-4 (Chaturthamsha)', focus: "Fixed assets, property, home, mother's happiness" },
+    { id: 'D5', name: 'Panchamsha', nameHi: 'पंचमांश', title: 'D-5 (Panchamsha)', focus: 'Spiritual inclination, higher wisdom, fame' },
+    { id: 'D6', name: 'Shashthamsha', nameHi: 'षष्ठांश', title: 'D-6 (Shashthamsha)', focus: 'Health, litigation, debts, enemies & service' },
+    { id: 'D7', name: 'Saptamsha', nameHi: 'सप्तांश', title: 'D-7 (Saptamsha)', focus: 'Children, progeny, lineage, creative output' },
+    { id: 'D8', name: 'Ashtamsha', nameHi: 'अष्टमांश', title: 'D-8 (Ashtamsha)', focus: 'Longevity, occult, transformations, sudden events' },
+    { id: 'D9', name: 'Navamsha (D9)', nameHi: 'नवांश (D9)', title: 'D-9 (Navamsha Chart)', focus: 'Marriage, spouse, dharma, inner planetary strength' },
+    { id: 'D10', name: 'Dashamsha (D10)', nameHi: 'दशमांश (D10)', title: 'D-10 (Dashamsha)', focus: 'Career, profession, status, public reputation' },
+    { id: 'D12', name: 'Dwadashamsha', nameHi: 'द्वादशांश', title: 'D-12 (Dwadashamsha)', focus: 'Parents, heritage, past lives' },
+    { id: 'D60', name: 'Shashtiamsha', nameHi: 'षष्ट्यंश', title: 'D-60 (Shashtiamsha)', focus: 'Past life karma, all areas fine-tuning' }
   ];
 
   vargas.forEach(v => {
@@ -802,6 +826,7 @@ export function calculateCompleteKundli({
     divisionalCharts[v.id] = {
       id: v.id,
       name: v.name,
+      nameHi: v.nameHi,
       title: v.title,
       focus: v.focus,
       ascSign: ZODIAC_SIGNS[vAscSignId - 1],
@@ -813,8 +838,160 @@ export function calculateCompleteKundli({
     };
   });
 
-  // Vimshottari Dasha Calculation with exact birth balance
+  // 1. Bhav Chalit Chart (Cusp-based Bhava Chart)
+  // Exact Ascendant degree is the midpoint of House 1. Each Bhava extends ±15° from cusp.
+  const ascDeg = pNow.Ascendant;
+  const startBhava1 = norm(ascDeg - 15);
+  const bhavChalitOccupants = {};
+  for (let h = 1; h <= 12; h++) {
+    const signIndex = ((ascSignId + h - 2) % 12) + 1;
+    bhavChalitOccupants[h] = {
+      house: h,
+      signNum: signIndex,
+      sign: ZODIAC_SIGNS[signIndex - 1],
+      planets: []
+    };
+  }
+
+  const bhavChalitPlanets = processedPlanets.map(p => {
+    const distFromStart = norm(p.fullDegree - startBhava1);
+    const chalitHouse = Math.floor(distFromStart / 30) + 1; // 1 to 12
+    const shifted = chalitHouse !== p.house;
+
+    const chalitP = {
+      ...p,
+      house: chalitHouse,
+      isShifted: shifted,
+      originalHouse: p.house,
+      codeDisplay: shifted ? `${p.code}*` : p.code,
+      codeHiDisplay: shifted ? `${p.codeHi}*` : p.codeHi
+    };
+
+    if (bhavChalitOccupants[chalitHouse]) {
+      bhavChalitOccupants[chalitHouse].planets.push(chalitP);
+    }
+    return chalitP;
+  });
+
+  divisionalCharts['BHAV_CHALIT'] = {
+    id: 'BHAV_CHALIT',
+    name: 'Bhav Chalit',
+    nameHi: 'भाव चलित',
+    title: 'Bhav Chalit (Equal Bhava / Cusp Chart)',
+    focus: 'Physical house cusps, planet house shifting and actual active bhava results',
+    ascSign: ZODIAC_SIGNS[ascSignId - 1],
+    houseOccupants: bhavChalitOccupants,
+    planets: bhavChalitPlanets
+  };
+
+  // 2. Gochar (Transit) Chart
+  // Real-time planetary positions active right now overlaid on natal Lagna houses
+  const transitDate = new Date();
+  const nowUT = transitDate.getUTCHours() + transitDate.getUTCMinutes() / 60 + transitDate.getUTCSeconds() / 3600;
+  const nowJD = getJulianDay(transitDate.getUTCFullYear(), transitDate.getUTCMonth() + 1, transitDate.getUTCDate(), nowUT);
+  const { longitudes: transitLongs } = computeRawLongitudes(nowJD, lat, lng);
+
+  const gocharOccupants = {};
+  for (let h = 1; h <= 12; h++) {
+    const signIndex = ((ascSignId + h - 2) % 12) + 1;
+    gocharOccupants[h] = {
+      house: h,
+      signNum: signIndex,
+      sign: ZODIAC_SIGNS[signIndex - 1],
+      planets: []
+    };
+  }
+
+  const gocharPlanets = PLANET_CONFIG.map(cfg => {
+    const rawDeg = transitLongs[cfg.name] !== undefined ? transitLongs[cfg.name] : pNow[cfg.name];
+    const signInfo = degToSign(rawDeg);
+    const nakInfo = getNakshatra(rawDeg);
+    const gHouse = getHouseFromSign(signInfo.signIndex, ascSignId);
+
+    const gp = {
+      name: cfg.name,
+      nameHi: cfg.nameHi,
+      code: cfg.code,
+      codeHi: cfg.codeHi,
+      fullDegree: rawDeg,
+      rashi: signInfo.sign,
+      signName: signInfo.sign.en,
+      signHi: signInfo.sign.hi,
+      signSanskrit: signInfo.sign.sanskrit,
+      degFormatted: signInfo.degFormatted,
+      nakshatra: nakInfo.nakshatra,
+      pada: nakInfo.pada,
+      house: gHouse,
+      color: cfg.color
+    };
+
+    if (gocharOccupants[gHouse]) {
+      gocharOccupants[gHouse].planets.push(gp);
+    }
+    return gp;
+  });
+
+  divisionalCharts['GOCHAR'] = {
+    id: 'GOCHAR',
+    name: 'Gochar (Transit)',
+    nameHi: 'गोचर कुण्डली',
+    title: 'Gochar (Live Transit Overlay Chart)',
+    focus: 'Real-time planetary transits overlaid on natal houses for current event activation',
+    ascSign: ZODIAC_SIGNS[ascSignId - 1],
+    houseOccupants: gocharOccupants,
+    planets: gocharPlanets
+  };
+
+  // 3. Janma Panchang Tatva Chart
   const moonNakInfo = getNakshatra(pNow.Moon);
+  const panchangOccupants = {};
+  for (let h = 1; h <= 12; h++) {
+    const signIndex = ((ascSignId + h - 2) % 12) + 1;
+    panchangOccupants[h] = {
+      house: h,
+      signNum: signIndex,
+      sign: ZODIAC_SIGNS[signIndex - 1],
+      planets: []
+    };
+  }
+
+  const birthDateObj = new Date(year, month - 1, day);
+  const dayOfWeek = isNaN(birthDateObj.getDay()) ? 0 : birthDateObj.getDay();
+  const vaaraLords = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+  const vaaraLordName = vaaraLords[dayOfWeek];
+  const nakLordName = moonNakInfo.nakshatra.lord;
+  const tithiRulers = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+  const tithiLordName = tithiRulers[tithiIndex % 15] || 'Venus';
+
+  processedPlanets.forEach(p => {
+    let tag = '';
+    let tagHi = '';
+    if (p.name === vaaraLordName) { tag += ' [वार]'; tagHi += ' [वार]'; }
+    if (p.name === nakLordName) { tag += ' [नक्ष]'; tagHi += ' [नक्ष]'; }
+    if (p.name === tithiLordName) { tag += ' [तिथि]'; tagHi += ' [तिथि]'; }
+
+    const panchangP = {
+      ...p,
+      code: tag ? `${p.code}${tag}` : p.code,
+      codeHi: tagHi ? `${p.codeHi}${tagHi}` : p.codeHi
+    };
+    if (panchangOccupants[p.house]) {
+      panchangOccupants[p.house].planets.push(panchangP);
+    }
+  });
+
+  divisionalCharts['PANCHANG'] = {
+    id: 'PANCHANG',
+    name: 'Janma Panchang',
+    nameHi: 'जन्म पंचांग',
+    title: 'Janma Panchang (Five Cosmic Elements Tatva Chart)',
+    focus: 'Five sacred pillars at birth (Tithi, Vaara, Nakshatra, Yoga, Karana)',
+    ascSign: ZODIAC_SIGNS[ascSignId - 1],
+    houseOccupants: panchangOccupants,
+    planets: processedPlanets
+  };
+
+  // Vimshottari Dasha Calculation with exact birth balance
   const birthLord = moonNakInfo.nakshatra.lord;
   const dashaIdx = DASHA_ORDER.findIndex(d => d.lord === birthLord);
   const currentDashaObj = DASHA_ORDER[dashaIdx >= 0 ? dashaIdx : 0];
