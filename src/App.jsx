@@ -31,6 +31,7 @@ import confetti from 'canvas-confetti';
 
 export default function App() {
   const [lang, setLang] = useState('en');
+  const langRef = useRef(lang);
   const [user, setUser] = useState(() => getActiveUser());
   const userRef = useRef(user);
 
@@ -39,6 +40,7 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
+    langRef.current = lang;
     document.documentElement.lang = lang;
   }, [lang]);
 
@@ -113,7 +115,7 @@ export default function App() {
           setAuthReason('premium_kundli');
           setIsAuthOpen(true);
           triggerNotice(
-            lang === 'hi'
+            langRef.current === 'hi'
               ? 'कुण्डली निर्माण एक प्रीमियम सुविधा है। कृपया पहले लॉगिन या साइन अप करें।'
               : 'Generating Kundli is a premium feature. Please Sign In or Sign Up first.'
           );
@@ -125,7 +127,7 @@ export default function App() {
           window.history.replaceState({ page: 'home' }, '', window.location.pathname);
           setCurrentPage('home');
           triggerNotice(
-            lang === 'hi'
+            langRef.current === 'hi'
               ? 'कृपया पहले जन्म विवरण भरें और "कुण्डली बनाएं" पर क्लिक करें।'
               : 'Please fill in your birth details and click "Generate Kundli" first.'
           );
@@ -148,7 +150,7 @@ export default function App() {
       window.removeEventListener('hashchange', handlePopState);
       if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
     };
-  }, [lang]);
+  }, []);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
