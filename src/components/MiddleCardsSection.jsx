@@ -41,6 +41,14 @@ export default function MiddleCardsSection({
       action: onOpenMilan
     },
     {
+      id: 'tarot',
+      title: lang === 'hi' ? 'टैरो कार्ड' : 'Tarot Card',
+      desc: lang === 'hi' ? 'भविष्य एवं जीवन दिशा हेतु दिव्य टैरो मार्गदर्शन' : 'Mystic card guidance for destiny & choices',
+      icon: BookOpen,
+      action: () => (onOpenTarotWithPackage ? onOpenTarotWithPackage(null) : onOpenConsultation('Tarot Card'))
+    },
+    /*
+    {
       id: 'palm',
       title: lang === 'hi' ? 'हस्तरेखा दर्शन' : 'Palm Reading',
       desc: lang === 'hi' ? 'हस्तरेखाओं द्वारा अपने भविष्य को जानें' : 'Know your future through palm study',
@@ -61,6 +69,7 @@ export default function MiddleCardsSection({
       icon: Home,
       action: () => onOpenConsultation('Vastu Consultation')
     },
+    */
     {
       id: 'muhurta',
       title: lang === 'hi' ? 'शुभ मुहूर्त' : 'Muhurta Consultation',
