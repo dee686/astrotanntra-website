@@ -942,6 +942,48 @@ export function calculateCompleteKundli({
     planets: gocharPlanets
   };
 
+  // Panchang calculations (Tithi, Yoga, Karana, Vaara)
+  const sunP = processedPlanets.find(p => p.name === 'Sun');
+  const moonP = processedPlanets.find(p => p.name === 'Moon');
+  const diffDeg = norm(moonP.fullDegree - sunP.fullDegree);
+  const tithiIndex = Math.floor(diffDeg / 12);
+  const isShukla = tithiIndex < 15;
+  const tithiNames = [
+    'Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami',
+    'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi',
+    isShukla ? 'Purnima' : 'Amavasya'
+  ];
+  const tithiNamesHi = [
+    'प्रतिपदा', 'द्वितीया', 'तृतीया', 'चतुर्थी', 'पंचमी', 'षष्ठी', 'सप्तमी',
+    'अष्टमी', 'नवमी', 'दशमी', 'एकादशी', 'द्वादशी', 'त्रयोदशी', 'चतुर्दशी',
+    isShukla ? 'पूर्णिमा' : 'अमावस्या'
+  ];
+  const tithiName = `${tithiNames[tithiIndex % 15]} (${isShukla ? 'Shukla Paksha' : 'Krishna Paksha'})`;
+  const tithiNameHi = `${tithiNamesHi[tithiIndex % 15]} (${isShukla ? 'शुक्ल पक्ष' : 'कृष्ण पक्ष'})`;
+
+  const yogaSum = norm(moonP.fullDegree + sunP.fullDegree);
+  const yogaIndex = Math.floor(yogaSum / (360 / 27));
+  const YOGA_NAMES = [
+    'Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti',
+    'Shula', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi',
+    'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla',
+    'Brahma', 'Indra', 'Vaidhriti'
+  ];
+  const YOGA_NAMES_HI = [
+    'विष्कम्भ योग', 'प्रीति योग', 'आयुष्मान योग', 'सौभाग्य योग', 'शोभन योग', 'अतिगण्ड योग', 'सुकर्मा योग', 'धृति योग',
+    'शूल योग', 'गण्ड योग', 'वृद्धि योग', 'ध्रुव योग', 'व्याघात योग', 'हर्षण योग', 'वज्र योग', 'सिद्धि योग',
+    'व्यतीपात योग', 'वरीयान योग', 'परिघ योग', 'शिव योग', 'सिद्ध योग', 'साध्य योग', 'शुभ योग', 'शुक्ल योग',
+    'ब्रह्म योग', 'इन्द्र योग', 'वैधृति योग'
+  ];
+  const yogaName = YOGA_NAMES[yogaIndex % 27];
+  const yogaNameHi = YOGA_NAMES_HI[yogaIndex % 27];
+
+  const karanaIndex = Math.floor(diffDeg / 6);
+  const KARANA_NAMES = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
+  const KARANA_NAMES_HI = ['बव करण', 'बालव करण', 'कौलव करण', 'तैतिल करण', 'गर करण', 'वणिज करण', 'विष्टि (भद्रा)'];
+  const karanaName = KARANA_NAMES[karanaIndex % 7];
+  const karanaNameHi = KARANA_NAMES_HI[karanaIndex % 7];
+
   // 3. Janma Panchang Tatva Chart
   const moonNakInfo = getNakshatra(pNow.Moon);
   const panchangOccupants = {};
@@ -1072,48 +1114,6 @@ export function calculateCompleteKundli({
     const diffSign = Math.abs(saturn.rashi.id - moon.rashi.id);
     hasSadeSati = diffSign === 0 || diffSign === 1 || diffSign === 11;
   }
-
-  // Panchang calculations
-  const sunP = processedPlanets.find(p => p.name === 'Sun');
-  const moonP = processedPlanets.find(p => p.name === 'Moon');
-  const diffDeg = norm(moonP.fullDegree - sunP.fullDegree);
-  const tithiIndex = Math.floor(diffDeg / 12);
-  const isShukla = tithiIndex < 15;
-  const tithiNames = [
-    'Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami',
-    'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi',
-    isShukla ? 'Purnima' : 'Amavasya'
-  ];
-  const tithiNamesHi = [
-    'प्रतिपदा', 'द्वितीया', 'तृतीया', 'चतुर्थी', 'पंचमी', 'षष्ठी', 'सप्तमी',
-    'अष्टमी', 'नवमी', 'दशमी', 'एकादशी', 'द्वादशी', 'त्रयोदशी', 'चतुर्दशी',
-    isShukla ? 'पूर्णिमा' : 'अमावस्या'
-  ];
-  const tithiName = `${tithiNames[tithiIndex % 15]} (${isShukla ? 'Shukla Paksha' : 'Krishna Paksha'})`;
-  const tithiNameHi = `${tithiNamesHi[tithiIndex % 15]} (${isShukla ? 'शुक्ल पक्ष' : 'कृष्ण पक्ष'})`;
-
-  const yogaSum = norm(moonP.fullDegree + sunP.fullDegree);
-  const yogaIndex = Math.floor(yogaSum / (360 / 27));
-  const YOGA_NAMES = [
-    'Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma', 'Dhriti',
-    'Shula', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra', 'Siddhi',
-    'Vyatipata', 'Variyan', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla',
-    'Brahma', 'Indra', 'Vaidhriti'
-  ];
-  const YOGA_NAMES_HI = [
-    'विष्कम्भ योग', 'प्रीति योग', 'आयुष्मान योग', 'सौभाग्य योग', 'शोभन योग', 'अतिगण्ड योग', 'सुकर्मा योग', 'धृति योग',
-    'शूल योग', 'गण्ड योग', 'वृद्धि योग', 'ध्रुव योग', 'व्याघात योग', 'हर्षण योग', 'वज्र योग', 'सिद्धि योग',
-    'व्यतीपात योग', 'वरीयान योग', 'परिघ योग', 'शिव योग', 'सिद्ध योग', 'साध्य योग', 'शुभ योग', 'शुक्ल योग',
-    'ब्रह्म योग', 'इन्द्र योग', 'वैधृति योग'
-  ];
-  const yogaName = YOGA_NAMES[yogaIndex % 27];
-  const yogaNameHi = YOGA_NAMES_HI[yogaIndex % 27];
-
-  const karanaIndex = Math.floor(diffDeg / 6);
-  const KARANA_NAMES = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
-  const KARANA_NAMES_HI = ['बव करण', 'बालव करण', 'कौलव करण', 'तैतिल करण', 'गर करण', 'वणिज करण', 'विष्टि (भद्रा)'];
-  const karanaName = KARANA_NAMES[karanaIndex % 7];
-  const karanaNameHi = KARANA_NAMES_HI[karanaIndex % 7];
 
   // Ascendant entry for tables
   const ascEntry = {
