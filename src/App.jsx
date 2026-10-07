@@ -16,6 +16,7 @@ import PanchangModal from './components/PanchangModal';
 import HoroscopeModal from './components/HoroscopeModal';
 import TarotReaderModal from './components/TarotReaderModal';
 import ConsultationModal from './components/ConsultationModal';
+import ConsultationPage from './components/ConsultationPage';
 import NumerologyModal from './components/NumerologyModal';
 import AuthModal from './components/AuthModal';
 import AboutModal from './components/AboutModal';
@@ -99,7 +100,9 @@ export default function App() {
       const hash = window.location.hash;
       const state = event?.state;
 
-      if (hash === '#kundli' || state?.page === 'kundli') {
+      if (hash === '#consultation' || state?.page === 'consultation') {
+        setCurrentPage('consultation');
+      } else if (hash === '#kundli' || state?.page === 'kundli') {
         // Disallow forward navigation to Kundli page if user is not logged in
         if (!userRef.current) {
           window.history.replaceState({ page: 'home' }, '', window.location.pathname);
@@ -254,7 +257,12 @@ export default function App() {
 
   const handleOpenConsultationWithTopic = (topic) => {
     setConsultationTopic(topic || 'General Vedic Consultation');
-    setIsConsultationOpen(true);
+    setIsConsultationOpen(false);
+    setCurrentPage('consultation');
+    if (window.location.hash !== '#consultation') {
+      window.history.pushState({ page: 'consultation' }, '', '#consultation');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectSign = (sign) => {
@@ -283,7 +291,7 @@ export default function App() {
         setLang={setLang}
       />
 
-      {/* Main Content: Dedicated Full Kundli Page OR Home Landing View */}
+      {/* Main Content: Dedicated Full Kundli Page OR Dedicated Consultation Page OR Home Landing View */}
       {currentPage === 'kundli' ? (
         <main className="flex-1 flex flex-col">
           <KundliPage
@@ -291,6 +299,15 @@ export default function App() {
             onGoBack={handleGoHome}
             onOpenConsultation={handleOpenConsultationWithTopic}
             lang={lang}
+          />
+        </main>
+      ) : currentPage === 'consultation' ? (
+        <main className="flex-1 flex flex-col">
+          <ConsultationPage
+            initialTopic={consultationTopic}
+            onGoBack={handleGoHome}
+            lang={lang}
+            user={user}
           />
         </main>
       ) : (
@@ -397,14 +414,6 @@ export default function App() {
           initialPackage={selectedTarotPkg}
           onClose={() => setIsTarotOpen(false)}
           onOpenConsultation={handleOpenConsultationWithTopic}
-          lang={lang}
-        />
-      )}
-
-      {isConsultationOpen && (
-        <ConsultationModal
-          initialTopic={consultationTopic}
-          onClose={() => setIsConsultationOpen(false)}
           lang={lang}
         />
       )}
