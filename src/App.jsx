@@ -313,6 +313,7 @@ export default function App() {
             onGoBack={handleGoHome}
             onOpenConsultation={handleOpenConsultationWithTopic}
             lang={lang}
+            setLang={setLang}
           />
         </main>
       ) : currentPage === 'consultation' ? (
