@@ -15,6 +15,7 @@ import KundliMilanModal from './components/KundliMilanModal';
 import PanchangModal from './components/PanchangModal';
 import HoroscopeModal from './components/HoroscopeModal';
 import TarotReaderModal from './components/TarotReaderModal';
+import TarotPage from './components/TarotPage';
 import ConsultationModal from './components/ConsultationModal';
 import ConsultationPage from './components/ConsultationPage';
 import NumerologyModal from './components/NumerologyModal';
@@ -102,6 +103,8 @@ export default function App() {
 
       if (hash === '#consultation' || state?.page === 'consultation') {
         setCurrentPage('consultation');
+      } else if (hash === '#tarot' || state?.page === 'tarot') {
+        setCurrentPage('tarot');
       } else if (hash === '#kundli' || state?.page === 'kundli') {
         // Disallow forward navigation to Kundli page if user is not logged in
         if (!userRef.current) {
@@ -185,7 +188,7 @@ export default function App() {
   };
 
   const handleGoHome = () => {
-    if (currentPage !== 'home' || window.location.hash === '#kundli') {
+    if (currentPage !== 'home' || window.location.hash) {
       window.history.pushState({ page: 'home' }, '', window.location.pathname + window.location.search);
       setCurrentPage('home');
     }
@@ -250,9 +253,18 @@ export default function App() {
     } catch (e) {}
   };
 
-  const handleOpenTarotWithPackage = (pkg) => {
+  const handleOpenTarot = (pkg = null) => {
     setSelectedTarotPkg(pkg);
-    setIsTarotOpen(true);
+    setIsTarotOpen(false);
+    setCurrentPage('tarot');
+    if (window.location.hash !== '#tarot') {
+      window.history.pushState({ page: 'tarot' }, '', '#tarot');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenTarotWithPackage = (pkg) => {
+    handleOpenTarot(pkg);
   };
 
   const handleOpenConsultationWithTopic = (topic) => {
@@ -280,7 +292,7 @@ export default function App() {
         onOpenMilan={() => setIsMilanOpen(true)}
         onOpenHoroscope={() => { setSelectedSign(HOROSCOPE_DATA[0]); setIsHoroscopeOpen(true); }}
         onOpenPanchang={() => setIsPanchangOpen(true)}
-        onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
+        onOpenTarot={() => handleOpenTarot(null)}
         onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
         onOpenAuth={() => { setAuthReason(null); setIsAuthOpen(true); }}
         onOpenAbout={() => setIsAboutOpen(true)}
@@ -310,6 +322,15 @@ export default function App() {
             user={user}
           />
         </main>
+      ) : currentPage === 'tarot' ? (
+        <main className="flex-1 flex flex-col">
+          <TarotPage
+            initialPackage={selectedTarotPkg}
+            onGoBack={handleGoHome}
+            onOpenConsultation={handleOpenConsultationWithTopic}
+            lang={lang}
+          />
+        </main>
       ) : (
         <main className="flex-1 flex flex-col">
           {/* Main Hero Section with "CREATE YOUR KUNDLI" Form Card */}
@@ -318,7 +339,7 @@ export default function App() {
             user={user}
             onGenerateKundli={handleGenerateKundli}
             onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
-            onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
+            onOpenTarot={() => handleOpenTarot(null)}
             lang={lang}
           />
 
@@ -356,7 +377,7 @@ export default function App() {
         onOpenAbout={() => setIsAboutOpen(true)}
         onOpenBlog={() => setIsBlogOpen(true)}
         onOpenConsultation={() => handleOpenConsultationWithTopic('Customer Support & Inquiries')}
-        onOpenTarot={() => { setSelectedTarotPkg(null); setIsTarotOpen(true); }}
+        onOpenTarot={() => handleOpenTarot(null)}
         onOpenHoroscope={() => { setSelectedSign(HOROSCOPE_DATA[0]); setIsHoroscopeOpen(true); }}
         lang={lang}
       />
@@ -409,14 +430,6 @@ export default function App() {
         />
       )}
 
-      {isTarotOpen && (
-        <TarotReaderModal
-          initialPackage={selectedTarotPkg}
-          onClose={() => setIsTarotOpen(false)}
-          onOpenConsultation={handleOpenConsultationWithTopic}
-          lang={lang}
-        />
-      )}
 
       {isNumerologyOpen && (
         <NumerologyModal
