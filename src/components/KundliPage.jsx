@@ -346,6 +346,56 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
         {activeTab === 'chart' && (
           <div className="bg-[#120629] border border-amber-500/30 rounded-2xl sm:rounded-3xl p-3 sm:p-5 lg:p-7 space-y-5 sm:space-y-6 shadow-xl">
             
+            {/* ASTROSAGE SIDE-BY-SIDE CHARTS: LAGNA CHART (D-1) & NAVAMSA CHART (D-9) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              
+              {/* Left Chart: Lagna Chart (D-1) */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
+                {chartType === 'north' ? (
+                  <NorthIndianChart
+                    houseOccupants={lagnaChartData.houseOccupants}
+                    activeHouse={selectedHouse}
+                    onSelectHouse={(h) => setSelectedHouse(h)}
+                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
+                    chartLang={chartLang}
+                    showDegrees={true}
+                    theme={chartTheme}
+                  />
+                ) : (
+                  <SouthIndianChart
+                    planets={lagnaChartData.planets || planets}
+                    ascendant={ascendant}
+                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
+                  />
+                )}
+              </div>
+
+              {/* Right Chart: Navamsa Chart (D-9) or Selected Divisional Chart */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
+                {chartType === 'north' ? (
+                  <NorthIndianChart
+                    houseOccupants={secondaryChartData.houseOccupants}
+                    activeHouse={selectedHouse}
+                    onSelectHouse={(h) => setSelectedHouse(h)}
+                    chartTitle={getBilingual(
+                      `${secondaryChartData.name} (${secondaryChartData.id})`,
+                      `${secondaryChartData.nameHi || secondaryChartData.name} (${secondaryChartData.id})`
+                    )}
+                    chartLang={chartLang}
+                    showDegrees={secondaryChartData.id === 'D1'}
+                    theme={chartTheme}
+                  />
+                ) : (
+                  <SouthIndianChart
+                    planets={secondaryChartData.planets || planets}
+                    ascendant={secondaryChartData.ascSign}
+                    chartTitle={`${secondaryChartData.name} (${secondaryChartData.id})`}
+                  />
+                )}
+              </div>
+
+            </div>
+
             {/* Controls Bar: Language Toggle, Theme Toggle & Chart Style Switcher */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1b0a38] border border-purple-800/80">
               
@@ -480,56 +530,6 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   );
                 })}
               </div>
-            </div>
-
-            {/* ASTROSAGE SIDE-BY-SIDE CHARTS: LAGNA CHART (D-1) & NAVAMSA CHART (D-9) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              
-              {/* Left Chart: Lagna Chart (D-1) */}
-              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
-                {chartType === 'north' ? (
-                  <NorthIndianChart
-                    houseOccupants={lagnaChartData.houseOccupants}
-                    activeHouse={selectedHouse}
-                    onSelectHouse={(h) => setSelectedHouse(h)}
-                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
-                    chartLang={chartLang}
-                    showDegrees={true}
-                    theme={chartTheme}
-                  />
-                ) : (
-                  <SouthIndianChart
-                    planets={lagnaChartData.planets || planets}
-                    ascendant={ascendant}
-                    chartTitle={getBilingual('Lagna Chart', 'लग्न कुण्डली')}
-                  />
-                )}
-              </div>
-
-              {/* Right Chart: Navamsa Chart (D-9) or Selected Divisional Chart */}
-              <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/20 border border-purple-900/50 shadow-inner">
-                {chartType === 'north' ? (
-                  <NorthIndianChart
-                    houseOccupants={secondaryChartData.houseOccupants}
-                    activeHouse={selectedHouse}
-                    onSelectHouse={(h) => setSelectedHouse(h)}
-                    chartTitle={getBilingual(
-                      `${secondaryChartData.name} (${secondaryChartData.id})`,
-                      `${secondaryChartData.nameHi || secondaryChartData.name} (${secondaryChartData.id})`
-                    )}
-                    chartLang={chartLang}
-                    showDegrees={secondaryChartData.id === 'D1'}
-                    theme={chartTheme}
-                  />
-                ) : (
-                  <SouthIndianChart
-                    planets={secondaryChartData.planets || planets}
-                    ascendant={secondaryChartData.ascSign}
-                    chartTitle={`${secondaryChartData.name} (${secondaryChartData.id})`}
-                  />
-                )}
-              </div>
-
             </div>
 
             {/* ASTROSAGE TABLES SECTION: PLANETS TABLE & VIMSHOTTARI DASHA */}
