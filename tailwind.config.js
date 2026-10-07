@@ -35,9 +35,10 @@ export default {
         }
       },
       fontFamily: {
-        cinzel: ['Cinzel', 'serif'],
-        outfit: ['Outfit', 'sans-serif'],
-        sans: ['Outfit', 'system-ui', 'sans-serif'],
+        cinzel: ['Cinzel', 'Noto Sans Devanagari', 'serif'],
+        outfit: ['Outfit', 'Noto Sans Devanagari', 'sans-serif'],
+        sans: ['Outfit', 'Noto Sans Devanagari', 'system-ui', 'sans-serif'],
+        hindi: ['Noto Sans Devanagari', 'Outfit', 'sans-serif'],
       },
       boxShadow: {
         'gold-glow': '0 0 25px -5px rgba(234, 179, 8, 0.45)',

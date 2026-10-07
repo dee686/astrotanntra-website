@@ -21,10 +21,20 @@
     font-family: 'Cinzel', 'Noto Sans Devanagari', serif;
   }
 
-  /* When Hindi is active, ensure clear, crisp font rendering and comfortable font sizes */
+  /* When Hindi is active, ensure clear, crisp font rendering and comfortable spacing between words */
   [lang="hi"], .font-hindi {
     font-family: 'Noto Sans Devanagari', 'Outfit', sans-serif;
-    letter-spacing: 0.01em;
+    letter-spacing: normal;
+    word-spacing: 0.12em;
+  }
+
+  [lang="hi"] h1,
+  [lang="hi"] h2,
+  [lang="hi"] h3,
+  [lang="hi"] h4,
+  .font-hindi-heading {
+    letter-spacing: normal;
+    word-spacing: 0.25em;
   }
 }
 
