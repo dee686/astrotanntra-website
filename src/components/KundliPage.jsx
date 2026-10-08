@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
+import VimshottariDashaTable from './VimshottariDashaTable';
 import { DIVISIONAL_CHARTS_META } from '../utils/vedicCalculations';
 
 export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, lang = 'en', setLang }) {
@@ -647,63 +648,9 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                 </div>
               </div>
 
-              {/* Vimshottari Dasha Balance Card (4 cols on lg) */}
-              <div className="lg:col-span-4 bg-[#170933] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-purple-800">
-                  <h3 className="font-cinzel text-base sm:text-lg font-bold text-amber-300 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-amber-400" />
-                    <span>{chartLang === 'hi' ? 'विंशोत्तरी दशा चक्र' : 'Vimshottari Dasha'}</span>
-                  </h3>
-                  <span className="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
-                    {chartLang === 'hi' ? '120-वर्षीय' : '120-Year'}
-                  </span>
-                </div>
-
-                {/* Balance String Banner */}
-                <div className="p-3.5 rounded-xl bg-black/40 border border-purple-900/60 mb-3.5 text-center">
-                  <span className="text-xs uppercase font-bold text-slate-300 block tracking-wider mb-1">
-                    {chartLang === 'hi' ? 'जन्म समय दशा शेष' : 'Balance Of Dasha at Birth'}
-                  </span>
-                  <strong className="text-amber-300 text-sm sm:text-base font-mono block font-bold">
-                    {chartLang === 'hi' ? (dasha.balanceStrHi || dasha.balanceStr) : dasha.balanceStr}
-                  </strong>
-                </div>
-
-                {/* Timeline Table */}
-                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                  {dasha.timeline?.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex items-center justify-between p-2.5 rounded-xl text-xs sm:text-sm transition-colors ${
-                        item.isCurrent
-                          ? 'bg-amber-500/20 border border-amber-400/80 shadow-sm'
-                          : 'bg-black/20 hover:bg-white/5 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
-                          item.isCurrent ? 'bg-amber-400 text-slate-950 font-black' : 'bg-purple-950 text-amber-300'
-                        }`}>
-                          {item.lordHi ? item.lordHi.substring(0, 2) : item.lord.substring(0, 2)}
-                        </span>
-                        <span className="font-semibold text-slate-100 text-sm">
-                          {getBilingual(item.lord, item.lordHi)}
-                        </span>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="font-mono text-amber-300 font-bold text-xs sm:text-sm block">
-                          {item.endDate || item.endYear}
-                        </span>
-                        {item.isCurrent && (
-                          <span className="text-[10px] sm:text-xs block text-emerald-400 font-bold">
-                            {chartLang === 'hi' ? 'सक्रिय' : 'Active'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {/* Vimshottari Dasha Interactive Table (4 cols on lg) */}
+              <div className="lg:col-span-4">
+                <VimshottariDashaTable dashaData={dasha} lang={chartLang} isHi={isHi} />
               </div>
 
             </div>
@@ -1096,45 +1043,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
               </p>
             </div>
 
-            <div className="space-y-3">
-              {dasha.timeline?.map((d, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm transition-all ${
-                    d.isCurrent
-                      ? 'bg-amber-500/15 border-amber-400 shadow-gold-glow'
-                      : 'bg-[#1b0a38]/60 border-purple-800/40 hover:bg-[#1b0a38]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                      d.isCurrent ? 'bg-amber-400 text-slate-950 shadow-md font-black' : 'bg-purple-950 text-purple-300 border border-purple-800'
-                    }`}>
-                      {d.lordHi ? d.lordHi.substring(0, 2) : d.lord.substring(0, 2)}
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-100 block text-sm sm:text-base">
-                        {(isHi ? (d.lordHi || d.lord) : d.lord)} {isHi ? 'महादशा' : 'Mahadasha'}
-                      </span>
-                      <span className="text-xs text-slate-300 font-medium">
-                        {isHi ? `अवधि: ${d.years || d.durationYears} वर्ष` : `Duration: ${d.years || d.durationYears} Years`}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-mono text-xs sm:text-sm font-bold text-amber-300 block">
-                      {d.startDate ? `${d.startDate} - ${d.endDate}` : `${d.startYear} - ${d.endYear}`}
-                    </span>
-                    {d.isCurrent && (
-                      <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold bg-emerald-500 text-slate-950 uppercase mt-1 tracking-wider shadow">
-                        {isHi ? 'वर्तमान में सक्रिय' : 'Currently Active'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <VimshottariDashaTable dashaData={dasha} lang={chartLang} isHi={isHi} />
           </div>
         )}
 

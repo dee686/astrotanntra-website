@@ -11,6 +11,8 @@
  * 8. Dual Language (English & Hindi) for all planetary symbols, signs, nakshatras, and houses
  */
 
+import { calculateMahadashas } from './dashaCalculations.js';
+
 // Math utilities
 export function toRad(d) { return (d * Math.PI) / 180; }
 export function toDeg(r) { return (r * 180) / Math.PI; }
@@ -1052,52 +1054,15 @@ export function calculateCompleteKundli({
   const balanceStrHi = `${currentDashaObj.lordHi} ${remY} वर्ष ${remM} माह ${remD} दिन`;
 
   // Compute Vimshottari Mahadasha timeline for all 9 planets
-  const dashaTimeline = [];
-  const currentStart = new Date(year, month - 1, day);
-  const firstEnd = new Date(currentStart);
-  firstEnd.setDate(firstEnd.getDate() + remD);
-  firstEnd.setMonth(firstEnd.getMonth() + remM);
-  firstEnd.setFullYear(firstEnd.getFullYear() + remY);
-
-  const formatDDate = (d) => `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-
-  dashaTimeline.push({
-    lord: currentDashaObj.lord,
-    lordHi: currentDashaObj.lordHi,
-    years: currentDashaObj.years,
-    startDate: formatDDate(currentStart),
-    startDateObj: currentStart,
-    endDate: formatDDate(firstEnd),
-    endYear: firstEnd.getFullYear(),
-    endDateObj: firstEnd
+  const dashaTimeline = calculateMahadashas({
+    birthDate: { year, month, day },
+    birthLord,
+    balanceY: remY,
+    balanceM: remM,
+    balanceD: remD,
+    totalYears: currentDashaObj.years
   });
 
-  let runningDate = new Date(firstEnd);
-  for (let step = 1; step < 9; step++) {
-    const nextIdx = (dashaIdx + step) % 9;
-    const dObj = DASHA_ORDER[nextIdx];
-    const sDate = new Date(runningDate);
-    const eDate = new Date(firstEnd);
-    eDate.setFullYear(runningDate.getFullYear() + dObj.years);
-
-    dashaTimeline.push({
-      lord: dObj.lord,
-      lordHi: dObj.lordHi,
-      years: dObj.years,
-      startDate: formatDDate(sDate),
-      startDateObj: sDate,
-      endDate: formatDDate(eDate),
-      endYear: eDate.getFullYear(),
-      endDateObj: eDate
-    });
-    runningDate = eDate;
-  }
-
-  // Active Mahadasha today
-  const now = new Date();
-  dashaTimeline.forEach(d => {
-    d.isCurrent = (now >= d.startDateObj && now <= d.endDateObj);
-  });
   const activeDasha = dashaTimeline.find(d => d.isCurrent) || dashaTimeline[1] || dashaTimeline[0];
 
   // Doshas evaluation

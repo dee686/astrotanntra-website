@@ -18,6 +18,15 @@ import {
   toRad
 } from './astronomyEngine.js';
 
+import {
+  calculateMahadashas,
+  calculateAntardashas,
+  calculatePratyantardashas,
+  calculateSookshmadashas,
+  formatDashaDate,
+  VIMSHOTTARI_PLANETS
+} from './dashaCalculations.js';
+
 export {
   ZODIAC_SIGNS,
   NAKSHATRAS,
@@ -31,7 +40,13 @@ export {
   getDivisionalSign,
   norm,
   toDeg,
-  toRad
+  toRad,
+  calculateMahadashas,
+  calculateAntardashas,
+  calculatePratyantardashas,
+  calculateSookshmadashas,
+  formatDashaDate,
+  VIMSHOTTARI_PLANETS
 };
 
 // Meta information for all Divisional & Special Charts

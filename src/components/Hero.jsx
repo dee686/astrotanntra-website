@@ -27,6 +27,9 @@ export default function Hero({
 }) {
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [tob, setTob] = useState('');
   const [place, setPlace] = useState('');
   const [coordinates, setCoordinates] = useState({
@@ -37,6 +40,30 @@ export default function Hero({
   });
   const [gender, setGender] = useState('Male');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+  const MONTHS = [
+    { value: '01', en: '01 - Jan', hi: '01 - जनवरी' },
+    { value: '02', en: '02 - Feb', hi: '02 - फ़रवरी' },
+    { value: '03', en: '03 - Mar', hi: '03 - मार्च' },
+    { value: '04', en: '04 - Apr', hi: '04 - अप्रैल' },
+    { value: '05', en: '05 - May', hi: '05 - मई' },
+    { value: '06', en: '06 - Jun', hi: '06 - जून' },
+    { value: '07', en: '07 - Jul', hi: '07 - जुलाई' },
+    { value: '08', en: '08 - Aug', hi: '08 - अगस्त' },
+    { value: '09', en: '09 - Sep', hi: '09 - सितंबर' },
+    { value: '10', en: '10 - Oct', hi: '10 - अक्टूबर' },
+    { value: '11', en: '11 - Nov', hi: '11 - नवंबर' },
+    { value: '12', en: '12 - Dec', hi: '12 - दिसंबर' }
+  ];
+
+  const updateDob = (d, m, y) => {
+    if (d && m && y && String(y).length >= 4) {
+      setDob(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+    } else {
+      setDob('');
+    }
+  };
 
   // Time parsing & AM/PM detection
   const timeInfo = parseTimeOfBirth(tob);
@@ -56,13 +83,14 @@ export default function Hero({
     setTob(`${String(h).padStart(2, '0')}:${m}`);
   };
 
-  // Formatted date preview for clarity (e.g. "1 May 2000")
+  // Formatted date preview for clarity (e.g. "08 April 2000 (08/04/2000)")
   const datePreview = dob ? (() => {
     const parsed = parseDateOfBirth(dob);
     const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthsHi = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
     const mName = lang === 'hi' ? monthsHi[parsed.month - 1] : monthsEn[parsed.month - 1];
-    return `${parsed.day} ${mName} ${parsed.year}`;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(parsed.day)} ${mName} ${parsed.year} (${pad(parsed.day)}/${pad(parsed.month)}/${parsed.year})`;
   })() : null;
 
   // Formatted time preview for clarity (e.g. "04:30 AM (सुबह)")
@@ -80,6 +108,9 @@ export default function Hero({
   useEffect(() => {
     setName('');
     setDob('');
+    setBirthDay('');
+    setBirthMonth('');
+    setBirthYear('');
     setTob('');
     setPlace('');
     setCoordinates({
@@ -138,6 +169,9 @@ export default function Hero({
     if (user) {
       setName('');
       setDob('');
+      setBirthDay('');
+      setBirthMonth('');
+      setBirthYear('');
       setTob('');
       setPlace('');
       setCoordinates({
@@ -315,20 +349,103 @@ export default function Hero({
                 />
               </div>
 
-              {/* Date of Birth */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-purple-300">
-                  <Calendar className="w-4 h-4 text-amber-400/80" />
+              {/* Date of Birth: 3 Distinct Non-Ambiguous Fields (Day, Month, Year) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5 px-0.5">
+                  <label className="text-[11px] font-semibold text-amber-300 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{lang === 'hi' ? 'जन्म तिथि (दिन / माह / वर्ष)' : 'Date of Birth (Day / Month / Year)'}</span>
+                  </label>
+                  <div>
+                    <input
+                      type="date"
+                      tabIndex={-1}
+                      className="sr-only"
+                      id="hero-quick-datepicker"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const [y, m, d] = e.target.value.split('-');
+                          setBirthDay(d);
+                          setBirthMonth(m);
+                          setBirthYear(y);
+                          setDob(e.target.value);
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="hero-quick-datepicker"
+                      className="cursor-pointer text-amber-300 hover:text-amber-200 flex items-center gap-1 text-[11px] font-medium"
+                      title={lang === 'hi' ? 'कैलेंडर से चुनें' : 'Pick from calendar'}
+                    >
+                      <span>📅</span>
+                      <span className="underline">{lang === 'hi' ? 'कैलेंडर' : 'Calendar'}</span>
+                    </label>
+                  </div>
                 </div>
-                <input
-                  type="date"
-                  required
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  placeholder="yyyy-mm-dd"
-                  autoComplete="off"
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
-                />
+
+                <div className="grid grid-cols-12 gap-2">
+                  {/* Day (DD) */}
+                  <div className="col-span-3">
+                    <select
+                      required
+                      value={birthDay}
+                      onChange={(e) => {
+                        const d = e.target.value;
+                        setBirthDay(d);
+                        updateDob(d, birthMonth, birthYear);
+                      }}
+                      className="w-full px-2 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white text-xs sm:text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-[#170932]">
+                        {lang === 'hi' ? 'दिन' : 'Day'}
+                      </option>
+                      {DAYS.map(d => (
+                        <option key={d} value={d} className="bg-[#170932]">{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Month (MM) */}
+                  <div className="col-span-5">
+                    <select
+                      required
+                      value={birthMonth}
+                      onChange={(e) => {
+                        const m = e.target.value;
+                        setBirthMonth(m);
+                        updateDob(birthDay, m, birthYear);
+                      }}
+                      className="w-full px-2 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white text-xs sm:text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-[#170932]">
+                        {lang === 'hi' ? 'माह' : 'Month'}
+                      </option>
+                      {MONTHS.map(m => (
+                        <option key={m.value} value={m.value} className="bg-[#170932]">
+                          {lang === 'hi' ? m.hi : m.en}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Year (YYYY) */}
+                  <div className="col-span-4">
+                    <input
+                      type="number"
+                      required
+                      min="1900"
+                      max="2099"
+                      value={birthYear}
+                      onChange={(e) => {
+                        const y = e.target.value;
+                        setBirthYear(y);
+                        updateDob(birthDay, birthMonth, y);
+                      }}
+                      placeholder={lang === 'hi' ? 'वर्ष (2000)' : 'Year (2000)'}
+                      className="w-full px-2.5 py-3 rounded-xl bg-[#231248]/80 border border-purple-600/40 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Time of Birth with explicit AM / PM toggle */}
