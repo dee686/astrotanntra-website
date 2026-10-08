@@ -114,21 +114,48 @@ export function calculateMahadashas({ birthDate, birthLord, balanceY = 0, balanc
 }
 
 /**
+ * Classical Vedic calendar addition for sub-dashas (Parashari Savana rules)
+ */
+function addParashariVedic(baseDate, mAdd, dAdd) {
+  let y = baseDate.getFullYear();
+  let m = baseDate.getMonth() + 1 + mAdd;
+  let d = baseDate.getDate() + dAdd;
+
+  if (d > 30) {
+    d -= 30;
+    m += 1;
+  }
+  while (m > 12) {
+    m -= 12;
+    y += 1;
+  }
+  return new Date(y, m - 1, d);
+}
+
+/**
  * Calculate Antardashas (Level 2) for a given Mahadasha
  * Classical Parashari rule: Months = floor(Y1 * Y2 / 10), Days = ((Y1 * Y2) % 10) * 3
  */
 export function calculateAntardashas(md) {
   const cycle = getVimshottariCycleFrom(md.lord);
-  const totalMs = md.endDateObj.getTime() - md.startDateObj.getTime();
   const now = new Date();
   const antardashas = [];
 
+  const mdPlanet = getPlanetByLord(md.lord);
+  const y1 = mdPlanet ? mdPlanet.years : (md.years || 6);
+
   let curStart = new Date(md.startDateObj);
 
-  cycle.forEach((adPlanet) => {
-    // Exact proportional duration in milliseconds
-    const durMs = totalMs * (adPlanet.years / 120.0);
-    const curEnd = new Date(curStart.getTime() + durMs);
+  cycle.forEach((adPlanet, idx) => {
+    let curEnd;
+    if (idx === cycle.length - 1) {
+      curEnd = new Date(md.endDateObj);
+    } else {
+      const prod = y1 * adPlanet.years;
+      const mAdd = Math.floor(prod / 10);
+      const dAdd = (prod % 10) * 3;
+      curEnd = addParashariVedic(curStart, mAdd, dAdd);
+    }
 
     const isCurrent = (now >= curStart && now < curEnd);
     const code = `${md.code} - ${adPlanet.code}`;
@@ -149,37 +176,37 @@ export function calculateAntardashas(md) {
       startDateObj: new Date(curStart),
       endDate: formatDashaDate(curEnd),
       endDateObj: new Date(curEnd),
-      durationMs: durMs,
+      durationMs: curEnd.getTime() - curStart.getTime(),
       isCurrent
     });
 
     curStart = new Date(curEnd);
   });
 
-  // Ensure last Antardasha ends exactly at Mahadasha end date
-  if (antardashas.length > 0) {
-    antardashas[antardashas.length - 1].endDateObj = new Date(md.endDateObj);
-    antardashas[antardashas.length - 1].endDate = formatDashaDate(md.endDateObj);
-  }
-
   return antardashas;
 }
 
 /**
  * Calculate Pratyantardashas (Level 3) for a given Antardasha
- * Proportional duration: PD_ms = AD_ms * (PD_years / 120)
+ * Proportional calendar duration: PD_days = AD_days * (PD_years / 120)
  */
 export function calculatePratyantardashas(ad) {
   const cycle = getVimshottariCycleFrom(ad.lord);
-  const totalMs = ad.endDateObj.getTime() - ad.startDateObj.getTime();
+  const totalDays = (ad.endDateObj.getTime() - ad.startDateObj.getTime()) / (1000 * 60 * 60 * 24);
   const now = new Date();
   const pratyantars = [];
 
   let curStart = new Date(ad.startDateObj);
+  let cumDays = 0;
 
-  cycle.forEach((pdPlanet) => {
-    const durMs = totalMs * (pdPlanet.years / 120.0);
-    const curEnd = new Date(curStart.getTime() + durMs);
+  cycle.forEach((pdPlanet, idx) => {
+    let curEnd;
+    if (idx === cycle.length - 1) {
+      curEnd = new Date(ad.endDateObj);
+    } else {
+      cumDays += totalDays * (pdPlanet.years / 120.0);
+      curEnd = new Date(ad.startDateObj.getTime() + Math.round(cumDays) * 24 * 60 * 60 * 1000);
+    }
 
     const isCurrent = (now >= curStart && now < curEnd);
     const code = `${ad.code} - ${pdPlanet.code}`;
@@ -200,36 +227,37 @@ export function calculatePratyantardashas(ad) {
       startDateObj: new Date(curStart),
       endDate: formatDashaDate(curEnd),
       endDateObj: new Date(curEnd),
-      durationMs: durMs,
+      durationMs: curEnd.getTime() - curStart.getTime(),
       isCurrent
     });
 
     curStart = new Date(curEnd);
   });
 
-  if (pratyantars.length > 0) {
-    pratyantars[pratyantars.length - 1].endDateObj = new Date(ad.endDateObj);
-    pratyantars[pratyantars.length - 1].endDate = formatDashaDate(ad.endDateObj);
-  }
-
   return pratyantars;
 }
 
 /**
  * Calculate Sookshmadashas (Level 4) for a given Pratyantardasha
- * Proportional duration: SD_ms = PD_ms * (SD_years / 120)
+ * Proportional calendar duration: SD_days = PD_days * (SD_years / 120)
  */
 export function calculateSookshmadashas(pd) {
   const cycle = getVimshottariCycleFrom(pd.lord);
-  const totalMs = pd.endDateObj.getTime() - pd.startDateObj.getTime();
+  const totalDays = (pd.endDateObj.getTime() - pd.startDateObj.getTime()) / (1000 * 60 * 60 * 24);
   const now = new Date();
   const sookshmas = [];
 
   let curStart = new Date(pd.startDateObj);
+  let cumDays = 0;
 
-  cycle.forEach((sdPlanet) => {
-    const durMs = totalMs * (sdPlanet.years / 120.0);
-    const curEnd = new Date(curStart.getTime() + durMs);
+  cycle.forEach((sdPlanet, idx) => {
+    let curEnd;
+    if (idx === cycle.length - 1) {
+      curEnd = new Date(pd.endDateObj);
+    } else {
+      cumDays += totalDays * (sdPlanet.years / 120.0);
+      curEnd = new Date(pd.startDateObj.getTime() + Math.round(cumDays) * 24 * 60 * 60 * 1000);
+    }
 
     const isCurrent = (now >= curStart && now < curEnd);
     const code = `${pd.code} - ${sdPlanet.code}`;
@@ -250,17 +278,12 @@ export function calculateSookshmadashas(pd) {
       startDateObj: new Date(curStart),
       endDate: formatDashaDate(curEnd),
       endDateObj: new Date(curEnd),
-      durationMs: durMs,
+      durationMs: curEnd.getTime() - curStart.getTime(),
       isCurrent
     });
 
     curStart = new Date(curEnd);
   });
-
-  if (sookshmas.length > 0) {
-    sookshmas[sookshmas.length - 1].endDateObj = new Date(pd.endDateObj);
-    sookshmas[sookshmas.length - 1].endDate = formatDashaDate(pd.endDateObj);
-  }
 
   return sookshmas;
 }

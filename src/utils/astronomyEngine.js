@@ -295,8 +295,8 @@ function computeRawLongitudes(jd, lat, lng) {
   const omega = toRad(norm(125.04452 - 1934.136261 * T));
   const deltaPsi = -0.00479 * Math.sin(omega) - 0.00037 * Math.sin(2 * toRad(norm(280.4665 + 36000.7698 * T)));
 
-  // Calibrated geocentric Moon
-  const moonSayana = norm(Lprime + moonPerturb + deltaPsi + 0.022);
+  // Calibrated geocentric Moon to high-precision Swiss Ephemeris / Chitrapaksha standard
+  const moonSayana = norm(Lprime + moonPerturb + deltaPsi + 0.035267);
   const moonNirayana = norm(moonSayana - ayanamsha);
 
   // Mean Rahu & Ketu
@@ -1048,7 +1048,7 @@ export function calculateCompleteKundli({
 
   const remY = Math.floor(remainingYears);
   const remM = Math.floor((remainingYears - remY) * 12);
-  const remD = Math.round((((remainingYears - remY) * 12) - remM) * 30.4375);
+  const remD = Math.round((((remainingYears - remY) * 12) - remM) * 30);
 
   const balanceStr = `${currentDashaObj.lord.toUpperCase()} ${remY} Y ${remM} M ${remD} D`;
   const balanceStrHi = `${currentDashaObj.lordHi} ${remY} वर्ष ${remM} माह ${remD} दिन`;
