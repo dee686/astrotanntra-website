@@ -260,6 +260,10 @@ export default function NorthIndianChart({
                     ? toHindiDigits(degVal)
                     : degVal;
 
+                  const hasDegree = Boolean(showDegrees && degDisplay);
+                  const isRetrograde = Boolean(p.isRetro && p.name !== 'Rahu' && p.name !== 'Ketu');
+                  const isCombust = Boolean(p.isCombust);
+
                   return (
                     <text
                       key={`${p.code}-${pIdx}`}
@@ -274,39 +278,40 @@ export default function NorthIndianChart({
                       className="filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] pointer-events-none select-none"
                     >
                       {label}
-                      {/* Red Superscript Degree */}
-                      {showDegrees && degDisplay && (
+                      {/* Degree Superscript */}
+                      {hasDegree && (
                         <tspan
-                          fill="#dc2626"
+                          fill={isAstrosage ? color : '#dc2626'}
                           fontSize="8.5"
                           fontWeight="bold"
                           dy="-4"
-                          dx="1"
+                          dx="0.5"
                         >
                           {degDisplay}
                         </tspan>
                       )}
                       {/* Retrograde Asterisk */}
-                      {p.isRetro && p.name !== 'Rahu' && p.name !== 'Ketu' && (
+                      {isRetrograde && (
                         <tspan
-                          fill="#dc2626"
+                          fill={isAstrosage ? color : '#dc2626'}
                           fontSize="9"
                           fontWeight="bold"
-                          dy="0"
+                          dy={hasDegree ? "3.5" : "0"}
                           dx="0.5"
                         >
                           *
                         </tspan>
                       )}
-                      {/* Combust Indicator */}
-                      {p.isCombust && (
+                      {/* Combust Indicator: AstroSage upside-down v (^) symbol */}
+                      {isCombust && (
                         <tspan
-                          fill="#b91c1c"
-                          fontSize="7"
-                          dy="-3"
-                          dx="0.5"
+                          fill={isAstrosage ? color : '#b91c1c'}
+                          fontSize="10"
+                          fontWeight="bold"
+                          dy={hasDegree && !isRetrograde ? "3.5" : "0"}
+                          dx="1"
                         >
-                          (c)
+                          ^
                         </tspan>
                       )}
                     </text>
@@ -353,6 +358,18 @@ export default function NorthIndianChart({
         <span className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-rose-800 inline-block"></span>
           <span>Ra/Ke: {chartLang === 'hi' ? 'राहु/केतु' : 'Nodes'}</span>
+        </span>
+        <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${
+          isAstrosage ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-cosmic-900 border-amber-500/20 text-amber-200'
+        }`}>
+          <span className="font-bold text-red-500">*</span>
+          <span>{chartLang === 'hi' ? 'वक्री (Retro)' : 'Retro (*)'}</span>
+        </span>
+        <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${
+          isAstrosage ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-cosmic-900 border-amber-500/20 text-amber-200'
+        }`}>
+          <span className="font-bold text-red-500">^</span>
+          <span>{chartLang === 'hi' ? 'अस्त (Combust)' : 'Combust (^)'}</span>
         </span>
       </div>
     </div>
