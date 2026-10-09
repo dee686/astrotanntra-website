@@ -49,16 +49,19 @@ export function formatDashaDate(d) {
  * Calendar-accurate date adder (adding Y years, M months, D days)
  */
 function addYMD(baseDate, y = 0, m = 0, d = 0) {
-  const curY = baseDate.getFullYear() + y;
-  const curM = baseDate.getMonth() + m;
-  const curDay = baseDate.getDate();
+  let curY = baseDate.getFullYear() + y;
+  let curM = baseDate.getMonth() + 1 + m;
+  let curDay = baseDate.getDate() + d;
 
-  // JavaScript handles month overflow automatically
-  const res = new Date(curY, curM, curDay);
-  if (d !== 0) {
-    res.setDate(res.getDate() + d);
+  if (curDay > 30) {
+    curDay -= 30;
+    curM += 1;
   }
-  return res;
+  while (curM > 12) {
+    curM -= 12;
+    curY += 1;
+  }
+  return new Date(curY, curM - 1, curDay);
 }
 
 /**
@@ -87,6 +90,8 @@ export function calculateMahadashas({ birthDate, birthLord, balanceY = 0, balanc
     } else {
       curEnd = new Date(curStart);
       curEnd.setFullYear(curStart.getFullYear() + p.years);
+      curEnd.setDate(firstEnd.getDate());
+      curEnd.setMonth(firstEnd.getMonth());
     }
 
     const isCurrent = (now >= curStart && now < curEnd);

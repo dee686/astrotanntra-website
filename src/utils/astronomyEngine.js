@@ -12,6 +12,7 @@
  */
 
 import { calculateMahadashas } from './dashaCalculations.js';
+import * as Astronomy from 'astronomy-engine';
 
 // Math utilities
 export function toRad(d) { return (d * Math.PI) / 180; }
@@ -95,11 +96,10 @@ export function getJulianDay(year, month, day, decimalHour = 0) {
   return jd + decimalHour / 24.0;
 }
 
-// True Chitrapaksha (Lahiri) Ayanamsha (Government of India PAC standard)
+// True Chitrapaksha (Lahiri) Ayanamsha calibrated to high-precision Swiss Ephemeris / AstroSage standard
 export function getLahiriAyanamsha(jd) {
   const T = (jd - 2451545.0) / 36525.0;
-  // PAC formula: 23° 51' 25.53" at J2000.0, precession ~ 50.290966" / yr
-  return norm(23.85709 + 1.396971 * T + 0.000308 * T * T);
+  return norm(23.860939 + 1.463450 * T);
 }
 
 // Solve Kepler's equation: E - e*sin(E) = M
@@ -221,100 +221,36 @@ function getHeliocentricPos(planetName, T) {
   return { x: xh, y: yh, z: zh };
 }
 
-// Compute raw geocentric longitudes for all planets at JD
+// Compute raw geocentric longitudes for all planets at JD using astronomy-engine (NASA JPL DE405 / ELP-2000)
 function computeRawLongitudes(jd, lat, lng) {
+  const time = new Astronomy.AstroTime(jd - 2451545.0);
   const T = (jd - 2451545.0) / 36525.0;
   const ayanamsha = getLahiriAyanamsha(jd);
 
-  // High-Precision Sun (Jean Meeus Astronomical Algorithms Ch 25)
-  const L0 = norm(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
-  const M_sun_meeus = toRad(norm(357.52911 + 35999.05029 * T - 0.0001537 * T * T));
-  const C_sun = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M_sun_meeus) +
-                (0.019993 - 0.000101 * T) * Math.sin(2 * M_sun_meeus) +
-                0.000289 * Math.sin(3 * M_sun_meeus);
-  const sunSayana = norm(L0 + C_sun);
-  const sunNirayana = norm(sunSayana - ayanamsha);
+  // High-Precision Geocentric Moon (NASA JPL / ELP-2000)
+  const moonEcl = Astronomy.EclipticGeoMoon(time);
+  const moonNirayana = norm(moonEcl.lon - ayanamsha);
 
-  // Accurate Geocentric Vector of Sun for other planets
-  const R_sun = 1.00014 - 0.01671 * Math.cos(M_sun_meeus) - 0.00014 * Math.cos(2 * M_sun_meeus);
-  const X_sun = R_sun * Math.cos(toRad(sunSayana));
-  const Y_sun = R_sun * Math.sin(toRad(sunSayana));
-  const Z_sun = 0.0;
+  // High-Precision Sun
+  const sunGeo = Astronomy.GeoVector(Astronomy.Body.Sun, time, false);
+  const sunEcl = Astronomy.Ecliptic(sunGeo);
+  const sunNirayana = norm(sunEcl.elon - ayanamsha);
 
-  // Moon (Jean Meeus Ch 47 & ELP-2000 periodic terms)
-  const Lprime = norm(218.3164477 + 481267.88123421 * T - 0.0015786 * T * T + T * T * T / 538841);
-  const D = toRad(norm(297.8501921 + 445267.1114034 * T - 0.0018819 * T * T + T * T * T / 545868));
-  const M_sun = toRad(norm(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T));
-  const M_moon = toRad(norm(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T + T * T * T / 69699));
-  const F = toRad(norm(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T - T * T * T / 3526000));
-
-  const moonPerturb = 
-    6.288774 * Math.sin(M_moon) +
-    1.274027 * Math.sin(2 * D - M_moon) +
-    0.658314 * Math.sin(2 * D) +
-    0.213618 * Math.sin(2 * M_moon) -
-    0.185116 * Math.sin(M_sun) -
-    0.114332 * Math.sin(2 * F) +
-    0.058793 * Math.sin(2 * D - 2 * M_moon) +
-    0.057066 * Math.sin(2 * D - M_sun - M_moon) +
-    0.053322 * Math.sin(2 * D + M_moon) +
-    0.045758 * Math.sin(2 * D - M_sun) -
-    0.040923 * Math.sin(M_sun - M_moon) -
-    0.034720 * Math.sin(D) -
-    0.030383 * Math.sin(M_sun + M_moon) +
-    0.015327 * Math.sin(2 * D - 2 * F) -
-    0.012528 * Math.sin(2 * F + M_moon) +
-    0.010980 * Math.sin(2 * F - M_moon) +
-    0.010675 * Math.sin(4 * D - M_moon) +
-    0.010034 * Math.sin(3 * M_moon) +
-    0.008548 * Math.sin(4 * D - 2 * M_moon) -
-    0.007888 * Math.sin(2 * D + M_sun - M_moon) -
-    0.006766 * Math.sin(2 * D + M_sun) -
-    0.005163 * Math.sin(D - M_moon) +
-    0.004987 * Math.sin(D + M_sun) +
-    0.004036 * Math.sin(2 * D - M_sun + M_moon) +
-    0.003994 * Math.sin(2 * D - 4 * M_moon) +
-    0.003861 * Math.sin(4 * D) +
-    0.003665 * Math.sin(2 * D - 3 * M_moon) -
-    0.002689 * Math.sin(M_sun - 2 * M_moon) -
-    0.002602 * Math.sin(2 * D - M_sun + 2 * F) +
-    0.002390 * Math.sin(2 * D - M_sun - 2 * M_moon) -
-    0.002348 * Math.sin(D + M_moon) +
-    0.002236 * Math.sin(2 * D - 2 * M_sun) -
-    0.002120 * Math.sin(M_sun + 2 * M_moon) -
-    0.002079 * Math.sin(2 * M_sun) +
-    0.002059 * Math.sin(2 * D - M_sun - 2 * F) -
-    0.001773 * Math.sin(2 * D + 2 * M_moon) -
-    0.001595 * Math.sin(4 * D - M_sun - M_moon) +
-    0.001220 * Math.sin(4 * D - 3 * M_moon) -
-    0.001110 * Math.sin(2 * M_moon + 2 * F) +
-    0.000892 * Math.sin(M_moon - 2 * F) -
-    0.000811 * Math.sin(2 * D + M_sun - 2 * M_moon);
-
-  // Nutation in longitude (IAU 1980)
-  const omega = toRad(norm(125.04452 - 1934.136261 * T));
-  const deltaPsi = -0.00479 * Math.sin(omega) - 0.00037 * Math.sin(2 * toRad(norm(280.4665 + 36000.7698 * T)));
-
-  // Calibrated geocentric Moon to high-precision Swiss Ephemeris / Chitrapaksha standard
-  const moonSayana = norm(Lprime + moonPerturb + deltaPsi + 0.035267);
-  const moonNirayana = norm(moonSayana - ayanamsha);
-
-  // Mean Rahu & Ketu
+  // Mean Rahu & Ketu (Vedic Standard)
   const rahuSayana = norm(125.04452 - 1934.136261 * T + 0.0020708 * T * T);
   const rahuNirayana = norm(rahuSayana - ayanamsha);
   const ketuNirayana = norm(rahuNirayana + 180);
 
-  // Ascendant (Lagna)
-  const gmst = norm(280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T);
-  const lst = toRad(norm(gmst + lng));
+  // Ascendant (Lagna) with full precession and nutation
+  const gstHours = Astronomy.SiderealTime(time);
+  const lstDeg = norm(gstHours * 15.0 + lng);
   const eps = toRad(23.4392911 - 0.0130042 * T);
   const phi = toRad(lat);
-  const yAsc = Math.cos(lst);
-  const xAsc = -Math.sin(lst) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps);
+  const yAsc = Math.cos(toRad(lstDeg));
+  const xAsc = -Math.sin(toRad(lstDeg)) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps);
   const ascSayana = norm(toDeg(Math.atan2(yAsc, xAsc)));
   const ascNirayana = norm(ascSayana - ayanamsha);
 
-  // Other Planets
   const result = {
     Ascendant: ascNirayana,
     Sun: sunNirayana,
@@ -323,13 +259,21 @@ function computeRawLongitudes(jd, lat, lng) {
     Ketu: ketuNirayana
   };
 
-  ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'].forEach(name => {
-    const hPos = getHeliocentricPos(name, T);
-    const Xg = hPos.x + X_sun;
-    const Yg = hPos.y + Y_sun;
-    const Zg = hPos.z + Z_sun;
-    const sayana = norm(toDeg(Math.atan2(Yg, Xg)));
-    result[name] = norm(sayana - ayanamsha);
+  const bodies = [
+    ['Mercury', Astronomy.Body.Mercury],
+    ['Venus', Astronomy.Body.Venus],
+    ['Mars', Astronomy.Body.Mars],
+    ['Jupiter', Astronomy.Body.Jupiter],
+    ['Saturn', Astronomy.Body.Saturn],
+    ['Uranus', Astronomy.Body.Uranus],
+    ['Neptune', Astronomy.Body.Neptune],
+    ['Pluto', Astronomy.Body.Pluto]
+  ];
+
+  bodies.forEach(([name, body]) => {
+    const geo = Astronomy.GeoVector(body, time, false);
+    const ecl = Astronomy.Ecliptic(geo);
+    result[name] = norm(ecl.elon - ayanamsha);
   });
 
   return { longitudes: result, ayanamsha };
