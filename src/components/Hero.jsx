@@ -534,7 +534,6 @@ export default function Hero({
                 >
                   <option value="Male" className="bg-[#170932]">{lang === 'hi' ? 'पुरुष' : 'Male'}</option>
                   <option value="Female" className="bg-[#170932]">{lang === 'hi' ? 'महिला' : 'Female'}</option>
-                  <option value="Other" className="bg-[#170932]">{lang === 'hi' ? 'अन्य' : 'Other'}</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-purple-300">
                   <ChevronDown className="w-4 h-4" />
