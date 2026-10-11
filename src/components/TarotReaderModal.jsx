@@ -320,17 +320,17 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                       {/* Title & Desc */}
                       <div className="mb-4">
                         <h4 className="font-cinzel font-bold text-base sm:text-lg text-slate-100 group-hover:text-amber-300 transition-colors">
-                          {pkg.name}
+                          {isHi ? (pkg.nameHi || pkg.name) : pkg.name}
                         </h4>
                         <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed font-light">
-                          {pkg.desc}
+                          {isHi ? (pkg.descHi || pkg.desc) : pkg.desc}
                         </p>
                       </div>
 
                       {/* Features */}
                       {pkg.features && (
                         <div className="space-y-1.5 mb-5 pt-3 border-t border-purple-800/60 text-xs sm:text-sm">
-                          {pkg.features.map((feat, fIdx) => (
+                          {((isHi && pkg.featuresHi) ? pkg.featuresHi : pkg.features).map((feat, fIdx) => (
                             <div key={fIdx} className="flex items-center gap-2 text-slate-300">
                               <span className="text-amber-400">✦</span>
                               <span>{feat}</span>
@@ -462,14 +462,14 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                 <div className="space-y-8">
                   
                   {/* Cards Display Container */}
-                  <div className="flex flex-wrap justify-center gap-3 sm:gap-5 max-w-5xl mx-auto">
+                  <div className="flex flex-wrap justify-center gap-y-10 gap-x-4 sm:gap-x-6 max-w-5xl mx-auto">
                     {drawnCards.map((card, idx) => {
                       const revealed = isRevealed[card.id];
                       const isMulti = drawnCards.length > 7;
                       return (
                         <div key={card.id} className="flex flex-col items-center">
-                          <span className={`text-[10px] sm:text-xs uppercase tracking-wider text-amber-400 font-bold mb-1.5 text-center ${
-                            isMulti ? 'max-w-[150px] text-[10px]' : 'max-w-[200px]'
+                          <span className={`text-xs uppercase tracking-wider text-amber-300 font-bold mb-3 text-center min-h-[48px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-purple-950/90 border border-purple-800/80 shadow-md ${
+                            isMulti ? 'max-w-[190px] text-[10px] sm:text-[11px]' : 'max-w-[240px]'
                           }`}>
                             {getSpreadPositionName(idx)}
                           </span>
@@ -479,43 +479,45 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                             onClick={() => setIsRevealed(prev => ({ ...prev, [card.id]: !prev[card.id] }))}
                             className={`${
                               isMulti
-                                ? 'w-32 h-50 sm:w-36 sm:h-58 md:w-40 md:h-64'
-                                : 'w-44 h-64 sm:w-52 sm:h-76 md:w-56 md:h-80'
-                            } perspective-1000 cursor-pointer group`}
+                                ? 'w-40 h-64 sm:w-44 sm:h-72 md:w-48 md:h-76'
+                                : 'w-52 h-80 sm:w-60 sm:h-92'
+                            } perspective-1000 cursor-pointer group select-none`}
                           >
                             <div className={`relative w-full h-full duration-700 transform-style-3d transition-transform rounded-2xl shadow-2xl ${
                               revealed ? 'rotate-y-180' : ''
                             }`}>
                               
                               {/* Card Back */}
-                              <div className="absolute inset-0 backface-hidden rounded-2xl bg-gradient-to-br from-[#2a0e5c] via-[#1b073e] to-[#0d0322] border-2 border-amber-400/80 p-3 flex flex-col items-center justify-center shadow-lg">
+                              <div className="absolute inset-0 backface-hidden rounded-2xl bg-gradient-to-br from-[#2a0e5c] via-[#1b073e] to-[#0d0322] border-2 border-amber-400/80 p-3 sm:p-3.5 flex flex-col items-center justify-center shadow-lg overflow-hidden">
                                 <div className="w-full h-full rounded-xl border border-amber-400/30 flex flex-col items-center justify-center p-2 bg-cosmic-950/60">
-                                  <div className="text-3xl mb-2 animate-spin" style={{ animationDuration: '20s' }}>☸️</div>
+                                  <div className="text-3xl sm:text-4xl mb-2 animate-spin" style={{ animationDuration: '20s' }}>☸️</div>
                                   <span className="font-cinzel text-xs text-amber-300 tracking-widest uppercase">ASTROTANNTRA</span>
                                   <span className="text-[10px] text-slate-400 mt-2">{isHi ? 'क्लिक करके कार्ड पलटें' : 'Click to Reveal'}</span>
                                 </div>
                               </div>
 
                               {/* Card Front */}
-                              <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-gradient-to-b from-[#1c0a3a] via-[#14062c] to-[#0b031c] border-2 border-amber-400 p-4 flex flex-col justify-between shadow-2xl text-left">
+                              <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-2xl bg-gradient-to-b from-[#1c0a3a] via-[#14062c] to-[#0b031c] border-2 border-amber-400 p-3.5 sm:p-4.5 flex flex-col justify-between shadow-2xl text-left overflow-hidden">
                                 <div>
-                                  <div className="flex items-center justify-between text-xs text-amber-300 font-mono mb-1">
+                                  <div className="flex items-center justify-between text-[11px] sm:text-xs text-amber-300 font-mono mb-1">
                                     <span>{card.number}</span>
-                                    <span>{card.element}</span>
+                                    <span className="font-sans text-[10px] sm:text-[11px] font-semibold">{isHi ? (card.elementHi || card.element) : card.element}</span>
                                   </div>
-                                  <div className="text-center my-3">
-                                    <span className="text-4xl filter drop-shadow">{card.image}</span>
-                                    <h4 className="font-cinzel font-bold text-sm sm:text-base text-amber-300 mt-1">
-                                      {card.name}
+                                  <div className="text-center my-1.5 sm:my-2">
+                                    <span className="text-3xl sm:text-4xl filter drop-shadow">{card.image}</span>
+                                    <h4 className="font-cinzel font-bold text-xs sm:text-sm md:text-base text-amber-300 mt-1 leading-snug">
+                                      {isHi ? (card.nameHi || card.name) : card.name}
                                     </h4>
-                                    <span className="text-[10px] text-purple-300 block">{card.arcana}</span>
+                                    <span className="text-[10px] sm:text-xs text-purple-300 block mt-0.5">
+                                      {isHi ? (card.arcanaHi || card.arcana) : card.arcana}
+                                    </span>
                                   </div>
                                 </div>
 
-                                <div className="space-y-1.5 border-t border-purple-800/80 pt-2 text-xs">
-                                  <div className="flex flex-wrap gap-1">
-                                    {card.keywords.slice(0, 3).map((kw, kIdx) => (
-                                      <span key={kIdx} className="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/60 text-amber-200">
+                                <div className="space-y-1 border-t border-purple-800/80 pt-1.5 text-xs">
+                                  <div className="flex flex-wrap gap-1 justify-center">
+                                    {((isHi && card.keywordsHi) ? card.keywordsHi : card.keywords).slice(0, 3).map((kw, kIdx) => (
+                                      <span key={kIdx} className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-purple-900/80 text-amber-200 border border-purple-700/50 leading-tight">
                                         {kw}
                                       </span>
                                     ))}
@@ -538,7 +540,7 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                           <div className="flex items-center gap-2">
                             <span className="text-xl">{card.image}</span>
                             <h4 className="font-cinzel font-bold text-base text-amber-300">
-                              {getSpreadPositionName(idx)}: {card.name}
+                              {getSpreadPositionName(idx)}: {isHi ? (card.nameHi || card.name) : card.name}
                             </h4>
                           </div>
                           <span className="text-xs text-slate-400">
@@ -547,7 +549,7 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                         </div>
 
                         <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-light">
-                          {card.upright}
+                          {isHi ? (card.uprightHi || card.upright) : card.upright}
                         </p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
@@ -555,21 +557,27 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                             <span className="font-bold text-pink-300 block mb-1 flex items-center gap-1 text-xs">
                               <Heart className="w-3.5 h-3.5" /> {isHi ? 'प्रेम एवं संबंध' : 'Love Insight'}
                             </span>
-                            <span className="text-slate-300 text-xs leading-tight block">{card.love}</span>
+                            <span className="text-slate-300 text-xs leading-tight block">
+                              {isHi ? (card.loveHi || card.love) : card.love}
+                            </span>
                           </div>
 
                           <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30">
                             <span className="font-bold text-amber-300 block mb-1 flex items-center gap-1 text-xs">
                               <Briefcase className="w-3.5 h-3.5" /> {isHi ? 'करियर एवं व्यापार' : 'Career Insight'}
                             </span>
-                            <span className="text-slate-300 text-xs leading-tight block">{card.career}</span>
+                            <span className="text-slate-300 text-xs leading-tight block">
+                              {isHi ? (card.careerHi || card.career) : card.career}
+                            </span>
                           </div>
 
                           <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30">
                             <span className="font-bold text-emerald-300 block mb-1 flex items-center gap-1 text-xs">
                               <DollarSign className="w-3.5 h-3.5" /> {isHi ? 'धन एवं संपदा' : 'Financial Path'}
                             </span>
-                            <span className="text-slate-300 text-xs leading-tight block">{card.finance}</span>
+                            <span className="text-slate-300 text-xs leading-tight block">
+                              {isHi ? (card.financeHi || card.finance) : card.finance}
+                            </span>
                           </div>
                         </div>
                       </div>
