@@ -23,6 +23,7 @@ import NumerologyModal from './components/NumerologyModal';
 import AuthModal from './components/AuthModal';
 import AboutModal from './components/AboutModal';
 import BlogModal from './components/BlogModal';
+import BlogPage from './components/BlogPage';
 import { getActiveUser, setActiveUser } from './services/authService';
 
 // Vedic Calculations
@@ -110,6 +111,8 @@ export default function App() {
         setCurrentPage('consultation');
       } else if (hash === '#book-package' || state?.page === 'packageBooking') {
         setCurrentPage('packageBooking');
+      } else if (hash === '#blog' || state?.page === 'blog') {
+        setCurrentPage('blog');
       } else if (hash === '#tarot' || state?.page === 'tarot') {
         setCurrentPage('tarot');
       } else if (hash === '#kundli' || state?.page === 'kundli') {
@@ -293,6 +296,14 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenBlogPage = () => {
+    setCurrentPage('blog');
+    if (window.location.hash !== '#blog') {
+      window.history.pushState({ page: 'blog' }, '', '#blog');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSelectSign = (sign) => {
     setSelectedSign(sign);
     setIsHoroscopeOpen(true);
@@ -312,11 +323,12 @@ export default function App() {
         onOpenConsultation={() => handleOpenConsultationWithTopic('Vedic Astrology Consultation')}
         onOpenAuth={() => { setAuthReason(null); setIsAuthOpen(true); }}
         onOpenAbout={() => setIsAboutOpen(true)}
-        onOpenBlog={() => setIsBlogOpen(true)}
+        onOpenBlog={handleOpenBlogPage}
         user={user}
         onLogout={handleLogout}
         lang={lang}
         setLang={setLang}
+        currentPage={currentPage}
       />
 
       {/* Main Content: Dedicated Full Kundli Page OR Dedicated Consultation Page OR Dedicated Package Booking Page OR Home Landing View */}
@@ -357,6 +369,18 @@ export default function App() {
             onOpenConsultation={handleOpenConsultationWithTopic}
             onOpenPackageBooking={handleOpenPackageBooking}
             lang={lang}
+          />
+        </main>
+      ) : currentPage === 'blog' ? (
+        <main className="flex-1 flex flex-col">
+          <BlogPage
+            onGoBack={handleGoHome}
+            onOpenConsultation={handleOpenConsultationWithTopic}
+            onOpenKundli={handleOpenKundliPage}
+            lang={lang}
+            setLang={setLang}
+            user={user}
+            onLoginSuccess={handleLoginSuccess}
           />
         </main>
       ) : (
@@ -404,7 +428,7 @@ export default function App() {
         onGoHome={handleGoHome}
         onOpenKundli={handleOpenKundliPage}
         onOpenAbout={() => setIsAboutOpen(true)}
-        onOpenBlog={() => setIsBlogOpen(true)}
+        onOpenBlog={handleOpenBlogPage}
         onOpenConsultation={() => handleOpenConsultationWithTopic('Customer Support & Inquiries')}
         onOpenTarot={() => handleOpenTarot(null)}
         onOpenHoroscope={() => { setSelectedSign(HOROSCOPE_DATA[0]); setIsHoroscopeOpen(true); }}

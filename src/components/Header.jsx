@@ -15,7 +15,8 @@ export default function Header({
   user,
   onLogout,
   lang, 
-  setLang 
+  setLang,
+  currentPage = 'home'
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -72,19 +73,27 @@ export default function Header({
         <nav className="hidden md:flex items-center gap-4 lg:gap-7 text-sm font-medium text-slate-200">
           <button 
             onClick={onGoHome}
-            className="hover:text-amber-300 transition-colors cursor-pointer"
+            className={`transition-colors cursor-pointer ${
+              currentPage === 'home' 
+                ? 'text-amber-300 font-bold border-b-2 border-amber-400 pb-0.5' 
+                : 'hover:text-amber-300 text-slate-200'
+            }`}
           >
             {lang === 'hi' ? 'होम' : 'Home'}
           </button>
           <button 
             onClick={onOpenAbout}
-            className="hover:text-amber-300 transition-colors cursor-pointer"
+            className="hover:text-amber-300 transition-colors cursor-pointer text-slate-200"
           >
             {lang === 'hi' ? 'हमारे बारे में' : 'About'}
           </button>
           <button 
             onClick={onOpenBlog}
-            className="hover:text-amber-300 transition-colors cursor-pointer"
+            className={`transition-colors cursor-pointer ${
+              currentPage === 'blog' 
+                ? 'text-amber-300 font-bold border-b-2 border-amber-400 pb-0.5' 
+                : 'hover:text-amber-300 text-slate-200'
+            }`}
           >
             {lang === 'hi' ? 'ब्लॉग' : 'Blog'}
           </button>

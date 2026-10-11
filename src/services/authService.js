@@ -26,6 +26,19 @@ export function isHoroscopeEditor(user) {
   );
 }
 
+/**
+ * Check if a given user has permission to edit, create or delete blog posts
+ */
+export function isBlogAdmin(user) {
+  if (!user) return false;
+  const cleanEmail = (user.email || '').trim().toLowerCase();
+  return (
+    AUTHORIZED_EDITOR_EMAILS.includes(cleanEmail) ||
+    user.role === 'admin' ||
+    user.isEditor === true
+  );
+}
+
 // Initial pre-registered users for seamless demonstration
 const DEFAULT_USERS = [
   {
