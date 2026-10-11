@@ -145,10 +145,14 @@ export default function ConsultationPage({
     }
   ];
 
-  // Price calculations
-  const basePrice = selectedAstrologer ? selectedAstrologer.pricePerMin * 30 : 750;
-  const discountAmount = couponApplied ? 200 : 0;
-  const finalPrice = Math.max(basePrice - discountAmount, 350);
+  // Price calculations: check if initialTopic contains a package price (e.g. ₹501, ₹1100, ₹101)
+  const topicPriceMatch = initialTopic ? initialTopic.match(/₹([\d,]+)/) : null;
+  const packagePrice = topicPriceMatch ? parseInt(topicPriceMatch[1].replace(/,/g, ''), 10) : null;
+  const basePrice = packagePrice || (selectedAstrologer ? selectedAstrologer.pricePerMin * 30 : 750);
+  const discountAmount = couponApplied 
+    ? (packagePrice ? Math.min(Math.round(packagePrice * 0.1), 100) : 200) 
+    : 0;
+  const finalPrice = Math.max(basePrice - discountAmount, 1);
 
   // Apply Coupon Code
   const handleApplyCoupon = (e) => {

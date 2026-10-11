@@ -26,6 +26,7 @@ import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VimshottariDashaTable from './VimshottariDashaTable';
 import { DIVISIONAL_CHARTS_META } from '../utils/vedicCalculations';
+import { KUNDLI_PACKAGES } from '../data/kundliPackagesData';
 
 export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, lang = 'en', setLang }) {
   const [activeTab, setActiveTab] = useState('chart');
@@ -1211,6 +1212,86 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
             </div>
           </div>
         )}
+
+        {/* Kundli Analysis Packages - Astrotanntra */}
+        <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-b from-[#180836] to-[#0e0422] p-6 sm:p-8 space-y-6 shadow-2xl">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>{isHi ? 'कुण्डली परामर्श पैकेज' : 'KUNDLI ANALYSIS PACKAGES'}</span>
+            </div>
+            <h3 className="font-cinzel text-xl sm:text-2xl md:text-3xl font-bold text-amber-300">
+              {isHi ? 'व्यक्तिगत कुण्डली विश्लेषण पैकेज' : 'Kundli Analysis Packages - Astrotanntra'}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 font-light">
+              {isHi
+                ? 'हमारे प्रमाणित वैदिक ज्योतिषियों द्वारा अपनी जन्मकुण्डली, गोचर एवं दशा का गहन 1-ऑन-1 विश्लेषण प्राप्त करें।'
+                : 'Get deep 1-on-1 personalized analysis and life remedies by verified Vedic Jyotish Acharyas.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {KUNDLI_PACKAGES.map((pkg) => (
+              <div
+                key={pkg.id}
+                className={`rounded-2xl p-5 border flex flex-col justify-between transition-all relative group ${
+                  pkg.popular
+                    ? 'bg-gradient-to-b from-[#280f55] to-[#160633] border-amber-400 shadow-gold-glow ring-1 ring-amber-400/50'
+                    : 'bg-[#15062e] border-purple-800/80 hover:border-amber-400/60'
+                }`}
+              >
+                {pkg.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider shadow-md">
+                    {isHi ? 'सर्वाधिक लोकप्रिय' : 'Most Popular'}
+                  </span>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 font-bold text-xs flex items-center justify-center border border-amber-500/40">
+                      #{pkg.num}
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-900/60 text-purple-200 border border-purple-700 font-medium">
+                      {pkg.badge}
+                    </span>
+                  </div>
+
+                  <h4 className="font-cinzel font-bold text-base sm:text-lg text-white group-hover:text-amber-300 transition-colors">
+                    {isHi ? pkg.nameHi : pkg.name}
+                  </h4>
+                  <p className="text-xs text-amber-200/80 font-medium mt-1 leading-relaxed">
+                    {isHi ? pkg.descHi : pkg.desc}
+                  </p>
+
+                  <ul className="mt-4 pt-3 border-t border-purple-800/50 space-y-2 text-xs text-slate-300">
+                    {pkg.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-purple-800/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">{isHi ? 'शुल्क (INR)' : 'Rate (INR)'}</span>
+                    <span className="font-cinzel font-extrabold text-xl text-amber-300">
+                      ₹{pkg.priceInr.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => onOpenConsultation?.(`Kundli Analysis: ${pkg.name} (₹${pkg.priceInr})`)}
+                    className="gold-btn px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:scale-105 transition-transform"
+                  >
+                    {isHi ? 'बुक करें' : 'Book Now'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Bottom Consultation CTA Banner */}
         <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-r from-[#1c093a] via-[#240d4f] to-[#14052b] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">

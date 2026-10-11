@@ -29,7 +29,7 @@ export default function TarotPage({
   const isHi = lang === 'hi';
 
   const [selectedPkg, setSelectedPkg] = useState(
-    initialPackage || TAROT_PACKAGES[1] // defaults to 3-card spread
+    initialPackage || TAROT_PACKAGES[0] // defaults to 3-card spread
   );
   const [activeMode, setActiveMode] = useState(initialPackage ? 'interactive' : 'pricing'); // 'pricing', 'interactive', 'booking'
   const [drawnCards, setDrawnCards] = useState([]);
@@ -87,8 +87,8 @@ export default function TarotPage({
     setSelectedPkg(pkg);
     if (onOpenConsultation) {
       const topic = isHi 
-        ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr || pkg.price * 80})`
-        : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr || pkg.price * 80})`;
+        ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr})`
+        : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr})`;
       onOpenConsultation(topic);
     }
   };
@@ -284,13 +284,13 @@ export default function TarotPage({
                       <div className="pt-4 border-t border-purple-800/80 space-y-4">
                         <div className="flex items-baseline justify-between">
                           <div>
-                            <span className="text-xs sm:text-sm text-slate-400">{isHi ? 'शुल्क: ' : 'Price: '}</span>
+                            <span className="text-xs sm:text-sm text-slate-400">{isHi ? 'शुल्क: ' : 'Rate: '}</span>
                             <span className="text-2xl sm:text-3xl font-bold font-cinzel text-amber-300">
-                              ₹{pkg.priceInr || pkg.price * 80}
+                              ₹{pkg.priceInr.toLocaleString('en-IN')}
                             </span>
                           </div>
-                          <span className="text-xs text-slate-400 font-medium">
-                            (${pkg.price} USD)
+                          <span className="text-xs text-amber-400/80 font-medium">
+                            {pkg.cards} {isHi ? 'कार्ड्स' : 'Cards'}
                           </span>
                         </div>
 

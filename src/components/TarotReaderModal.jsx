@@ -22,7 +22,7 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
 
   // If opened directly without a package, default to 'pricing' mode to show card readings with price!
   const [selectedPkg, setSelectedPkg] = useState(
-    initialPackage || TAROT_PACKAGES[1] // defaults to 3-card spread
+    initialPackage || TAROT_PACKAGES[0] // defaults to 3-card spread
   );
   const [activeMode, setActiveMode] = useState(initialPackage ? 'interactive' : 'pricing'); // 'pricing', 'interactive', 'booking'
   const [drawnCards, setDrawnCards] = useState([]);
@@ -65,8 +65,8 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
     onClose();
     if (onOpenConsultation) {
       const topic = isHi 
-        ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr || pkg.price * 80})`
-        : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr || pkg.price * 80})`;
+        ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr})`
+        : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr})`;
       onOpenConsultation(topic);
     }
   };
@@ -238,11 +238,11 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
                           <div>
                             <span className="text-xs sm:text-sm text-slate-400">{isHi ? 'शुल्क: ' : 'Price: '}</span>
                             <span className="text-2xl font-bold font-cinzel text-amber-300">
-                              ₹{pkg.priceInr || pkg.price * 80}
+                              ₹{pkg.priceInr ? pkg.priceInr.toLocaleString('en-IN') : pkg.price * 80}
                             </span>
                           </div>
-                          <span className="text-xs text-slate-400 font-medium">
-                            (${pkg.price} USD)
+                          <span className="text-xs text-amber-400/90 font-medium px-2 py-0.5 rounded-full bg-purple-900/60 border border-purple-700/50">
+                            {pkg.cards} {isHi ? 'कार्ड्स' : 'Cards'}
                           </span>
                         </div>
 
