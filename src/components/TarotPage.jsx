@@ -53,12 +53,13 @@ export default function TarotPage({
   // Shuffle and pick cards for interactive mode
   const handleDrawCards = (pkgToUse = selectedPkg) => {
     const shuffled = [...TAROT_DECK].sort(() => 0.5 - Math.random());
-    const count = Math.min(pkgToUse.cards || 1, 7); // max 7 for interactive flip display
+    const count = Math.min(pkgToUse.cards || 3, TAROT_DECK.length);
     const selected = shuffled.slice(0, count);
     setDrawnCards(selected);
     setIsRevealed({});
 
     // Auto reveal with stagger
+    const stagger = selected.length > 7 ? 250 : 500;
     selected.forEach((card, idx) => {
       setTimeout(() => {
         setIsRevealed(prev => ({ ...prev, [card.id]: true }));
@@ -71,7 +72,7 @@ export default function TarotPage({
             });
           } catch (e) {}
         }
-      }, (idx + 1) * 600);
+      }, (idx + 1) * stagger);
     });
   };
 
@@ -93,15 +94,121 @@ export default function TarotPage({
     }
   };
 
-  const getSpreadPositionName = (idx) => {
-    if (selectedPkg.cards === 1) return isHi ? 'मुख्य मार्गदर्शन / वर्तमान ऊर्जा' : 'Core Guidance / Present Energy';
-    if (idx === 0) return isHi ? 'अतीत का प्रभाव एवं मूल कारण' : 'Past Influences & Root Cause';
-    if (idx === 1) return isHi ? 'वर्तमान स्थिति एवं परिस्थितियां' : 'Current Situation & Present Crossroads';
-    if (idx === 2) return isHi ? 'भविष्य का परिणाम एवं समाधान' : 'Future Outcome & Cosmic Guidance';
-    if (idx === 3) return isHi ? 'अवचेतन इच्छाएं एवं भय' : 'Subconscious Desires & Fears';
-    if (idx === 4) return isHi ? 'बाह्य ऊर्जाएं एवं परिवेश' : 'External Energies & Environment';
-    if (idx === 5) return isHi ? 'आशाएं, चुनौतियां एवं अवसर' : 'Hopes, Pitfalls & Opportunities';
-    return isHi ? `पहलू ${idx + 1}` : `Aspect ${idx + 1}`;
+  const getSpreadPositionName = (idx, pkg = selectedPkg) => {
+    if (pkg.cards === 12) {
+      const monthsEn = [
+        'Month 1 (Jan) - New Dawn & Ambition',
+        'Month 2 (Feb) - Bonds & Relationships',
+        'Month 3 (Mar) - Creative Manifestation',
+        'Month 4 (Apr) - Stability & Foundations',
+        'Month 5 (May) - Growth & Expansion',
+        'Month 6 (Jun) - Health & Inner Balance',
+        'Month 7 (Jul) - Karmic Crossroads',
+        'Month 8 (Aug) - Power & Career Momentum',
+        'Month 9 (Sep) - Wisdom & Inner Reflection',
+        'Month 10 (Oct) - Public Recognition',
+        'Month 11 (Nov) - Aspirations & Synergy',
+        'Month 12 (Dec) - Full-Year Fulfillment'
+      ];
+      const monthsHi = [
+        'माह 1 (जनवरी) - नई शुरुआत एवं ऊर्जा',
+        'माह 2 (फरवरी) - संबंध एवं सामंजस्य',
+        'माह 3 (मार्च) - रचनात्मकता एवं अभिव्यक्ति',
+        'माह 4 (अप्रैल) - स्थिरता एवं आधार',
+        'माह 5 (मई) - विस्तार एवं प्रगति',
+        'माह 6 (जून) - स्वास्थ्य एवं संतुलन',
+        'माह 7 (जुलाई) - कर्म चक्र एवं मोड़',
+        'माह 8 (अगस्त) - शक्ति एवं करियर योग',
+        'माह 9 (सितंबर) - आत्ममंथन एवं ज्ञान',
+        'माह 10 (अक्टूबर) - सामाजिक प्रतिष्ठा',
+        'माह 11 (नवंबर) - आशाएं एवं मित्र सहयोग',
+        'माह 12 (दिसंबर) - पूर्णता एवं सिद्धि'
+      ];
+      return isHi ? (monthsHi[idx] || `माह ${idx + 1}`) : (monthsEn[idx] || `Month ${idx + 1}`);
+    }
+
+    if (pkg.cards === 7) {
+      const celticEn = [
+        'Card 1: Core Present Energy',
+        'Card 2: The Challenge / Crossing',
+        'Card 3: Subconscious Foundation',
+        'Card 4: Past Influences Fading',
+        'Card 5: Conscious Goal / Crown',
+        'Card 6: Near Future Horizon',
+        'Card 7: Spiritual Resolution & Outcome'
+      ];
+      const celticHi = [
+        'कार्ड 1: वर्तमान मुख्य ऊर्जा',
+        'कार्ड 2: तात्कालिक चुनौती / बाधा',
+        'कार्ड 3: अवचेतन आधार / मूल कारण',
+        'कार्ड 4: भूतकाल का प्रभाव',
+        'कार्ड 5: सचेतन लक्ष्य / उच्च दृष्टि',
+        'कार्ड 6: निकट भविष्य का पथ',
+        'कार्ड 7: अंतिम कर्म फल एवं समाधान'
+      ];
+      return isHi ? (celticHi[idx] || `कार्ड ${idx + 1}`) : (celticEn[idx] || `Card ${idx + 1}`);
+    }
+
+    if (pkg.cards === 5) {
+      if (pkg.id === 'love') {
+        const loveEn = [
+          'Card 1: Your Heart & True Feelings',
+          'Card 2: Partner’s Mind & Desires',
+          'Card 3: Current Bond Dynamic',
+          'Card 4: Hidden Relationship Obstacle',
+          'Card 5: Love Destiny & Sacred Advice'
+        ];
+        const loveHi = [
+          'कार्ड 1: आपकी भावनाएं एवं हृदय स्थिति',
+          'कार्ड 2: साथी के विचार एवं इच्छाएं',
+          'कार्ड 3: संबंध का मूल स्वरूप एवं बंधन',
+          'कार्ड 4: गुप्त बाधा अथवा चुनौती',
+          'कार्ड 5: प्रेम भविष्यफल एवं मार्गदर्शन'
+        ];
+        return isHi ? loveHi[idx] : loveEn[idx];
+      }
+
+      if (pkg.id === 'career') {
+        const careerEn = [
+          'Card 1: Current Career Foundation',
+          'Card 2: Ambitions & True Calling',
+          'Card 3: Workplace Obstacles / Competition',
+          'Card 4: Upcoming Growth Opportunity',
+          'Card 5: Long-Term Career Triumph'
+        ];
+        const careerHi = [
+          'कार्ड 1: वर्तमान कार्य स्थिति एवं आधार',
+          'कार्ड 2: महत्वाकांक्षाएं एवं लक्ष्य',
+          'कार्ड 3: कार्यक्षेत्र की चुनौतियां / प्रतिस्पर्धा',
+          'कार्ड 4: आगामी अवसर एवं उन्नति',
+          'कार्ड 5: दीर्घकालिक सफलता एवं सिद्धि'
+        ];
+        return isHi ? careerHi[idx] : careerEn[idx];
+      }
+
+      if (pkg.id === 'finance') {
+        const finEn = [
+          'Card 1: Current Financial Energy',
+          'Card 2: Wealth & Earning Streams',
+          'Card 3: Subconscious Money Blocks / Debts',
+          'Card 4: Prosperity & Investment Window',
+          'Card 5: Long-Term Abundance Destiny'
+        ];
+        const finHi = [
+          'कार्ड 1: वर्तमान वित्तीय स्थिति',
+          'कार्ड 2: धन अर्जन एवं आय के स्रोत',
+          'कार्ड 3: गुप्त रुकावटें / व्यय कारक',
+          'कार्ड 4: निवेश योग एवं समृद्धि का अवसर',
+          'कार्ड 5: दीर्घकालिक संपन्नता एवं सुरक्षा'
+        ];
+        return isHi ? finHi[idx] : finEn[idx];
+      }
+    }
+
+    if (idx === 0) return isHi ? 'कार्ड 1: अतीत का प्रभाव एवं मूल कारण' : 'Card 1: Past Influences & Root Cause';
+    if (idx === 1) return isHi ? 'कार्ड 2: वर्तमान स्थिति एवं ऊर्जा' : 'Card 2: Current Situation & Present Crossroads';
+    if (idx === 2) return isHi ? 'कार्ड 3: भविष्य का परिणाम एवं समाधान' : 'Card 3: Future Outcome & Cosmic Guidance';
+    return isHi ? `कार्ड ${idx + 1}` : `Card ${idx + 1}`;
   };
 
   return (
@@ -405,19 +512,26 @@ export default function TarotPage({
                 <div className="space-y-10">
                   
                   {/* Cards Display Grid */}
-                  <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
+                  <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-6xl mx-auto">
                     {drawnCards.map((card, idx) => {
                       const revealed = isRevealed[card.id];
+                      const isMulti = drawnCards.length > 7;
                       return (
                         <div key={card.id} className="flex flex-col items-center">
-                          <span className="text-xs uppercase tracking-wider text-amber-400 font-bold mb-2.5 text-center max-w-[210px] min-h-[32px] flex items-center justify-center">
+                          <span className={`text-xs uppercase tracking-wider text-amber-400 font-bold mb-2 text-center min-h-[30px] flex items-center justify-center ${
+                            isMulti ? 'max-w-[170px] text-[10px] sm:text-[11px]' : 'max-w-[210px]'
+                          }`}>
                             {getSpreadPositionName(idx)}
                           </span>
 
                           {/* 3D Flip Card Container */}
                           <div
                             onClick={() => setIsRevealed(prev => ({ ...prev, [card.id]: !prev[card.id] }))}
-                            className="w-48 h-72 sm:w-56 sm:h-80 md:w-60 md:h-88 perspective-1000 cursor-pointer group select-none"
+                            className={`${
+                              isMulti
+                                ? 'w-36 h-56 sm:w-40 sm:h-64 md:w-44 md:h-68'
+                                : 'w-48 h-72 sm:w-56 sm:h-80 md:w-60 md:h-88'
+                            } perspective-1000 cursor-pointer group select-none`}
                           >
                             <div className={`relative w-full h-full duration-700 transform-style-3d transition-transform rounded-2xl shadow-2xl ${
                               revealed ? 'rotate-y-180' : ''
@@ -570,7 +684,7 @@ export default function TarotPage({
                     <span className="text-slate-400 block text-xs">{isHi ? 'चयनित रीडिंग पैकेज' : 'Selected Reading Package'}</span>
                     <strong className="text-amber-300 text-sm sm:text-base block">{selectedPkg.name}</strong>
                     <span className="text-emerald-400 font-bold text-base block">
-                      ₹{selectedPkg.priceInr || selectedPkg.price * 80} <span className="text-xs text-slate-400 font-normal">(${selectedPkg.price} USD)</span>
+                      ₹{selectedPkg.priceInr ? selectedPkg.priceInr.toLocaleString('en-IN') : selectedPkg.price * 80}
                     </span>
                   </div>
 

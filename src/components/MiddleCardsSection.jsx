@@ -119,7 +119,7 @@ export default function MiddleCardsSection({
                   <div className="mt-2.5 pt-2 border-t border-amber-100 flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-slate-500 block leading-none">{isHi ? 'शुल्क (INR)' : 'Rate (INR)'}</span>
-                      <span className="font-cinzel font-extrabold text-sm sm:text-base text-amber-700">
+                      <span className="font-bold text-sm sm:text-base text-[#8a4b08] tabular-nums">
                         ₹{pkg.priceInr.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -165,29 +165,29 @@ export default function MiddleCardsSection({
               {TAROT_PACKAGES.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="flex items-center justify-between p-2 rounded-xl bg-white border border-amber-200/80 hover:border-amber-400 transition-all text-xs"
+                  className="flex items-center justify-between p-2 sm:p-2.5 rounded-xl bg-white border border-amber-200/80 hover:border-amber-400 transition-all text-xs"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-4 h-4 rounded-full bg-[#531e84] text-amber-300 font-bold text-[9px] flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+                    <span className="w-4.5 h-4.5 rounded-full bg-[#531e84] text-amber-300 font-bold text-[9px] flex items-center justify-center shrink-0">
                       {pkg.num}
                     </span>
-                    <div className="min-w-0">
-                      <span className="font-bold text-slate-900 block leading-tight truncate text-[11px] sm:text-xs">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-slate-900 block leading-tight text-[11px] sm:text-xs">
                         {isHi ? (pkg.nameHi || pkg.name) : pkg.name}
                       </span>
-                      <span className="text-[10px] text-slate-600 block">
-                        {pkg.cards} {isHi ? 'कार्ड' : 'Cards'}
+                      <span className="text-[10px] text-slate-500 block mt-0.5">
+                        {pkg.cards} {isHi ? 'कार्ड्स' : 'Cards'}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-                    <span className="font-cinzel font-extrabold text-amber-700 text-xs sm:text-sm">
+                    <span className="font-bold text-[#8a4b08] text-xs sm:text-[13px] tabular-nums">
                       ₹{pkg.priceInr.toLocaleString('en-IN')}
                     </span>
                     <button
                       onClick={() => onOpenTarotWithPackage(pkg)}
-                      className="px-2.5 py-1 rounded bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm whitespace-nowrap"
+                      className="px-2.5 py-1 rounded-lg bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm whitespace-nowrap"
                     >
                       {isHi ? 'बुक करें' : 'BOOK NOW'}
                     </button>
