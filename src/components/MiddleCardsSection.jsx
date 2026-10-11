@@ -24,6 +24,7 @@ export default function MiddleCardsSection({
   onOpenMilan,
   onOpenNumerology,
   onOpenTarotWithPackage,
+  onOpenPackageBooking,
   onOpenKundli,
   lang
 }) {
@@ -125,7 +126,7 @@ export default function MiddleCardsSection({
                     </div>
 
                     <button
-                      onClick={() => onOpenConsultation(`Kundli Analysis: ${pkg.name} (₹${pkg.priceInr})`)}
+                      onClick={() => onOpenPackageBooking ? onOpenPackageBooking(pkg, 'kundli') : onOpenConsultation(`Kundli Analysis: ${pkg.name} (₹${pkg.priceInr})`)}
                       className="px-3 py-1.5 rounded-lg bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm whitespace-nowrap"
                     >
                       {isHi ? 'बुक करें' : 'BOOK NOW'}
@@ -186,7 +187,7 @@ export default function MiddleCardsSection({
                       ₹{pkg.priceInr.toLocaleString('en-IN')}
                     </span>
                     <button
-                      onClick={() => onOpenTarotWithPackage(pkg)}
+                      onClick={() => onOpenPackageBooking ? onOpenPackageBooking(pkg, 'tarot') : onOpenTarotWithPackage(pkg)}
                       className="px-2.5 py-1 rounded-lg bg-[#531e84] hover:bg-[#3d1363] text-amber-200 font-bold text-[10px] tracking-wider uppercase transition-colors cursor-pointer shadow-sm whitespace-nowrap"
                     >
                       {isHi ? 'बुक करें' : 'BOOK NOW'}
@@ -197,12 +198,16 @@ export default function MiddleCardsSection({
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-amber-200/80 text-center">
-            <span className="text-[11px] text-slate-600">
-              {isHi
-                ? 'तुरंत इंटरैक्टिव कार्ड चयन + व्यक्तिगत आध्यात्मिक मार्गदर्शन शामिल'
-                : 'Instant interactive draw + personalized spiritual guidance included'}
+          <div className="mt-4 pt-3 border-t border-amber-200/80 flex items-center justify-between text-xs text-amber-900">
+            <span className="font-semibold">
+              {isHi ? 'कार्ड्स स्वयं निकालें?' : 'Draw cards yourself?'}
             </span>
+            <button
+              onClick={() => onOpenTarotWithPackage(null)}
+              className="text-xs font-bold text-[#531e84] hover:underline cursor-pointer"
+            >
+              {isHi ? 'टैरो डेक खोलें →' : 'Open Tarot Deck →'}
+            </button>
           </div>
         </div>
 

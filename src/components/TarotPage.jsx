@@ -24,6 +24,7 @@ export default function TarotPage({
   initialPackage, 
   onGoBack, 
   onOpenConsultation, 
+  onOpenPackageBooking,
   lang = 'en' 
 }) {
   const isHi = lang === 'hi';
@@ -86,7 +87,9 @@ export default function TarotPage({
 
   const handleSelectPackageForBooking = (pkg = selectedPkg) => {
     setSelectedPkg(pkg);
-    if (onOpenConsultation) {
+    if (onOpenPackageBooking) {
+      onOpenPackageBooking(pkg, 'tarot');
+    } else if (onOpenConsultation) {
       const topic = isHi 
         ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr})`
         : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr})`;

@@ -17,7 +17,7 @@ import {
 import { TAROT_DECK, TAROT_PACKAGES } from '../data/tarotData';
 import confetti from 'canvas-confetti';
 
-export default function TarotReaderModal({ initialPackage, onClose, onOpenConsultation, lang }) {
+export default function TarotReaderModal({ initialPackage, onClose, onOpenConsultation, onOpenPackageBooking, lang }) {
   const isHi = lang === 'hi';
 
   // If opened directly without a package, default to 'pricing' mode to show card readings with price!
@@ -64,7 +64,9 @@ export default function TarotReaderModal({ initialPackage, onClose, onOpenConsul
   const handleSelectPackageForBooking = (pkg) => {
     setSelectedPkg(pkg);
     onClose();
-    if (onOpenConsultation) {
+    if (onOpenPackageBooking) {
+      onOpenPackageBooking(pkg, 'tarot');
+    } else if (onOpenConsultation) {
       const topic = isHi 
         ? `टैरो परामर्श: ${pkg.name} (₹${pkg.priceInr})`
         : `Tarot Reading: ${pkg.name} (₹${pkg.priceInr})`;

@@ -18,6 +18,7 @@ import TarotReaderModal from './components/TarotReaderModal';
 import TarotPage from './components/TarotPage';
 import ConsultationModal from './components/ConsultationModal';
 import ConsultationPage from './components/ConsultationPage';
+import PackageBookingPage from './components/PackageBookingPage';
 import NumerologyModal from './components/NumerologyModal';
 import AuthModal from './components/AuthModal';
 import AboutModal from './components/AboutModal';
@@ -79,6 +80,8 @@ export default function App() {
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [consultationTopic, setConsultationTopic] = useState('');
 
+  const [selectedPackageForBooking, setSelectedPackageForBooking] = useState(null);
+
   const [isNumerologyOpen, setIsNumerologyOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -105,6 +108,8 @@ export default function App() {
 
       if (hash === '#consultation' || state?.page === 'consultation') {
         setCurrentPage('consultation');
+      } else if (hash === '#book-package' || state?.page === 'packageBooking') {
+        setCurrentPage('packageBooking');
       } else if (hash === '#tarot' || state?.page === 'tarot') {
         setCurrentPage('tarot');
       } else if (hash === '#kundli' || state?.page === 'kundli') {
@@ -279,6 +284,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenPackageBooking = (pkg, serviceType = 'tarot') => {
+    setSelectedPackageForBooking({ ...pkg, serviceType });
+    setCurrentPage('packageBooking');
+    if (window.location.hash !== '#book-package') {
+      window.history.pushState({ page: 'packageBooking' }, '', '#book-package');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSelectSign = (sign) => {
     setSelectedSign(sign);
     setIsHoroscopeOpen(true);
@@ -305,15 +319,25 @@ export default function App() {
         setLang={setLang}
       />
 
-      {/* Main Content: Dedicated Full Kundli Page OR Dedicated Consultation Page OR Home Landing View */}
+      {/* Main Content: Dedicated Full Kundli Page OR Dedicated Consultation Page OR Dedicated Package Booking Page OR Home Landing View */}
       {currentPage === 'kundli' ? (
         <main className="flex-1 flex flex-col">
           <KundliPage
             kundliData={kundliData}
             onGoBack={handleGoHome}
             onOpenConsultation={handleOpenConsultationWithTopic}
+            onOpenPackageBooking={handleOpenPackageBooking}
             lang={lang}
             setLang={setLang}
+          />
+        </main>
+      ) : currentPage === 'packageBooking' ? (
+        <main className="flex-1 flex flex-col">
+          <PackageBookingPage
+            packageData={selectedPackageForBooking}
+            onGoBack={handleGoHome}
+            lang={lang}
+            user={user}
           />
         </main>
       ) : currentPage === 'consultation' ? (
@@ -331,6 +355,7 @@ export default function App() {
             initialPackage={selectedTarotPkg}
             onGoBack={handleGoHome}
             onOpenConsultation={handleOpenConsultationWithTopic}
+            onOpenPackageBooking={handleOpenPackageBooking}
             lang={lang}
           />
         </main>
@@ -364,6 +389,7 @@ export default function App() {
             onOpenMilan={() => setIsMilanOpen(true)}
             onOpenNumerology={() => setIsNumerologyOpen(true)}
             onOpenTarotWithPackage={handleOpenTarotWithPackage}
+            onOpenPackageBooking={handleOpenPackageBooking}
             onOpenKundli={handleOpenKundliPage}
             lang={lang}
           />

@@ -28,7 +28,7 @@ import VimshottariDashaTable from './VimshottariDashaTable';
 import { DIVISIONAL_CHARTS_META } from '../utils/vedicCalculations';
 import { KUNDLI_PACKAGES } from '../data/kundliPackagesData';
 
-export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, lang = 'en', setLang }) {
+export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, onOpenPackageBooking, lang = 'en', setLang }) {
   const [activeTab, setActiveTab] = useState('chart');
   const [chartType, setChartType] = useState('north'); // 'north' or 'south'
   const [chartLang, setChartLang] = useState(lang === 'hi' ? 'hi' : 'en'); // 'en' | 'hi' | 'both'
@@ -1282,7 +1282,7 @@ export default function KundliPage({ kundliData, onGoBack, onOpenConsultation, l
                   </div>
 
                   <button
-                    onClick={() => onOpenConsultation?.(`Kundli Analysis: ${pkg.name} (₹${pkg.priceInr})`)}
+                    onClick={() => onOpenPackageBooking ? onOpenPackageBooking(pkg, 'kundli') : onOpenConsultation?.(`Kundli Analysis: ${pkg.name} (₹${pkg.priceInr})`)}
                     className="gold-btn px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:scale-105 transition-transform"
                   >
                     {isHi ? 'बुक करें' : 'Book Now'}
