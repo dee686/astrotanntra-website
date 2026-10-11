@@ -405,18 +405,35 @@ export default function BlogPage({
     }
   };
 
-  // ==========================================
-  // ARTICLE DETAIL READER VIEW
-  // ==========================================
-  if (selectedArticle) {
-    const article = selectedArticle;
-    const related = blogs.filter(b => b.id !== article.id && (b.category === article.category || b.isPopular)).slice(0, 3);
+  const relatedArticles = useMemo(() => {
+    if (!selectedArticle) return [];
+    return blogs.filter(b => b.id !== selectedArticle.id && (b.category === selectedArticle.category || b.isPopular)).slice(0, 3);
+  }, [blogs, selectedArticle]);
 
-    return (
-      <div className="min-h-screen bg-[#0b031b] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-black">
-        
-        {/* Breadcrumb Navigation & Top Action Bar */}
-        <div className="bg-[#12052c] border-b border-purple-900/60 sticky top-0 z-30 backdrop-blur-md bg-opacity-95">
+  return (
+    <div className="min-h-screen bg-[#0b031b] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-black">
+      
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1c0836]/95 border-2 border-amber-400 text-amber-200 px-5 py-3 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.4)] flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-md w-[90%] sm:w-auto">
+          <span className="text-amber-400 text-base shrink-0">✦</span>
+          <span className="text-xs sm:text-sm font-semibold">{toastMessage}</span>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-auto cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {selectedArticle ? (
+        /* ==========================================
+           ARTICLE DETAIL READER VIEW
+           ========================================== */
+        <div className="flex-1 flex flex-col animate-fadeIn">
+          {/* Breadcrumb Navigation & Top Action Bar */}
+          <div className="bg-[#12052c] border-b border-purple-900/60 sticky top-0 z-30 backdrop-blur-md bg-opacity-95">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 overflow-x-auto whitespace-nowrap py-1">
               <button 
@@ -646,7 +663,7 @@ export default function BlogPage({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {related.map(rel => (
+                {relatedArticles.map(rel => (
                   <div
                     key={rel.id}
                     onClick={() => setSelectedArticle(rel)}
@@ -682,88 +699,70 @@ export default function BlogPage({
         </article>
 
       </div>
-    );
-  }
-
-  // ==========================================
-  // MAIN BLOG DIRECTORY VIEW (Matching Screenshot)
-  // ==========================================
-  return (
-    <div className="min-h-screen bg-[#0b031b] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-black">
-      
-      {/* 1. TOP BREADCRUMB & ADMIN STATUS BAR */}
-      <div className="bg-[#12052c] border-b border-purple-900/60 sticky top-0 z-30 backdrop-blur-md bg-opacity-95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
-          
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
-            <button 
-              onClick={onGoBack} 
-              className="hover:text-amber-400 transition-colors cursor-pointer"
-            >
-              {isHi ? 'होम' : 'Home'}
-            </button>
-            <span>›</span>
-            <span className="text-amber-300 font-semibold">{isHi ? 'ब्लॉग' : 'Blog'}</span>
-          </div>
-
-          {/* Admin Status / Actions */}
-          <div className="flex items-center gap-3">
-            {isAdminLoggedIn ? (
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/70 text-emerald-300 font-semibold text-xs shadow-sm">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Admin: deepak.kumar686@gmail.com</span>
-                </span>
-                <button
-                  onClick={handleOpenCreateModal}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-gold-glow transition-all"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>{isHi ? 'नया लेख लिखें' : '+ New Blog Post'}</span>
-                </button>
-                <button
-                  onClick={handleResetDefaults}
-                  className="p-1.5 rounded-lg bg-purple-950 hover:bg-purple-900 text-slate-300 border border-purple-800 text-xs cursor-pointer transition-all"
-                  title={isHi ? 'डिफ़ॉल्ट रीसेट करें' : 'Reset to Default Articles'}
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsAdminLoginModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-purple-900 border border-purple-700/80 text-amber-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all"
+    ) : (
+      /* ==========================================
+         MAIN BLOG DIRECTORY VIEW (Matching Screenshot)
+         ========================================== */
+      <div className="flex-1 flex flex-col animate-fadeIn">
+        {/* 1. TOP BREADCRUMB & ADMIN STATUS BAR */}
+        <div className="bg-[#12052c] border-b border-purple-900/60 sticky top-0 z-30 backdrop-blur-md bg-opacity-95">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
+            
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
+              <button 
+                onClick={onGoBack} 
+                className="hover:text-amber-400 transition-colors cursor-pointer"
               >
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isHi ? 'एडमिन पोर्टल' : 'Admin Login'}</span>
+                {isHi ? 'होम' : 'Home'}
               </button>
-            )}
+              <span>›</span>
+              <span className="text-amber-300 font-semibold">{isHi ? 'ब्लॉग' : 'Blog'}</span>
+            </div>
 
-            <button
-              onClick={onGoBack}
-              className="px-3 py-1.5 rounded-xl bg-cosmic-800 hover:bg-cosmic-700 text-slate-200 border border-purple-800 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{isHi ? 'मुख्य पृष्ठ' : 'Home'}</span>
-            </button>
+            {/* Admin Status / Actions */}
+            <div className="flex items-center gap-3">
+              {isAdminLoggedIn ? (
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/70 text-emerald-300 font-semibold text-xs shadow-sm">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Admin: deepak.kumar686@gmail.com</span>
+                  </span>
+                  <button
+                    onClick={handleOpenCreateModal}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-gold-glow transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>{isHi ? 'नया लेख लिखें' : '+ New Blog Post'}</span>
+                  </button>
+                  <button
+                    onClick={handleResetDefaults}
+                    className="p-1.5 rounded-lg bg-purple-950 hover:bg-purple-900 text-slate-300 border border-purple-800 text-xs cursor-pointer transition-all"
+                    title={isHi ? 'डिफ़ॉल्ट रीसेट करें' : 'Reset to Default Articles'}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAdminLoginModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-purple-900 border border-purple-700/80 text-amber-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{isHi ? 'एडमिन पोर्टल' : 'Admin Login'}</span>
+                </button>
+              )}
+
+              <button
+                onClick={onGoBack}
+                className="px-3 py-1.5 rounded-xl bg-cosmic-800 hover:bg-cosmic-700 text-slate-200 border border-purple-800 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{isHi ? 'मुख्य पृष्ठ' : 'Home'}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#1c0836]/95 border-2 border-amber-400 text-amber-200 px-5 py-3 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8),0_0_25px_rgba(245,158,11,0.4)] flex items-center gap-3 animate-fadeIn backdrop-blur-md max-w-md w-[90%] sm:w-auto">
-          <span className="text-amber-400 text-base shrink-0">✦</span>
-          <span className="text-xs sm:text-sm font-semibold">{toastMessage}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors ml-auto cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       {/* 2. HERO HEADER & SEARCH BAR (Matching Screenshot Header) */}
       <section className="relative overflow-hidden pt-8 pb-10 sm:py-14 border-b border-purple-900/40 bg-gradient-to-b from-[#18073b] via-[#12042d] to-[#0b031b]">
@@ -1222,6 +1221,8 @@ export default function BlogPage({
 
         </div>
       </section>
+      </div>
+    )}
 
       {/* ==========================================
           MODAL 1: ADMIN LOGIN MODAL
